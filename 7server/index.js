@@ -9,12 +9,8 @@ import {
   isUsernameValid
 } from "./Lobby.js";
 import {
-  removeCardFromHand,
-  drawHand,
-  checkWinner,
-  mapToPlayerLives,
+  mapPlayerInfo,
   nextPlayer,
-  switchRoles,
 } from "./Battle.js";
 const server = http.createServer();
 
@@ -93,85 +89,29 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("lobbyLeave", () => {
-    const roomID = PlayerRooms.get(socket.id);
-    const players = leaveLobby(socket, roomID);
-    socket.to(roomID).emit("playerHandler", players);
-    socket.emit("leaveLobby");
-  });
-
-  socket.on("changeDeck", (deck) => {
-    const roomID = PlayerRooms.get(socket.id);
-    const roomData = Rooms.get(roomID);
-
-    const isPossible = changeDeckState(deck, socket.id, roomData);
-
-    if (isPossible) {
-      //Emit to other players that the host has readied up
-      const playerArr = mapToArrayObj(roomData.players);
-      io.to(roomID).emit("playerHandler", playerArr);
-
-      socket.emit("changeDeck", deck.name);
-    } else {
-      socket.emit("deckNotAccepted");
-    }
-  });
-
-  socket.on("deleteLobby", () => {
-    const roomID = PlayerRooms.get(socket.id);
-    io.to(roomID).emit("leaveLobby");
-    deleteLobby(roomID, io);
-  });
-
-  //Listens for player ready and returns the players readyness status.
-  socket.on("playerReady", () => {
-    const roomID = PlayerRooms.get(socket.id);
-    const playerReadyStatus = playerReady(socket.id, roomID);
-    console.log("player", socket.id, "changed ready status");
-    io.to(roomID).emit("playerHandler", playerReadyStatus);
-  });
-
   //Listens for a 'startGame' event and either emits a 'startedGame' event to all clients in a room if conditions are met, or sends a 'cantStartGame' event to the initiating client if not.
   socket.on("startGame", () => {
     const roomID = PlayerRooms.get(socket.id);
-    if (shouldStartGame(roomID)) {
-      const roomData = Rooms.get(roomID);
+    const roomData = Rooms.get(roomID);
 
-      //give each player lives according to settings
-      let lifeAmount = roomData.settings.life;
+    roomData.turn.current = socket.id;
+    roomData.turn.next = nextPlayer(roomData);
+    roomData.gameStarted = true;
 
-      //give players correct information and draw their hand
-      for (let [playerid, player] of roomData.players.entries()) {
-        let hand = drawHand(
-          player.deck,
-          roomData.settings.handSize,
-        );
-        player.lives = lifeAmount;
-        player.hand = [...hand];
-
-        io.to(playerid).emit("playerInfo", player);
-      }
-
-      roomData.turn.current = socket.id;
-      roomData.turn.next = nextPlayer(roomData);
-
-      // Calculate the minimum amount of cards present in all decks
-      roomData.maxDeckSize = calculateMaxDeckSize(roomData);
-      roomData.gameStarted = true;
-
-      const playerLives = mapToPlayerLives(roomData.players);
-      const startedGameData = {
-        playerLives: playerLives,
-        maxLives: lifeAmount,
-        handSize: roomData.settings.handSize,
-        turn: roomData.turn,
-      };
-      io.to(roomID).emit("startedGame", startedGameData);
-      console.log("Started game made by", socket.id);
-    } else {
-      console.log("Can not start game made by", socket.id);
-      socket.emit("cantStartGame");
+    // Gives players their hand
+    for (let [playerid, player] of roomData.players.entries()) {
+      player.cardsLeft = 2;
+      io.to(playerid).emit("playerInfo", player);
     }
+
+    const playersInfo = mapPlayerInfo(roomData.players);
+    const startedGameData = {
+      playersInfo,
+      turn: roomData.turn,
+    };
+    console.log(startedGameData)
+    io.to(roomID).emit("startedGame", startedGameData);
+    console.log("Started game made by", socket.id);
   });
 });
 // Start application server

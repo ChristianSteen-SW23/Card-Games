@@ -3,6 +3,7 @@ import './App.css';
 import { socket } from "./socket.js";
 import StartPage from "./components/StartPage.jsx"
 import Lobby from "./components/Lobby.jsx"
+import GamePage from "./components/GamePage.jsx"
 
 function App() {
 
@@ -11,6 +12,10 @@ function App() {
     const [currentPage, setCurrentPage] = useState('StartPage');
 
     useEffect(() => {
+        function onDisconnect() {
+            setCurrentPage('StartPage')
+        }
+
         function leaveLobbyFunc(){
             setCurrentPage('StartPage')
         }
@@ -19,12 +24,21 @@ function App() {
             console.table(data)
             setCurrentPage('Lobby')
         }
+        function startedGameFunc(data){
+            setLobbyState(data)
+            console.log(data)
+            setCurrentPage('Game')
+        }
 
+        socket.on('disconnect', onDisconnect);
         socket.on('leaveLobby', leaveLobbyFunc);
         socket.on('conToLobby', conToLobbyFunc);
+        socket.on('startedGame', startedGameFunc);
         return () => {
+            socket.off('disconnect', onDisconnect);
             socket.off("leaveLobby");
             socket.off("conToLobby");
+            socket.off("startedGame");
         };
     }, []);
 
@@ -34,8 +48,7 @@ function App() {
         case 'Lobby':
             return <Lobby lobbyState={lobbyState}/>
         case 'Game':
-
-            break;
+            return <GamePage lobbyState={lobbyState}/>
         default:
             console.log("Default")
     }
