@@ -1,14 +1,52 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
 import './App.css';
+import { socket } from "./socket.js";
+import StartPage from "./components/StartPage.jsx"
+import Lobby from "./components/Lobby.jsx"
 
 function App() {
-	const cardClicked = (card) => {
-		alert('You clicked: ' + card);
-	};
 
-	return (
-		<>
-			<ul className="playingCards table">
+
+    const [lobbyState, setLobbyState] = useState({});
+    const [currentPage, setCurrentPage] = useState('StartPage');
+
+    useEffect(() => {
+        function leaveLobbyFunc(){
+            setCurrentPage('StartPage')
+        }
+        function conToLobbyFunc(data){
+            setLobbyState(data);
+            console.table(data)
+            setCurrentPage('Lobby')
+        }
+
+        socket.on('leaveLobby', leaveLobbyFunc);
+        socket.on('conToLobby', conToLobbyFunc);
+        return () => {
+            socket.off("leaveLobby");
+            socket.off("conToLobby");
+        };
+    }, []);
+
+    switch (currentPage) {
+        case 'StartPage':
+            return <StartPage/>
+        case 'Lobby':
+            return <Lobby lobbyState={lobbyState}/>
+        case 'Game':
+
+            break;
+        default:
+            console.log("Default")
+    }
+}
+
+export default App;
+
+/*
+return (
+        <>
+            <ul className="playingCards table">
         <li>
             <div className="card rank-2 spades"><span className="rank">2</span><span className="suit">&spades;</span></div>
         </li>
@@ -49,9 +87,6 @@ function App() {
             <div className="card rank-a spades"><span className="rank">A</span><span className="suit">&spades;</span></div>
         </li>
     </ul>
-		</>
-	);
-}
-
-export default App;
-
+        </>
+    );
+*/

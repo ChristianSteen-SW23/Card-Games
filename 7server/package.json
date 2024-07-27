@@ -1,0 +1,14 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "dependencies": {
+    "http": "^0.0.1-security",
+    "socket.io": "^4.7.5"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}

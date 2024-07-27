@@ -9,9 +9,6 @@
 
 /* card itself
 ********************************************************************/
-div {
-    background-color: #000;
-}
 
 .playingCards .card {
     display: inline-block;
