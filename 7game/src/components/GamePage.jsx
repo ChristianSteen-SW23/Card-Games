@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { socket } from "./../socket";
 import InGamePlayerList from "./subComponents/game/InGamePlayerList";
+import MakeBoard from "./subComponents/game/MakeBoard";
 
 
 export default function GamePage({ lobbyState }) {
@@ -19,7 +20,9 @@ export default function GamePage({ lobbyState }) {
                 <div className="col-2">
                     <InGamePlayerList lobbyState={lobbyState}/>
                 </div>
-                <div className="col-10"></div>
+                <div className="col-10">
+                    <MakeBoard board={lobbyState.board}/>
+                </div>
             </div>
         </div>
     );

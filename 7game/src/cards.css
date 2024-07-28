@@ -324,19 +324,19 @@
 .playingCards.faceImages .card.rank-q,
 .playingCards.faceImages .card.rank-k,
 .playingCards.faceImages .card.joker {
-    /*background-repeat: no-repeat;*/
-    /*background-position: -1em 0;*/
+    background-repeat: no-repeat;
+    background-position: -1em 0;
     /* @change: smaller cards: more negative distance from the left
        bigger cards: 0 or more positive distance from the left */
 
-    /* for a centered full background image:*/
+    /* for a centered full background image:
     background-position: .35em 0;
     -moz-background-size: contain;
     -o-background-size: contain;
     -webkit-background-size: contain;
     -khtml-background-size: contain;
     background-size: contain;
-    
+    */
 }
 
 .playingCards.faceImages .card.rank-j.diams  { background-image: url(faces/JD.gif); }

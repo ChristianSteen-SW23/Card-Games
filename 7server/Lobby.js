@@ -36,7 +36,8 @@ function roomStateObj(socket, username) {
     // The lobby state is added to the rooms map as a value to the given room id
     let lobbyStateObj = {
         "players": new Map(),
-        "turn": { current: undefined, next: undefined }
+        "turn": { current: undefined, next: undefined },
+        "board": [[2,2,2,2],[7,7,7,7],["k","j","q",10]]
     };
     lobbyStateObj.players.set(socket.id, createPlayer(username, true, socket.id));
     return lobbyStateObj;

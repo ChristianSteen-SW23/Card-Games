@@ -108,6 +108,7 @@ io.on("connection", (socket) => {
     const startedGameData = {
       playersInfo,
       turn: roomData.turn,
+      board: roomData.board
     };
     console.log(startedGameData)
     io.to(roomID).emit("startedGame", startedGameData);

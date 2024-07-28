@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import './App.css';
+import './cards.css';
 import { socket } from "./socket.js";
 import StartPage from "./components/StartPage.jsx"
 import Lobby from "./components/Lobby.jsx"
