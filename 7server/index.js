@@ -170,6 +170,6 @@ io.on("connection", (socket) => {
   });
 });
 // Start application server
-server.listen(3000, () => {
-  console.log("listening on *:3000");
+server.listen(3069, () => {
+  console.log("listening on *:3069");
 });
