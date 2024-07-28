@@ -10,6 +10,7 @@ function App() {
 
     const [lobbyState, setLobbyState] = useState({});
     const [currentPage, setCurrentPage] = useState('StartPage');
+    const [hand, setHand] = useState([]);
 
     useEffect(() => {
         function onDisconnect() {
@@ -21,24 +22,49 @@ function App() {
         }
         function conToLobbyFunc(data){
             setLobbyState(data);
-            console.table(data)
             setCurrentPage('Lobby')
         }
         function startedGameFunc(data){
             setLobbyState(data)
-            console.log(data)
             setCurrentPage('Game')
+        }
+        function handInfoFunc(data){
+            const newHand = [...data];
+            setHand(newHand)
+        }
+        function outOfTurnFunc(){
+            alert("Not your turn...")
+        }
+        function notPlayableFunc(){
+            alert("You can not play that card")
+        }
+        function playableFunc(data){
+            const newHand = [...data];
+            setHand(newHand)
+        }
+        function gameInfoFunc(data){
+            setLobbyState(data)
         }
 
         socket.on('disconnect', onDisconnect);
         socket.on('leaveLobby', leaveLobbyFunc);
         socket.on('conToLobby', conToLobbyFunc);
         socket.on('startedGame', startedGameFunc);
+        socket.on('handInfo', handInfoFunc);
+        socket.on('outOfTurn', outOfTurnFunc);
+        socket.on('notPlayable', notPlayableFunc);
+        socket.on('playable', playableFunc);
+        socket.on('gameInfo', gameInfoFunc);
         return () => {
             socket.off('disconnect', onDisconnect);
             socket.off("leaveLobby");
             socket.off("conToLobby");
             socket.off("startedGame");
+            socket.off("handInfo");
+            socket.off("outOfTurn");
+            socket.off("notPlayable");
+            socket.off("playable");
+            socket.off("gameInfo");
         };
     }, []);
 
@@ -48,7 +74,7 @@ function App() {
         case 'Lobby':
             return <Lobby lobbyState={lobbyState}/>
         case 'Game':
-            return <GamePage lobbyState={lobbyState}/>
+            return <GamePage lobbyState={lobbyState} hand={hand} setHand={setHand}/>
         default:
             console.log("Default")
     }

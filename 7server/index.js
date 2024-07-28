@@ -11,6 +11,9 @@ import {
 import {
   mapPlayerInfo,
   nextPlayer,
+  dealCards,
+  cardPlayable,
+  playCard
 } from "./Battle.js";
 const server = http.createServer();
 
@@ -36,20 +39,9 @@ io.on("connection", (socket) => {
     if (PlayerRooms.has(socket.id)) {
       const roomID = PlayerRooms.get(socket.id);
       const roomData = Rooms.get(roomID);
-      //Does the player have host status
-      if (roomData.players.get(socket.id).host) {
-        socket.to(roomID).emit("leaveLobby");
-        deleteLobby(roomID, io);
-      } else {
-        // If game has already started, disconnect all clients from game, also if not a host and player is not dead.
-        if (roomData.gameStarted && roomData.players.get(socket.id).lives > 0) {
-          socket.to(roomID).emit("leaveLobby");
-          deleteLobby(roomID, io);
-        } else {
-          const players = leaveLobby(socket, roomID);
-          socket.to(roomID).emit("playerHandler", players);
-        }
-      }
+
+      socket.to(roomID).emit("leaveLobby");
+      deleteLobby(roomID, io);
     }
   });
 
@@ -98,10 +90,14 @@ io.on("connection", (socket) => {
     roomData.turn.next = nextPlayer(roomData);
     roomData.gameStarted = true;
 
+    dealCards(roomData)
+    roomData.turn.current = roomData.startingPlayerID
+    roomData.turn.next = nextPlayer(roomData);
+
     // Gives players their hand
     for (let [playerid, player] of roomData.players.entries()) {
-      player.cardsLeft = 2;
-      io.to(playerid).emit("playerInfo", player);
+      player.cardsLeft = player.hand.length;
+      io.to(playerid).emit("handInfo", player.hand);
     }
 
     const playersInfo = mapPlayerInfo(roomData.players);
@@ -110,9 +106,67 @@ io.on("connection", (socket) => {
       turn: roomData.turn,
       board: roomData.board
     };
-    console.log(startedGameData)
     io.to(roomID).emit("startedGame", startedGameData);
     console.log("Started game made by", socket.id);
+  });
+
+  socket.on("playCard", (card) => {
+    const roomID = PlayerRooms.get(socket.id)
+    const roomData = Rooms.get(roomID)
+    if (socket.id == roomData.turn.current) {
+      if (cardPlayable(card, roomData)) {
+        roomData.players.get(roomData.turn.current).cardsLeft--;
+        playCard(card, roomData)
+        const playersInfo = mapPlayerInfo(roomData.players);
+        
+        // Remove card from hand and sent it out
+        let indexToRemove = roomData.players.get(roomData.turn.current).hand.indexOf(card);
+        roomData.players.get(roomData.turn.current).hand.splice(indexToRemove,1);
+        io.to(socket.id).emit("playable",roomData.players.get(roomData.turn.current).hand)
+        
+
+        // Set next turn
+        roomData.turn.current = roomData.turn.next;
+        roomData.turn.next = nextPlayer(roomData);
+
+        // Send out new game info
+        const gameInfo = {
+          playersInfo,
+          turn: roomData.turn,
+          board: roomData.board
+        };
+        io.to(roomID).emit("gameInfo", gameInfo);
+        
+      } else {
+        io.to(socket.id).emit("notPlayable")
+      }
+    } else {
+      io.to(socket.id).emit("outOfTurn")
+    }
+
+  });
+
+  socket.on("skipTurn", (card) => {
+    const roomID = PlayerRooms.get(socket.id)
+    const roomData = Rooms.get(roomID)
+    if (socket.id == roomData.turn.current) {
+        // Set next turn
+        roomData.turn.current = roomData.turn.next;
+        roomData.turn.next = nextPlayer(roomData);
+
+        // Send out new game info
+        const playersInfo = mapPlayerInfo(roomData.players);
+        const gameInfo = {
+          playersInfo,
+          turn: roomData.turn,
+          board: roomData.board
+        };
+        io.to(roomID).emit("gameInfo", gameInfo);
+        
+    } else {
+      io.to(socket.id).emit("outOfTurn")
+    }
+
   });
 });
 // Start application server
