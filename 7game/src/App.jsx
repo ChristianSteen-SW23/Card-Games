@@ -29,8 +29,9 @@ function App() {
             setCurrentPage('Game')
         }
         function handInfoFunc(data){
-            const newHand = [...data];
-            setHand(newHand)
+            let newHand = data;
+            newHand.sort((a, b) => a - b)
+            setHand(newHand);
         }
         function outOfTurnFunc(){
             alert("Not your turn...")
@@ -38,9 +39,10 @@ function App() {
         function notPlayableFunc(){
             alert("You can not play that card")
         }
-        function playableFunc(data){
-            const newHand = [...data];
-            setHand(newHand)
+        function playableFunc(data) {
+            let newHand = data;
+            newHand.sort((a, b) => a - b)
+            setHand(newHand);
         }
         function gameInfoFunc(data){
             setLobbyState(data)
