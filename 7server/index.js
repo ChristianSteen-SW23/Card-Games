@@ -13,7 +13,8 @@ import {
   nextPlayer,
   dealCards,
   cardPlayable,
-  playCard
+  playCard,
+  possibleSkip
 } from "./Battle.js";
 const server = http.createServer();
 
@@ -118,12 +119,12 @@ io.on("connection", (socket) => {
         roomData.players.get(roomData.turn.current).cardsLeft--;
         playCard(card, roomData)
         const playersInfo = mapPlayerInfo(roomData.players);
-        
+
         // Remove card from hand and sent it out
         let indexToRemove = roomData.players.get(roomData.turn.current).hand.indexOf(card);
-        roomData.players.get(roomData.turn.current).hand.splice(indexToRemove,1);
-        io.to(socket.id).emit("playable",roomData.players.get(roomData.turn.current).hand)
-        
+        roomData.players.get(roomData.turn.current).hand.splice(indexToRemove, 1);
+        io.to(socket.id).emit("playable", roomData.players.get(roomData.turn.current).hand)
+
 
         // Set next turn
         roomData.turn.current = roomData.turn.next;
@@ -136,7 +137,7 @@ io.on("connection", (socket) => {
           board: roomData.board
         };
         io.to(roomID).emit("gameInfo", gameInfo);
-        
+
       } else {
         io.to(socket.id).emit("notPlayable")
       }
@@ -150,6 +151,8 @@ io.on("connection", (socket) => {
     const roomID = PlayerRooms.get(socket.id)
     const roomData = Rooms.get(roomID)
     if (socket.id == roomData.turn.current) {
+      if (possibleSkip(roomData, socket.id)) {
+
         // Set next turn
         roomData.turn.current = roomData.turn.next;
         roomData.turn.next = nextPlayer(roomData);
@@ -162,7 +165,10 @@ io.on("connection", (socket) => {
           board: roomData.board
         };
         io.to(roomID).emit("gameInfo", gameInfo);
-        
+      } else {
+        io.to(socket.id).emit("noSkip")
+      }
+
     } else {
       io.to(socket.id).emit("outOfTurn")
     }

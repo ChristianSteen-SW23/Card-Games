@@ -1,5 +1,5 @@
 import { PlayerRooms, Rooms } from "./index.js";
-export {  mapPlayerInfo, nextPlayer, switchRoles, dealCards, playCard, cardPlayable };
+export { mapPlayerInfo, nextPlayer, switchRoles, dealCards, playCard, cardPlayable, possibleSkip };
 
 function mapPlayerInfo(map) {
     let array = [];
@@ -34,17 +34,17 @@ function switchRoles(roomID, roomData, socket) {
     socket.emit("switchRoles", { turn: roomData.turn, hand: roomData.players.get(socket.id).hand });
 }
 
-function dealCards(roomData){
+function dealCards(roomData) {
     let cardDeck = []
     for (let i = 0; i < 52; i++) {
-        cardDeck.push(i)        
+        cardDeck.push(i)
     }
 
     let randomNum;
-    while(cardDeck.length != 0){
+    while (cardDeck.length != 0) {
         randomNum = Math.floor(Math.random() * cardDeck.length);
         roomData.players.get(roomData.turn.current).hand.push(cardDeck[randomNum])
-        if(cardDeck[randomNum] == 19)
+        if (cardDeck[randomNum] == 19)
             roomData.startingPlayerID = roomData.turn.current
         cardDeck.splice(randomNum, 1);
         roomData.turn.current = roomData.turn.next;
@@ -52,36 +52,48 @@ function dealCards(roomData){
     }
 }
 
-function cardPlayable(card, roomData){
+function cardPlayable(card, roomData) {
     let board = roomData.board
-    const suit = (card-(card%13))/13
-    const rank = card%13+1
-    if(board[1][1] == null && card != 19) return false
+    const suit = (card - (card % 13)) / 13
+    const rank = card % 13 + 1
+    if (board[1][1] == null && card != 19) return false
 
-    if(rank == 7) return true
+    if (rank == 7) return true
 
-    if(board[1][suit] == null) return false
+    if (board[1][suit] == null) return false
 
-    if(rank == 6 || rank == 8) return true
+    if (rank == 6 || rank == 8) return true
 
-    if(rank > 7 && board[0][suit]+1 == rank) return true
+    if (rank > 7 && board[0][suit] + 1 == rank) return true
 
-    if(rank < 7 && board[2][suit]-1 == rank) return true
+    if (rank < 7 && board[2][suit] - 1 == rank) return true
 
     return false
 }
 
-function playCard(card, roomData){
-    const suit = (card-(card%13))/13
-    const rank = card%13+1
+function playCard(card, roomData) {
+    const suit = (card - (card % 13)) / 13
+    const rank = card % 13 + 1
 
-    if(rank == 7) roomData.board[1][suit] = 7;
-    if(rank < 7) roomData.board[2][suit] = rank;
-    if(rank > 7) roomData.board[0][suit] = rank;
+    if (rank == 7) roomData.board[1][suit] = 7;
+    if (rank < 7) roomData.board[2][suit] = rank;
+    if (rank > 7) roomData.board[0][suit] = rank;
 }
 
 function getRandomInt(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function possibleSkip(roomData, socketID) {
+    let playerHand = roomData.players.get(socketID).hand;
+    console.log(playerHand);
+    let canSkip = true;
+    playerHand.forEach((card, index) => {
+        if (cardPlayable(card, roomData)) {
+            canSkip = false;
+        }
+    });
+    return canSkip;
 }

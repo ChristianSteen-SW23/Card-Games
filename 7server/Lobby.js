@@ -25,7 +25,7 @@ function createLobbyID() {
     let id;
     do {
         id = "";
-        for (let i = 0; i < 6; i++) {
+        for (let i = 0; i < 1; i++) {
             id += Math.floor(Math.random() * 10);
         }
     } while (Rooms.get(`/${id}`));

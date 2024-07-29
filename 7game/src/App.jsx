@@ -47,6 +47,9 @@ function App() {
         function gameInfoFunc(data){
             setLobbyState(data)
         }
+        function noSkipFunc(){
+            alert("You can play a card. Please stop the cheating")
+        }
 
         socket.on('disconnect', onDisconnect);
         socket.on('leaveLobby', leaveLobbyFunc);
@@ -57,6 +60,7 @@ function App() {
         socket.on('notPlayable', notPlayableFunc);
         socket.on('playable', playableFunc);
         socket.on('gameInfo', gameInfoFunc);
+        socket.on('noSkip', noSkipFunc);
         return () => {
             socket.off('disconnect', onDisconnect);
             socket.off("leaveLobby");
@@ -67,6 +71,7 @@ function App() {
             socket.off("notPlayable");
             socket.off("playable");
             socket.off("gameInfo");
+            socket.off("noSkip");
         };
     }, []);
 
