@@ -11,11 +11,15 @@ import {
 import {
   mapPlayerInfo,
   nextPlayer,
-  dealCards,
+  dealCards as dealCards7,
   cardPlayable,
   playCard,
   possibleSkip
-} from "./Battle.js";
+} from "./Battle7.js";
+import {
+  dealCards31,
+  mapPlayerInfo31
+} from "./Battle31.js";
 const server = http.createServer();
 
 // Socket server that makes use of the above http app server:
@@ -81,34 +85,70 @@ io.on("connection", (socket) => {
       socket.emit("roomNotExist");
     }
   });
-
+  //7---------------------------------------------------------------------------------------------------------------------------------------------------------
   //Listens for a 'startGame' event and either emits a 'startedGame' event to all clients in a room if conditions are met, or sends a 'cantStartGame' event to the initiating client if not.
-  socket.on("startGame", () => {
+  socket.on("startGame", (gameMode) => {
     const roomID = PlayerRooms.get(socket.id);
     const roomData = Rooms.get(roomID);
 
-    roomData.turn.current = socket.id;
-    roomData.turn.next = nextPlayer(roomData);
-    roomData.gameStarted = true;
+    let startedGameData;
+    let playersInfo;
 
-    dealCards(roomData)
-    roomData.turn.current = roomData.startingPlayerID
-    roomData.turn.next = nextPlayer(roomData);
+    switch (gameMode) {
+      case 7:
+        roomData.turn.current = socket.id;
+        roomData.turn.next = nextPlayer(roomData);
+        roomData.gameStarted = true;
 
-    // Gives players their hand
-    for (let [playerid, player] of roomData.players.entries()) {
-      player.cardsLeft = player.hand.length;
-      io.to(playerid).emit("handInfo", player.hand);
+        dealCards7(roomData)
+        roomData.turn.current = roomData.startingPlayerID
+        roomData.turn.next = nextPlayer(roomData);
+
+        // Gives players their hand
+        for (let [playerid, player] of roomData.players.entries()) {
+          player.cardsLeft = player.hand.length;
+          io.to(playerid).emit("handInfo", player.hand);
+        }
+
+        playersInfo = mapPlayerInfo(roomData.players);
+        startedGameData = {
+          playersInfo,
+          turn: roomData.turn,
+          board: roomData.board
+        };
+        io.to(roomID).emit("startedGame7", startedGameData);
+        console.log("Started game 7 made by", socket.id);
+        break;
+      case 31:
+        roomData.turn.current = socket.id;
+        roomData.turn.next = nextPlayer(roomData);
+        roomData.gameStarted = true;
+        dealCards31(roomData);
+
+        roomData.turn.current = roomData.startingPlayerID
+        roomData.turn.next = nextPlayer(roomData);
+
+        // Gives players their hand
+        for (let [playerid, player] of roomData.players.entries()) {
+          player.cardsLeft = player.hand.length;
+          io.to(playerid).emit("handInfo", player.hand);
+        }
+
+        roomData.turn.current = socket.id
+        roomData.turn.next = nextPlayer(roomData);
+
+        playersInfo = mapPlayerInfo31(roomData.players);
+        startedGameData = {
+          playersInfo,
+          turn: roomData.turn,
+          stack: roomData.stack[0]
+        };
+
+        io.to(roomID).emit("startedGame31", startedGameData);
+        console.log("Started game 31 made by", socket.id);
+        break;
     }
 
-    const playersInfo = mapPlayerInfo(roomData.players);
-    const startedGameData = {
-      playersInfo,
-      turn: roomData.turn,
-      board: roomData.board
-    };
-    io.to(roomID).emit("startedGame", startedGameData);
-    console.log("Started game made by", socket.id);
   });
 
   socket.on("playCard", (card) => {

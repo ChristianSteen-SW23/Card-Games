@@ -3,7 +3,7 @@ import { socket } from "../../../socket";
 
 export default function StartGameBTN( { players } ) {
     function startGame(){
-        socket.emit("startGame")
+        socket.emit("startGame",31)
     }
     return (
         <>

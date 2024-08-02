@@ -88,7 +88,6 @@ function getRandomInt(min, max) {
 
 function possibleSkip(roomData, socketID) {
     let playerHand = roomData.players.get(socketID).hand;
-    console.log(playerHand);
     let canSkip = true;
     playerHand.forEach((card, index) => {
         if (cardPlayable(card, roomData)) {
