@@ -18,7 +18,8 @@ import {
 } from "./Battle7.js";
 import {
   dealCards31,
-  mapPlayerInfo31
+  mapPlayerInfo31,
+  cal31Move
 } from "./Battle31.js";
 const server = http.createServer();
 
@@ -212,8 +213,16 @@ io.on("connection", (socket) => {
     } else {
       io.to(socket.id).emit("outOfTurn")
     }
-
   });
+
+  socket.on("31Move", (data) => {
+    console.log(data)
+    const roomID = PlayerRooms.get(socket.id)
+    const roomData = Rooms.get(roomID)
+
+    cal31Move(roomData, data, socket.id, io, roomID);
+
+  })
 });
 // Start application server
 server.listen(3069, () => {
