@@ -46,6 +46,9 @@ function cal31Move(roomData, socketData, socketID, io, roomID) {
         return
     }
     let playerData = roomData.players.get(socketID);
+
+   // playerData.hand = [0,13,26] // TODO DELETE
+    console.table(playerData.hand)
     let playersInfo;
     let startedGameData;
     switch (socketData.moveType) {
@@ -71,9 +74,33 @@ function cal31Move(roomData, socketData, socketID, io, roomID) {
             break;
         case "swap":
             // Take card from stack and set the new one in
-            playerData.hand.push(roomData.stack.pop())
-            roomData.stack.push(playerData.hand.splice(socketData.card, 1))
-            io.to(socketID).emit("playable", roomData.players.get(roomData.turn.current).hand)
+            console.table(roomData.stack)
+            console.table(playerData.hand)
+
+            /*let card = roomData.stack[roomData.stack.length-1]
+            console.log(card)
+            roomData.stack.pop()
+            playerData.hand.push((card instanceof Array)?card[0]:card)
+
+            console.table(roomData.stack)
+            console.table(playerData.hand)*/
+            /*let card = roomData.stack.pop()
+            console.log((card instanceof Array)?card[0]:card)
+            playerData.hand.push((card instanceof Array)?card[0]:card)
+            console.log(card)
+            console.table(roomData.stack)
+            console.table(playerData.hand)*/
+            
+            let topStackCard = roomData.stack.pop()
+            let swapCardHand = playerData.hand[socketData.card]
+            roomData.stack.push(swapCardHand)
+            playerData.hand[socketData.card] = topStackCard
+            
+            //playerData.hand.push(roomData.stack.pop())
+            //roomData.stack.push(playerData.hand.splice(socketData.card, 1)[0])
+
+
+            io.to(socketID).emit("playable", playerData.hand/*roomData.players.get(roomData.turn.current).hand*/)
 
             roomData.turn.current = roomData.turn.next
             roomData.turn.next = nextPlayer(roomData);
@@ -85,6 +112,7 @@ function cal31Move(roomData, socketData, socketID, io, roomID) {
                 stack: roomData.stack[roomData.stack.length - 1]
             };
             io.to(roomID).emit("startedGame31", startedGameData);
+            console.table(playerData.hand)
             break;
     }
 

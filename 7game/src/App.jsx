@@ -42,8 +42,9 @@ function App() {
             alert("You can not play that card")
         }
         function playableFunc(data) {
+            console.log(data)
             let newHand = data;
-            newHand.sort((a, b) => a - b)
+            //newHand.sort((a, b) => a - b)
             setHand(newHand);
         }
         function gameInfoFunc(data){

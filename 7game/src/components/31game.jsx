@@ -13,9 +13,9 @@ export default function GamePage31({ lobbyState, hand, setHand }) {
 
     const [pickedCard, setPickedCard] = useState(-1);
 
-    useEffect(() => {
+    /*useEffect(() => {
         console.log(pickedCard)
-    }, [pickedCard]);
+    }, [pickedCard]);*/
     return (
         <>
             <div className="container text-center">
@@ -29,7 +29,7 @@ export default function GamePage31({ lobbyState, hand, setHand }) {
                     </div>
                 </div>
                 <div className="row">
-                    <MakeHand31 hand={hand} setPickedCard={setPickedCard} />
+                    <MakeHand31 hand={hand} setPickedCard={setPickedCard} pickedCard={pickedCard} />
                 </div>
                 <div className="row">
                     <button type="button" className="btn btn-primary p-3 m-3 btn-lg" onClick={knockBTNFunc}>

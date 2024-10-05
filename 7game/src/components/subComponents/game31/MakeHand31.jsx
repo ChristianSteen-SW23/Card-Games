@@ -2,17 +2,21 @@ import { useState } from "react";
 import { socket } from "../../../socket";
 import MakeCardWithSuit from "../game/MakeCardWithSuit";
 
-export default function MakeHand31({ hand, setPickedCard }) {
+export default function MakeHand31({ hand, setPickedCard, pickedCard }) {
     return (
         <>
             <div className="row p-5"></div>
             <h1 className="text-primary"><b>Your hand:</b></h1>
-            <div className="row playingCards rotateHand fourColours justify-content-md-center">
+            <div className="row playingCards fourColours justify-content-md-center">
                 <div className="col-md-auto">
-                    <ul className="hand">
-                        {hand.map((card, index) =>
-                            <CalNeedCard card={card} index={index} setPickedCard={setPickedCard} />
-                        )}
+                    <ul className="table">
+                        {hand.map((card, index) =>{
+                            if(index === pickedCard){
+                                return <strong><CalNeedCard card={card} index={index} setPickedCard={setPickedCard}/></strong>
+                            }else {
+                                return <CalNeedCard card={card} index={index} setPickedCard={setPickedCard} />
+                            }
+                        })}
                     </ul>
                 </div>
             </div>
@@ -81,7 +85,7 @@ function CalNeedCard({ card, index, setPickedCard }) {
 
     return (
         <li>
-            <div onClick={()=>{setPickedCard(index)}}><MakeCardWithSuit suit={suit} rank={rank} /></div>
+            <div onClick={()=>{setPickedCard(index);console.log(index)}}><MakeCardWithSuit suit={suit} rank={rank} /></div>
         </li>
     )
 }
