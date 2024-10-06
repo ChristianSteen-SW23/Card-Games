@@ -54,6 +54,7 @@ function App() {
             alert("You can play a card. Please stop the cheating")
         }
         function startedGameFunc31(data){
+            console.log(data)
             setLobbyState(data)
             setCurrentPage('Game')
         }

@@ -138,12 +138,14 @@ io.on("connection", (socket) => {
 
         roomData.turn.current = socket.id
         roomData.turn.next = nextPlayer(roomData);
+        roomData.endPlayer = null;
 
         playersInfo = mapPlayerInfo31(roomData.players);
         startedGameData = {
           playersInfo,
           turn: roomData.turn,
-          stack: roomData.stack[0]
+          stack: roomData.stack[0],
+          endPlayer: roomData.endPlayer
         };
 
         io.to(roomID).emit("startedGame31", startedGameData);
@@ -222,7 +224,6 @@ io.on("connection", (socket) => {
     const roomData = Rooms.get(roomID)
 
     cal31Move(roomData, data, socket.id, io, roomID);
-
   })
 });
 // Start application server

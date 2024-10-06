@@ -85,7 +85,7 @@ function CalNeedCard({ card, index, setPickedCard }) {
 
     return (
         <li>
-            <div onClick={()=>{setPickedCard(index);console.log(index)}}><MakeCardWithSuit suit={suit} rank={rank} /></div>
+            <div onClick={()=>{setPickedCard(index)}}><MakeCardWithSuit suit={suit} rank={rank} /></div>
         </li>
     )
 }

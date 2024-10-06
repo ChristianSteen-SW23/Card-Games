@@ -40,15 +40,22 @@ function mapPlayerInfo31(map) {
     return array;
 }
 
+
+
 function cal31Move(roomData, socketData, socketID, io, roomID) {
+    if(roomData.endPlayer == nextPlayer(roomData)){
+        calculatePoints(roomData,roomID, io)
+        return
+    }
+
+
+    console.log("Endplayer: " + roomData.endPlayer);
     if (roomData.turn.current != socketID) {
         io.to(socketID).emit("outOfTurn")
         return
     }
     let playerData = roomData.players.get(socketID);
 
-   // playerData.hand = [0,13,26] // TODO DELETE
-    console.table(playerData.hand)
     let playersInfo;
     let startedGameData;
     switch (socketData.moveType) {
@@ -68,7 +75,8 @@ function cal31Move(roomData, socketData, socketID, io, roomID) {
             startedGameData = {
                 playersInfo,
                 turn: roomData.turn,
-                stack: roomData.stack[roomData.stack.length - 1]
+                stack: roomData.stack[roomData.stack.length - 1],
+                endPlayer: roomData.endPlayer
             };
             io.to(roomID).emit("startedGame31", startedGameData);
             break;
@@ -77,30 +85,12 @@ function cal31Move(roomData, socketData, socketID, io, roomID) {
             console.table(roomData.stack)
             console.table(playerData.hand)
 
-            /*let card = roomData.stack[roomData.stack.length-1]
-            console.log(card)
-            roomData.stack.pop()
-            playerData.hand.push((card instanceof Array)?card[0]:card)
-
-            console.table(roomData.stack)
-            console.table(playerData.hand)*/
-            /*let card = roomData.stack.pop()
-            console.log((card instanceof Array)?card[0]:card)
-            playerData.hand.push((card instanceof Array)?card[0]:card)
-            console.log(card)
-            console.table(roomData.stack)
-            console.table(playerData.hand)*/
-            
             let topStackCard = roomData.stack.pop()
             let swapCardHand = playerData.hand[socketData.card]
             roomData.stack.push(swapCardHand)
             playerData.hand[socketData.card] = topStackCard
-            
-            //playerData.hand.push(roomData.stack.pop())
-            //roomData.stack.push(playerData.hand.splice(socketData.card, 1)[0])
 
-
-            io.to(socketID).emit("playable", playerData.hand/*roomData.players.get(roomData.turn.current).hand*/)
+            io.to(socketID).emit("playable", playerData.hand)
 
             roomData.turn.current = roomData.turn.next
             roomData.turn.next = nextPlayer(roomData);
@@ -109,11 +99,36 @@ function cal31Move(roomData, socketData, socketID, io, roomID) {
             startedGameData = {
                 playersInfo,
                 turn: roomData.turn,
-                stack: roomData.stack[roomData.stack.length - 1]
+                stack: roomData.stack[roomData.stack.length - 1],
+                endPlayer: roomData.endPlayer
             };
             io.to(roomID).emit("startedGame31", startedGameData);
-            console.table(playerData.hand)
+            break;
+        case "Knock":
+            // Sets the endPlayer to be the player that have knocked
+            if(roomData.endPlayer != null){
+                io.to(socketID).emit("elseKnocked")
+                return
+            }
+            roomData.endPlayer = socketID;
+
+            roomData.turn.current = roomData.turn.next
+            roomData.turn.next = nextPlayer(roomData);
+
+            playersInfo = mapPlayerInfo31(roomData.players);
+            startedGameData = {
+                playersInfo,
+                turn: roomData.turn,
+                stack: roomData.stack[roomData.stack.length - 1],
+                endPlayer: roomData.endPlayer
+            };
+            io.to(roomID).emit("startedGame31", startedGameData);
             break;
     }
 
+}
+
+function calculatePoints(roomData, roomID, io){
+
+    io.to(roomID).emit("GameOver31", []);
 }

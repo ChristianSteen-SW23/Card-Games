@@ -6,9 +6,24 @@ import MakeHand31 from "./subComponents/game31/MakeHand31";
 
 
 export default function GamePage31({ lobbyState, hand, setHand }) {
+    useEffect(() => {
+        function elseKnockedFunc(){
+            alert("You can not knock, someone else have knocked")
+        }
+
+        function GameOver31Func(data){
+            alert(data)
+        }
+
+        socket.on('elseKnocked', elseKnockedFunc);
+        socket.on('GameOver31', GameOver31Func);
+        return () => {
+            socket.off("elseKnocked");
+            socket.off("GameOver31");
+        };
+    }, []);
     function knockBTNFunc(){
-
-
+        socket.emit("31Move", {moveType: "Knock"});
     }
 
     const [pickedCard, setPickedCard] = useState(-1);
