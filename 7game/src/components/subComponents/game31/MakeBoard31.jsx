@@ -24,10 +24,10 @@ export default function MakeBoard({ stack, pickedCard }) {
     return (
         <>
             <div className="row">
-                <div class="playingCards col-6" onClick={drawCard}>
-                    <div class="card back">*</div>
+                <div className="playingCards col-6" onClick={drawCard}>
+                    <div className="card back">*</div>
                 </div>
-                <div class="playingCards col-6" onClick={swapCard}>
+                <div className="playingCards col-6" onClick={swapCard}>
                     <MakeCard rank={getRank(stack)} suit={getSuit(stack)} />
                 </div>
             </div>

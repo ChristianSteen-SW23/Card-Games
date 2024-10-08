@@ -6,14 +6,20 @@ import MakeHand31 from "./subComponents/game31/MakeHand31";
 
 
 export default function GamePage31({ lobbyState, hand, setHand }) {
+    const [winPop, setWinPop] = useState(false);
+    const [winData, setWinData] = useState([]);
     useEffect(() => {
-        function elseKnockedFunc(){
+        function elseKnockedFunc() {
             alert("You can not knock, someone else have knocked")
         }
 
-        function GameOver31Func(data){
-            alert(data)
+        function GameOver31Func(data) {
+            console.log(data)
+            let newData = data
+            setWinData(newData)
+            setWinPop(true)
         }
+
 
         socket.on('elseKnocked', elseKnockedFunc);
         socket.on('GameOver31', GameOver31Func);
@@ -22,15 +28,12 @@ export default function GamePage31({ lobbyState, hand, setHand }) {
             socket.off("GameOver31");
         };
     }, []);
-    function knockBTNFunc(){
-        socket.emit("31Move", {moveType: "Knock"});
+    function knockBTNFunc() {
+        socket.emit("31Move", { moveType: "Knock" });
     }
 
     const [pickedCard, setPickedCard] = useState(-1);
 
-    /*useEffect(() => {
-        console.log(pickedCard)
-    }, [pickedCard]);*/
     return (
         <>
             <div className="container text-center">
@@ -52,6 +55,37 @@ export default function GamePage31({ lobbyState, hand, setHand }) {
                     </button>
                 </div>
             </div>
+
+            <div className={`modal fade ${(winPop == true) ? "show" : ""}`} id={"nameModal"} aria-hidden="true" data-bs-backdrop="static" aria-labelledby="staticBackdropLabel" style={{ display: (winPop == true) ? "block" : "none" }}>
+                <div className='modal-dialog modal-dialog-scrollable modal-dialog-centered'>
+                    <div className='modal-content'>
+                        <div className='modal-header'>
+                            <h1>Scoreboard:</h1>
+                        </div>
+                        <div className='modal-body'>
+                            <ul className="list-group">
+                                <li className="list-group-item d-flex justify-content-between align-items-center">
+                                    <strong>Name:</strong>
+                                    <span className="badge text-bg-primary rounded-pill">Score</span>
+                                </li>
+                                {winData.map((player, index) => (
+                                    <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
+                                        <p>{player.name}</p>
+                                        <span className="badge text-bg-primary rounded-pill">{player.point}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                        <div className='modal-footer'>
+                            <button type="button" className="btn btn-danger" data-bs-dismiss="modal"
+                                onClick={console.log("hej")}>Go to front page</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {(winPop == true) && (
+                <div className="modal-backdrop fade show" />
+            )}
         </>
     );
 }

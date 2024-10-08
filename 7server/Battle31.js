@@ -1,9 +1,8 @@
 import { PlayerRooms, Rooms } from "./index.js";
-import {
-    nextPlayer
-} from "./Battle7.js";
+import { nextPlayer } from "./Battle7.js";
 import { Server } from "socket.io";
 export { dealCards31, mapPlayerInfo31, cal31Move };
+import { deleteLobby } from "./Lobby.js";
 
 
 function dealCards31(roomData) {
@@ -18,7 +17,6 @@ function dealCards31(roomData) {
     cardDeck.splice(randomNum, 1);
 
     while (true) {
-        //console.log(roomData.players.get(roomData.turn.current))
         if (roomData.players.get(roomData.turn.current).hand.length == 3) break;
         randomNum = Math.floor(Math.random() * cardDeck.length);
         roomData.players.get(roomData.turn.current).hand.push(cardDeck[randomNum])
@@ -43,30 +41,26 @@ function mapPlayerInfo31(map) {
 
 
 function cal31Move(roomData, socketData, socketID, io, roomID) {
-    if(roomData.endPlayer == nextPlayer(roomData)){
-        calculatePoints(roomData,roomID, io)
-        return
-    }
-
-
-    console.log("Endplayer: " + roomData.endPlayer);
     if (roomData.turn.current != socketID) {
         io.to(socketID).emit("outOfTurn")
         return
     }
-    let playerData = roomData.players.get(socketID);
 
+    let playerData = roomData.players.get(socketID);
+    if (calPointForOne(playerData.hand) == 31) {
+        return sendWinner(roomData, roomID, io)
+    }
     let playersInfo;
     let startedGameData;
     switch (socketData.moveType) {
         case "draw":
             // Add card to stack
-            roomData.stack.push(playerData.hand.splice(socketData.card, 1))
+            roomData.stack.push(playerData.hand[socketData.card])
             // Draw new card
             let randomNum = Math.floor(Math.random() * roomData.cardDeck.length);
-            playerData.hand.push(roomData.cardDeck[randomNum])
+            playerData.hand[socketData.card] = roomData.cardDeck[randomNum]
             roomData.cardDeck.splice(randomNum, 1);
-            io.to(socketID).emit("playable", roomData.players.get(roomData.turn.current).hand)
+            io.to(socketID).emit("hand31", roomData.players.get(roomData.turn.current).hand)
 
             roomData.turn.current = roomData.turn.next
             roomData.turn.next = nextPlayer(roomData);
@@ -82,15 +76,13 @@ function cal31Move(roomData, socketData, socketID, io, roomID) {
             break;
         case "swap":
             // Take card from stack and set the new one in
-            console.table(roomData.stack)
-            console.table(playerData.hand)
-
             let topStackCard = roomData.stack.pop()
             let swapCardHand = playerData.hand[socketData.card]
             roomData.stack.push(swapCardHand)
             playerData.hand[socketData.card] = topStackCard
-
-            io.to(socketID).emit("playable", playerData.hand)
+            console.log("stack: " + topStackCard + "   handcard: " + swapCardHand)
+            console.log(playerData.hand)
+            io.to(socketID).emit("hand31", playerData.hand)
 
             roomData.turn.current = roomData.turn.next
             roomData.turn.next = nextPlayer(roomData);
@@ -106,7 +98,7 @@ function cal31Move(roomData, socketData, socketID, io, roomID) {
             break;
         case "Knock":
             // Sets the endPlayer to be the player that have knocked
-            if(roomData.endPlayer != null){
+            if (roomData.endPlayer != null) {
                 io.to(socketID).emit("elseKnocked")
                 return
             }
@@ -125,10 +117,42 @@ function cal31Move(roomData, socketData, socketID, io, roomID) {
             io.to(roomID).emit("startedGame31", startedGameData);
             break;
     }
-
+    if (roomData.endPlayer == roomData.turn.current) {
+        return sendWinner(roomData, roomID, io)
+    }
 }
 
-function calculatePoints(roomData, roomID, io){
+function sendWinner(roomData, roomID, io) {
+    let winnerData = calculatePoints(roomData, roomID, io)
+    winnerData = winnerData.sort((a,b)=>b.point - a.point);
+    io.to(roomID).emit("GameOver31", winnerData);
+    console.log(winnerData)
+    deleteLobby(roomID, io);
+}
 
-    io.to(roomID).emit("GameOver31", []);
+function calculatePoints(roomData, roomID, io) {
+    let pointsArray = calPointForAll(roomData);
+    return pointsArray;
+}
+function calPointForAll(roomData) {
+    let pointsArray = [];
+    roomData.players.forEach((key, value) => {
+        pointsArray.push({ id: value, name: key.name, point: calPointForOne(key.hand) })
+    })
+    return pointsArray
+}
+function calPointForOne(hand) {
+    let suitPoints = [0, 0, 0, 0];
+    hand.forEach((value, index) => {
+        let rank = value % 13 + 1;
+        let suit = (value - (value % 13)) / 13
+        if (rank == 1) {
+            suitPoints[suit] += 11
+        } else if ([10, 11, 12, 13].includes(rank)) {
+            suitPoints[suit] += 10
+        } else {
+            suitPoints[suit] += rank
+        }
+    })
+    return Math.max(...suitPoints);
 }

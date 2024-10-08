@@ -7,8 +7,6 @@ import GamePage7 from "./components/7game.jsx"
 import GamePage31 from './components/31game.jsx';
 
 function App() {
-
-
     const [lobbyState, setLobbyState] = useState({});
     const [currentPage, setCurrentPage] = useState('StartPage');
     const [hand, setHand] = useState([]);
@@ -44,7 +42,7 @@ function App() {
         function playableFunc(data) {
             console.log(data)
             let newHand = data;
-            //newHand.sort((a, b) => a - b)
+            newHand.sort((a, b) => a - b)
             setHand(newHand);
         }
         function gameInfoFunc(data){
@@ -54,9 +52,13 @@ function App() {
             alert("You can play a card. Please stop the cheating")
         }
         function startedGameFunc31(data){
-            console.log(data)
             setLobbyState(data)
             setCurrentPage('Game')
+        }
+        function hand31Func(data) {
+            console.log(data)
+            let newHand = data;
+            setHand(newHand);
         }
 
         socket.on('disconnect', onDisconnect);
@@ -69,6 +71,7 @@ function App() {
         socket.on('notPlayable', notPlayableFunc);
         socket.on('playable', playableFunc);
         socket.on('gameInfo', gameInfoFunc);
+        socket.on('hand31', hand31Func);
         socket.on('noSkip', noSkipFunc);
         return () => {
             socket.off('disconnect', onDisconnect);
@@ -82,6 +85,7 @@ function App() {
             socket.off("playable");
             socket.off("gameInfo");
             socket.off("noSkip");
+            socket.off("hand31");
         };
     }, []);
 

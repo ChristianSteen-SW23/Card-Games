@@ -127,17 +127,10 @@ io.on("connection", (socket) => {
         roomData.gameStarted = true;
         dealCards31(roomData);
 
-        roomData.turn.current = roomData.startingPlayerID
-        roomData.turn.next = nextPlayer(roomData);
-
-        // Gives players their hand
-        for (let [playerid, player] of roomData.players.entries()) {
-          player.cardsLeft = player.hand.length;
-          io.to(playerid).emit("handInfo", player.hand);
-        }
-
-        roomData.turn.current = socket.id
-        roomData.turn.next = nextPlayer(roomData);
+        /*roomData.turn.current = roomData.startingPlayerID
+        roomData.turn.next = nextPlayer(roomData);*/
+        /*roomData.turn.current = socket.id
+        roomData.turn.next = nextPlayer(roomData);*/
         roomData.endPlayer = null;
 
         playersInfo = mapPlayerInfo31(roomData.players);
@@ -149,10 +142,15 @@ io.on("connection", (socket) => {
         };
 
         io.to(roomID).emit("startedGame31", startedGameData);
+
+        // Gives players their hand
+        for (let [playerid, player] of roomData.players.entries()) {
+          player.cardsLeft = player.hand.length;
+          io.to(playerid).emit("playable", player.hand);
+        }
         console.log("Started game 31 made by", socket.id);
         break;
     }
-
   });
 
   socket.on("playCard", (card) => {
