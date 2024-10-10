@@ -36,16 +36,23 @@ export default function GamePage31({ lobbyState, hand, setHand }) {
             setMustPickCard(false)
         }
 
+        function New31GameFunc() {
+            setWinPop(false);
+            socket.emit("31Move", { moveType: "ReadyForHand" });
+        }
+
         socket.on('elseKnocked', elseKnockedFunc);
         socket.on('GameOver31', GameOver31Func);
         socket.on('MustDrawFromHand', MustDrawFromHandFunc);
         socket.on('hand31', hand31Func);
+        socket.on('New31Game', New31GameFunc);
 
         return () => {
             socket.off("elseKnocked");
             socket.off("GameOver31");
             socket.off('MustDrawFromHand');
             socket.off("hand31");
+            socket.off("New31Game");
         };
     }, []);
 
@@ -115,8 +122,10 @@ export default function GamePage31({ lobbyState, hand, setHand }) {
                             </ul>
                         </div>
                         <div className='modal-footer'>
+                            <button type="button" className="btn btn-success" data-bs-dismiss="modal"
+                                onClick={()=>{socket.emit("31Move", { moveType: "NewGame", data: true }); console.log("Hejsss")}}>Play again?</button>
                             <button type="button" className="btn btn-danger" data-bs-dismiss="modal"
-                                onClick={console.log("hej")}>Go to front page</button>
+                                onClick={()=>{socket.emit("31Move", { moveType: "NewGame", data: false }); console.log("Hejssssss")}}>Leave lobby</button>
                         </div>
                     </div>
                 </div>

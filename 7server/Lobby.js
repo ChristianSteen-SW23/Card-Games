@@ -45,12 +45,12 @@ function roomStateObj(socket, username) {
 }
 
 function deleteLobby(roomID, io) {
+    io.to(roomID).emit("leaveLobby");
     //Deletes the key-value pairs from the PlayerRooms map
     const players = Rooms.get(roomID).players;
     for (const [id,] of players.entries()) {
         PlayerRooms.delete(id);
     }
-
     io.socketsLeave(roomID);
     Rooms.delete(roomID);
 }

@@ -123,7 +123,7 @@ io.on("connection", (socket) => {
         console.log("Started game 7 made by", socket.id);
         break;
       case 31:
-        start31Game(roomData, socket, io, roomID)
+        start31Game(roomData, socket.id, io, roomID)
         break;
     }
   });
