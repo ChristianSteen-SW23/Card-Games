@@ -23,17 +23,16 @@ export default function GamePage31({ lobbyState, hand, setHand }) {
         }
 
         function MustDrawFromHandFunc(data) {
-            console.log(data)
-            let newData = data
-            setWinData(newData)
-            setWinPop(true)
+            let newHand = data;
+            setHand(newHand);
+            setPickedCard(-1);
+            setMustPickCard(true);
         }
 
         function hand31Func(data) {
-            console.log(data)
             let newHand = data;
             setHand(newHand);
-            if(pickedCard == 3) setPickedCard(-1);
+            if (pickedCard == 3) setPickedCard(-1);
             setMustPickCard(false)
         }
 
@@ -41,7 +40,7 @@ export default function GamePage31({ lobbyState, hand, setHand }) {
         socket.on('GameOver31', GameOver31Func);
         socket.on('MustDrawFromHand', MustDrawFromHandFunc);
         socket.on('hand31', hand31Func);
-        
+
         return () => {
             socket.off("elseKnocked");
             socket.off("GameOver31");
@@ -50,12 +49,21 @@ export default function GamePage31({ lobbyState, hand, setHand }) {
         };
     }, []);
 
-    useEffect(()=>{
+    useEffect(() => {
         socket.emit("31Move", { moveType: "ReadyForHand" });
-    },[])
+    }, [])
 
     function knockBTNFunc() {
         socket.emit("31Move", { moveType: "Knock" });
+    }
+
+    function playCardBTNFunc() {
+        if (pickedCard == -1) return;
+        let data = {}
+        data.card = pickedCard
+        data.moveType = "cardPicked"
+
+        socket.emit("31Move", data);
     }
 
 
@@ -68,14 +76,19 @@ export default function GamePage31({ lobbyState, hand, setHand }) {
                         <InGamePlayerList31 lobbyState={lobbyState} />
                     </div>
                     <div className="col-8">
-                        <MakeBoard31 stack={lobbyState.stack} pickedCard={pickedCard} />
+                        <MakeBoard31 stack={lobbyState.stack} pickedCard={pickedCard} mustPickCard={mustPickCard} />
                     </div>
                 </div>
                 <div className="row">
                     <MakeHand31 hand={hand} setPickedCard={setPickedCard} pickedCard={pickedCard} />
                 </div>
+                <div className="row" >
+                    <button type="button" className="btn btn-success p-3 m-3 btn-lg" onClick={playCardBTNFunc} hidden={!mustPickCard}>
+                        Play select card
+                    </button>
+                </div>
                 <div className="row">
-                    <button type="button" className="btn btn-primary p-3 m-3 btn-lg" onClick={knockBTNFunc}>
+                    <button type="button" className="btn btn-primary p-3 m-3 btn-lg" onClick={knockBTNFunc} disabled={mustPickCard}>
                         Knock table
                     </button>
                 </div>
