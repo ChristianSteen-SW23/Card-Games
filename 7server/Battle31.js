@@ -41,7 +41,7 @@ function mapPlayerInfo31(map) {
 
 
 function cal31Move(roomData, socketData, socketID, io, roomID) {
-    if (roomData.turn.current != socketID) {
+    if (roomData.turn.current != socketID && socketData.moveType != "ReadyForHand") {
         io.to(socketID).emit("outOfTurn")
         return
     }
@@ -50,17 +50,45 @@ function cal31Move(roomData, socketData, socketID, io, roomID) {
     
     let playersInfo;
     let startedGameData;
+    let randomNum;
     switch (socketData.moveType) {
+        case "ReadyForHand":
+            io.to(socketID).emit("hand31", playerData.hand);
+            return;
+        case "showTopCard":
+            // Draw new card
+            randomNum = Math.floor(Math.random() * roomData.cardDeck.length);
+            playerData.hand.push(roomData.cardDeck[randomNum]);
+            roomData.cardDeck.splice(randomNum, 1);
+            io.to(socketID).emit("MustDrawFromHand", roomData.players.get(roomData.turn.current).hand);
+            break;
+        case "cardPicked": 
+            roomData.stack.push(playerData.hand[socketData.card]);
+            playerData.hand.splice(socketData.card, 1);
+            io.to(socketID).emit("hand31", roomData.players.get(roomData.turn.current).hand);
+
+            roomData.turn.current = roomData.turn.next;
+            roomData.turn.next = nextPlayer(roomData);
+
+            playersInfo = mapPlayerInfo31(roomData.players);
+            startedGameData = {
+                playersInfo,
+                turn: roomData.turn,
+                stack: roomData.stack[roomData.stack.length - 1],
+                endPlayer: roomData.endPlayer
+            };
+            io.to(roomID).emit("startedGame31", startedGameData);
+            break;
         case "draw":
             // Add card to stack
-            roomData.stack.push(playerData.hand[socketData.card])
+            roomData.stack.push(playerData.hand[socketData.card]);
             // Draw new card
-            let randomNum = Math.floor(Math.random() * roomData.cardDeck.length);
-            playerData.hand[socketData.card] = roomData.cardDeck[randomNum]
+            randomNum = Math.floor(Math.random() * roomData.cardDeck.length);
+            playerData.hand[socketData.card] = roomData.cardDeck[randomNum];
             roomData.cardDeck.splice(randomNum, 1);
-            io.to(socketID).emit("hand31", roomData.players.get(roomData.turn.current).hand)
+            io.to(socketID).emit("hand31", roomData.players.get(roomData.turn.current).hand);
 
-            roomData.turn.current = roomData.turn.next
+            roomData.turn.current = roomData.turn.next;
             roomData.turn.next = nextPlayer(roomData);
 
             playersInfo = mapPlayerInfo31(roomData.players);
@@ -176,10 +204,9 @@ function start31Game(roomData, socket, io, roomID){
     io.to(roomID).emit("startedGame31", startedGameData);
 
     // Gives players their hand
-    for (let [playerid, player] of roomData.players.entries()) {
-      player.cardsLeft = player.hand.length;
-      io.to(playerid).emit("hand31", player.hand);
-    }
+    //for (let [playerid, player] of roomData.players.entries()) {
+    //  player.cardsLeft = player.hand.length;
+    //  io.to(playerid).emit("hand31", player.hand);
+    //}
     console.log("Started game 31 made by", socket.id);
-
 }

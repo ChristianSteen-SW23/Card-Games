@@ -8,31 +8,56 @@ import MakeHand31 from "./subComponents/game31/MakeHand31";
 export default function GamePage31({ lobbyState, hand, setHand }) {
     const [winPop, setWinPop] = useState(false);
     const [winData, setWinData] = useState([]);
+    const [pickedCard, setPickedCard] = useState(-1);
+    const [mustPickCard, setMustPickCard] = useState(false);
+
     useEffect(() => {
         function elseKnockedFunc() {
             alert("You can not knock, someone else have knocked")
         }
 
         function GameOver31Func(data) {
+            let newData = data
+            setWinData(newData)
+            setWinPop(true)
+        }
+
+        function MustDrawFromHandFunc(data) {
             console.log(data)
             let newData = data
             setWinData(newData)
             setWinPop(true)
         }
 
+        function hand31Func(data) {
+            console.log(data)
+            let newHand = data;
+            setHand(newHand);
+            if(pickedCard == 3) setPickedCard(-1);
+            setMustPickCard(false)
+        }
 
         socket.on('elseKnocked', elseKnockedFunc);
         socket.on('GameOver31', GameOver31Func);
+        socket.on('MustDrawFromHand', MustDrawFromHandFunc);
+        socket.on('hand31', hand31Func);
+        
         return () => {
             socket.off("elseKnocked");
             socket.off("GameOver31");
+            socket.off('MustDrawFromHand');
+            socket.off("hand31");
         };
     }, []);
+
+    useEffect(()=>{
+        socket.emit("31Move", { moveType: "ReadyForHand" });
+    },[])
+
     function knockBTNFunc() {
         socket.emit("31Move", { moveType: "Knock" });
     }
 
-    const [pickedCard, setPickedCard] = useState(-1);
 
     return (
         <>

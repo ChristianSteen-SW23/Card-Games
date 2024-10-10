@@ -55,11 +55,6 @@ function App() {
             setLobbyState(data)
             setCurrentPage('Game')
         }
-        function hand31Func(data) {
-            console.log(data)
-            let newHand = data;
-            setHand(newHand);
-        }
 
         socket.on('disconnect', onDisconnect);
         socket.on('leaveLobby', leaveLobbyFunc);
@@ -71,7 +66,6 @@ function App() {
         socket.on('notPlayable', notPlayableFunc);
         socket.on('playable', playableFunc);
         socket.on('gameInfo', gameInfoFunc);
-        socket.on('hand31', hand31Func);
         socket.on('noSkip', noSkipFunc);
         return () => {
             socket.off('disconnect', onDisconnect);
@@ -85,7 +79,6 @@ function App() {
             socket.off("playable");
             socket.off("gameInfo");
             socket.off("noSkip");
-            socket.off("hand31");
         };
     }, []);
 
