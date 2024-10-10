@@ -56,7 +56,7 @@ function cal31Move(roomData, socketData, socketID, io, roomID) {
             if (socketData.data) {
                 // Sets the player hands down to 0 cards
                 for (let [playerid, player] of roomData.players.entries()) {
-                  player.hand = [];
+                    player.hand = [];
                 }
                 start31Game(roomData, socketID, io, roomID)
                 io.to(roomID).emit("New31Game");
@@ -72,6 +72,9 @@ function cal31Move(roomData, socketData, socketID, io, roomID) {
             // Draw new card
             randomNum = Math.floor(Math.random() * roomData.cardDeck.length);
             playerData.hand.push(roomData.cardDeck[randomNum]);
+
+            // If the deck is out of cards the game is over
+            if (roomData.cardDeck == 0) return sendWinner(roomData, roomID, io)
             roomData.cardDeck.splice(randomNum, 1);
             io.to(socketID).emit("MustDrawFromHand", roomData.players.get(roomData.turn.current).hand);
             break;
