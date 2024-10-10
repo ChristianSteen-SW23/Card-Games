@@ -1,7 +1,7 @@
 import { PlayerRooms, Rooms } from "./index.js";
 import { nextPlayer } from "./Battle7.js";
 import { Server } from "socket.io";
-export { dealCards31, mapPlayerInfo31, cal31Move };
+export { dealCards31, mapPlayerInfo31, cal31Move, start31Game };
 import { deleteLobby } from "./Lobby.js";
 
 
@@ -47,9 +47,7 @@ function cal31Move(roomData, socketData, socketID, io, roomID) {
     }
 
     let playerData = roomData.players.get(socketID);
-    if (calPointForOne(playerData.hand) == 31) {
-        return sendWinner(roomData, roomID, io)
-    }
+    
     let playersInfo;
     let startedGameData;
     switch (socketData.moveType) {
@@ -80,8 +78,6 @@ function cal31Move(roomData, socketData, socketID, io, roomID) {
             let swapCardHand = playerData.hand[socketData.card]
             roomData.stack.push(swapCardHand)
             playerData.hand[socketData.card] = topStackCard
-            console.log("stack: " + topStackCard + "   handcard: " + swapCardHand)
-            console.log(playerData.hand)
             io.to(socketID).emit("hand31", playerData.hand)
 
             roomData.turn.current = roomData.turn.next
@@ -117,6 +113,9 @@ function cal31Move(roomData, socketData, socketID, io, roomID) {
             io.to(roomID).emit("startedGame31", startedGameData);
             break;
     }
+    if (calPointForOne(playerData.hand) == 31) {
+        return sendWinner(roomData, roomID, io)
+    }
     if (roomData.endPlayer == roomData.turn.current) {
         return sendWinner(roomData, roomID, io)
     }
@@ -127,7 +126,7 @@ function sendWinner(roomData, roomID, io) {
     winnerData = winnerData.sort((a,b)=>b.point - a.point);
     io.to(roomID).emit("GameOver31", winnerData);
     console.log(winnerData)
-    deleteLobby(roomID, io);
+    //deleteLobby(roomID, io);
 }
 
 function calculatePoints(roomData, roomID, io) {
@@ -155,4 +154,32 @@ function calPointForOne(hand) {
         }
     })
     return Math.max(...suitPoints);
+}
+
+
+function start31Game(roomData, socket, io, roomID){
+    roomData.turn.current = socket.id;
+    roomData.turn.next = nextPlayer(roomData);
+    roomData.gameStarted = true;
+    dealCards31(roomData);
+
+    roomData.endPlayer = null;
+
+    let playersInfo = mapPlayerInfo31(roomData.players);
+    let startedGameData = {
+      playersInfo,
+      turn: roomData.turn,
+      stack: roomData.stack[0],
+      endPlayer: roomData.endPlayer
+    };
+
+    io.to(roomID).emit("startedGame31", startedGameData);
+
+    // Gives players their hand
+    for (let [playerid, player] of roomData.players.entries()) {
+      player.cardsLeft = player.hand.length;
+      io.to(playerid).emit("hand31", player.hand);
+    }
+    console.log("Started game 31 made by", socket.id);
+
 }

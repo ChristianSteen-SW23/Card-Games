@@ -19,7 +19,8 @@ import {
 import {
   dealCards31,
   mapPlayerInfo31,
-  cal31Move
+  cal31Move,
+  start31Game
 } from "./Battle31.js";
 
 const server = http.createServer();
@@ -122,33 +123,7 @@ io.on("connection", (socket) => {
         console.log("Started game 7 made by", socket.id);
         break;
       case 31:
-        roomData.turn.current = socket.id;
-        roomData.turn.next = nextPlayer(roomData);
-        roomData.gameStarted = true;
-        dealCards31(roomData);
-
-        /*roomData.turn.current = roomData.startingPlayerID
-        roomData.turn.next = nextPlayer(roomData);*/
-        /*roomData.turn.current = socket.id
-        roomData.turn.next = nextPlayer(roomData);*/
-        roomData.endPlayer = null;
-
-        playersInfo = mapPlayerInfo31(roomData.players);
-        startedGameData = {
-          playersInfo,
-          turn: roomData.turn,
-          stack: roomData.stack[0],
-          endPlayer: roomData.endPlayer
-        };
-
-        io.to(roomID).emit("startedGame31", startedGameData);
-
-        // Gives players their hand
-        for (let [playerid, player] of roomData.players.entries()) {
-          player.cardsLeft = player.hand.length;
-          io.to(playerid).emit("playable", player.hand);
-        }
-        console.log("Started game 31 made by", socket.id);
+        start31Game(roomData, socket, io, roomID)
         break;
     }
   });
