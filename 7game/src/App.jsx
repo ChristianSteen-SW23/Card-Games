@@ -25,7 +25,7 @@ function App() {
         }
         function startedGameFunc7(data){
             setLobbyState(data)
-            setCurrentPage('Game')
+            setCurrentPage('GameMode: 7')
         }
         function handInfoFunc(data){
             console.log(data)
@@ -53,7 +53,7 @@ function App() {
         }
         function startedGameFunc31(data){
             setLobbyState(data)
-            setCurrentPage('Game')
+            setCurrentPage('GameMode: 31')
         }
 
         socket.on('disconnect', onDisconnect);
@@ -87,8 +87,10 @@ function App() {
             return <StartPage/>
         case 'Lobby':
             return <Lobby lobbyState={lobbyState}/>
-        case 'Game':
-            return <GamePage31 lobbyState={lobbyState} hand={hand} setHand={setHand}/>
+        case 'GameMode: 31':
+            return <GamePage31 lobbyState={lobbyState} hand={hand} setHand={setHand} />
+        case 'GameMode: 7':
+            return <GamePage7 lobbyState={lobbyState} hand={hand} setHand={setHand} />
         default:
             console.log("Default")
     }

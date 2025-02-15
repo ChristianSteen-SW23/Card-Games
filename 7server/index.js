@@ -98,7 +98,7 @@ io.on("connection", (socket) => {
     let playersInfo;
 
     switch (gameMode) {
-      case 7:
+      case "7":
         roomData.turn.current = socket.id;
         roomData.turn.next = nextPlayer(roomData);
         roomData.gameStarted = true;
@@ -122,7 +122,7 @@ io.on("connection", (socket) => {
         io.to(roomID).emit("startedGame7", startedGameData);
         console.log("Started game 7 made by", socket.id);
         break;
-      case 31:
+      case "31":
         start31Game(roomData, socket.id, io, roomID)
         break;
     }
