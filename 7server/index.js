@@ -199,7 +199,10 @@ io.on("connection", (socket) => {
     cal31Move(roomData, data, socket.id, io, roomID);
   })
 });
+
 // Start application server
-server.listen(3069, () => {
-  console.log("listening on *:3069");
+const PORT = 3069;
+const HOST = "0.0.0.0";
+server.listen(PORT, HOST, () => {
+  console.log(`Server started on LAN at: http://${HOST}:${PORT}`);
 });
