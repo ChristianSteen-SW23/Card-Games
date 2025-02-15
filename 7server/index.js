@@ -1,4 +1,5 @@
 import http from "http";
+import dotenv from "dotenv";
 import { Server } from "socket.io";
 import {
   createLobby,
@@ -201,8 +202,9 @@ io.on("connection", (socket) => {
 });
 
 // Start application server
+dotenv.config();
 const PORT = 3069;
-const HOST = "0.0.0.0";
+const HOST = process.env.BACKEND_IP || "0.0.0.0";
 server.listen(PORT, HOST, () => {
   console.log(`Server started on LAN at: http://${HOST}:${PORT}`);
 });

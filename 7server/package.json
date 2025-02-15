@@ -5,6 +5,7 @@
   "main": "index.js",
   "type": "module",
   "dependencies": {
+    "dotenv": "^16.4.7",
     "http": "^0.0.1-security",
     "socket.io": "^4.7.5"
   },
