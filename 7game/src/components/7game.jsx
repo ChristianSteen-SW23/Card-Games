@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { socket } from "./../socket";
-import InGamePlayerList from "./subComponents/game/InGamePlayerList";
-import MakeBoard from "./subComponents/game/MakeBoard";
-import MakeHand from "./subComponents/game/MakeHand";
+import InGamePlayerList from "./subComponents/game7/InGamePlayerList";
+import MakeBoard from "./subComponents/game7/MakeBoard";
+import MakeHand from "./subComponents/game7/MakeHand";
 
 
 export default function GamePage7({ lobbyState, hand, setHand }) {

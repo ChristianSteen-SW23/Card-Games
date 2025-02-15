@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { socket } from "../../../socket";
-import MakeCardWithSuit from "../game/MakeCardWithSuit";
+import MakeCardWithSuit from "../game7/MakeCardWithSuit";
 
 export default function MakeHand31({ hand, setPickedCard, pickedCard }) {
     return (

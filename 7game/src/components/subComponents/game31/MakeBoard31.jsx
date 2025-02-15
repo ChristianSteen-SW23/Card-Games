@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { socket } from "../../../socket";
-import MakeCard from "./../game/MakeCard";
+import MakeCard from "../game7/MakeCard";
 import { getCardDetails, getRank, getSuit } from "./../../../js/cardCal"
 
 export default function MakeBoard({ stack, pickedCard, mustPickCard }) {
