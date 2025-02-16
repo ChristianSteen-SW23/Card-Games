@@ -6,11 +6,7 @@ COPY package.json package-lock.json ./
 
 RUN npm install
 
-# Copy the entire frontend project
-COPY . .
-
-# Copy the .env file from the build context
-COPY ../.env .env
+COPY . .  # Copy everything inside 7game/
 
 RUN npm run build
 
