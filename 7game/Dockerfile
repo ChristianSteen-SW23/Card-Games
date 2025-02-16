@@ -2,12 +2,15 @@ FROM node:21-alpine
 
 WORKDIR /app
 
-COPY package.json package.json
-COPY package-lock.json package-lock.json
+COPY package.json package-lock.json ./
 
 RUN npm install
 
+# Copy the entire frontend project
 COPY . .
+
+# Copy the .env file from the build context
+COPY ../.env .env
 
 RUN npm run build
 
