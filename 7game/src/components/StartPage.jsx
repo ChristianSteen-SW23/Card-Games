@@ -5,6 +5,7 @@ export default function StartPage() {
     return (
         <div className="container text-center">
             <h1 className="p-5 text-center">Card Games</h1>
+            <h3 className="p-5 text-center">Game modes - 7 | 31</h3>
             <div className="p-5"></div>
             <div className="row justify-content-md-center">
                 <div className="d-grid gap-2 col-6">
