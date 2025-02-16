@@ -6,7 +6,7 @@ COPY package.json package-lock.json ./
 
 RUN npm install
 
-COPY . .  # Copy everything inside 7game/
+COPY . .
 
 RUN npm run build
 
