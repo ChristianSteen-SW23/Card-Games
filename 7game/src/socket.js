@@ -4,7 +4,7 @@ Note: The following document here uses guidelines from:
 */
 import { io } from "socket.io-client";
 
-const SOCKET_IP = import.meta.env.VITE_FRONT_SOCKET_IP // || "0.0.0.0:3069";
+const SOCKET_IP = import.meta.env.VITE_FRONT_SOCKET_IP || "0.0.0.0:3069";
 console.log("IP", SOCKET_IP)
 const URL = import.meta.env.MODE === "production" ? `http://${SOCKET_IP}` : "http://localhost:3069";
 
