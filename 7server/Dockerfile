@@ -6,8 +6,6 @@ COPY package.json package-lock.json ./
 
 RUN npm install
 
-COPY . .  
-COPY .env .env  # Copy environment variables
 
 EXPOSE 3069
 
