@@ -4,9 +4,9 @@ import { socket } from "../socket";
 export default function StartPage() {
     return (
         <div className="container text-center">
-            <h1 className="p-5 text-center">Card Games</h1>
-            <h2 className="p-3 text-center">Game modes are:</h2>
-            <h3 className="p-2 text-center">7 | 31</h3>
+            <h1 className="p-4 text-center">Card Games</h1>
+            <h4 className="p-1 text-center">Game modes are:</h4>
+            <h4 className="p-1 text-center">7 | 31</h4>
             <div className="p-5"></div>
             <div className="row justify-content-md-center">
                 <div className="d-grid gap-2 col-6">
