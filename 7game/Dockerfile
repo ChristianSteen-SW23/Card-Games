@@ -8,6 +8,8 @@ RUN npm install
 
 COPY . .
 
+ENV VITE_BACKEND_IP=${VITE_BACKEND_IP}
+
 RUN npm run build
 
 EXPOSE 8081
