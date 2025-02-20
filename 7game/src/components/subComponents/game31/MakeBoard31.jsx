@@ -19,7 +19,7 @@ export default function MakeBoard({ stack, pickedCard, mustPickCard }) {
     function swapCard() {
         if(mustPickCard) return alert("You must play a card, not swap");
         if (pickedCard == -1) return alert("pick a card before playing")
-        if (pickedCard == 1 || pickedCard == 2 || pickedCard == 3) return alert("pick a card to swap")
+        if (!(pickedCard == 0 || pickedCard == 1 || pickedCard == 2)) return alert("pick a card to swap")
         let data = {}
         data.card = pickedCard
         data.moveType = "swap"
