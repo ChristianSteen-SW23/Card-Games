@@ -128,6 +128,9 @@ io.on("connection", (socket) => {
         start31Game(roomData, socket.id, io, roomID)
         break;
     }
+    console.log(Rooms)
+    console.log("\n\n\n")
+    console.log(PlayerRooms)
   });
 
   socket.on("playCard", (card) => {
@@ -200,6 +203,11 @@ io.on("connection", (socket) => {
 
     cal31Move(roomData, data, socket.id, io, roomID);
   })
+
+  socket.on("500Move", (data) => {
+
+
+  });
 });
 
 // Start application server
