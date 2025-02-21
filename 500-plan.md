@@ -48,12 +48,41 @@ With data:
 Send over information `gameInformation`
 ```JSON
 {
-    TODO 
-}
+  "hand": [
+    32,
+    21,
+    1,
+    45,
+    49,
+    22,
+    13
+  ],
+  "playersInfo": [
+    {
+      "name": "123",
+      "id": "iZARbfMKRIVCXskbAAAF",
+      "handSize": 7,
+      "tricks": []
+    },
+    {
+      "name": "77",
+      "id": "qc7ePPHrFh9fpsGEAAAD",
+      "handSize": 7,
+      "tricks": []
+    }
+  ],
+  "turn": {
+    "current": "iZARbfMKRIVCXskbAAAF",
+    "next": "qc7ePPHrFh9fpsGEAAAD"
+  },
+  "stack": 7,
+  "stackSize": 1
+} 
+
 ```
 
 ### Start game
-Send over information `start500`
+Send over information `startedGame500`
 Same data as for gameInformation
 
 ### Game over
@@ -90,7 +119,7 @@ gameData: {
             needsToTrick: false // Used if entire stack have been drawn
             points: Num
             hand:[cards],
-            playedTricks: [],
+            tricks: [],
 
         }
     },
@@ -105,13 +134,13 @@ gameData: {
 # Plan For implementaion
 
 ## Backend
-0. Setup testing for backend
-1. Game start setup
-2. Setup diff. socket connections to the right functions
-3. Implement logik for draw
-4. Implement end turn logik
-5. Implement trick logik\
-Frontend ends to follow up 
+0. Setup testing for backend ❌
+1. Game start setup ✅
+2. Setup diff. socket connections to the right functions ❌
+3. Implement logik for draw ❌
+4. Implement end turn logik ❌
+5. Implement trick logik ❌\
+Frontend ends to follow up ❌
 6. Winlogik
 
 ## Frontend

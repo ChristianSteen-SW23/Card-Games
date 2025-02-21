@@ -17,13 +17,16 @@ import {
   cardPlayable,
   playCard,
   possibleSkip
-} from "./Battle7.js";
+} from "./gamelogic/Battle7.js";
 import {
   dealCards31,
   mapPlayerInfo31,
   cal31Move,
   start31Game
-} from "./Battle31.js";
+} from "./gamelogic/Battle31.js";
+import {
+  start500Game,
+} from "./gamelogic/Battle500.js"
 
 const server = http.createServer();
 
@@ -127,10 +130,13 @@ io.on("connection", (socket) => {
       case "31":
         start31Game(roomData, socket.id, io, roomID)
         break;
+      case "500":
+        start500Game(roomData, socket.id, io, roomID)
+        break;
     }
-    console.log(Rooms)
-    console.log("\n\n\n")
-    console.log(PlayerRooms)
+    // console.log(Rooms)
+    // console.log("\n\n\n")
+    // console.log(PlayerRooms)
   });
 
   socket.on("playCard", (card) => {
