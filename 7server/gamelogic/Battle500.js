@@ -1,4 +1,4 @@
-export { start500Game };
+export { start500Game, cal500Move };
 import { drawDeck, dealFromDeckToHand } from "../lib/CardDeckFunctions.js";
 import { nextPlayer } from "./Battle7.js";
 
@@ -27,6 +27,76 @@ function start500Game(roomData, socketID, io, roomID) {
     // io.to(roomID).emit("startedGame500", startedGameData);
     console.log("Started game 500 made by", socketID);
 }
+
+
+function cal500Move(roomData, socketData, socketID, io, roomID) {
+    let moveType = socketData.moveType;
+
+    switch (moveType) {
+        case "draw":
+            draw500Move(roomData, socketData, socketID, io, roomID, moveType.drawKind);
+            break;
+        case "endTurn":
+            break;
+        case "playTrick":
+            break;
+    }
+}
+
+function draw500Move(roomData, socketData, socketID, io, roomID, drawKind) {
+    switch (drawKind) {
+        case "stacktop":
+            drawStacktop();
+            break;
+        case "stack":
+            drawStack();
+            break;
+        case "decktop":
+            drawDecktop();
+            break;
+    }
+}
+
+function drawStacktop() {
+
+}
+
+function drawStack() {
+
+}
+
+function drawDecktop() {
+
+}
+
+function endTurnMove(roomData, socketData, socketID, io, roomID) {
+
+
+}
+
+function playTrickMove(roomData, socketData, socketID, io, roomID) {
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function mapPlayerInfo500(map, gameData) {
     let array = [];

@@ -136,7 +136,7 @@ gameData: {
 ## Backend
 0. Setup testing for backend ❌
 1. Game start setup ✅
-2. Setup diff. socket connections to the right functions ❌
+2. Setup diff. socket connections to the right functions ✅
 3. Implement logik for draw ❌
 4. Implement end turn logik ❌
 5. Implement trick logik ❌\
