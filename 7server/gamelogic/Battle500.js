@@ -1,5 +1,5 @@
-export { start500Game, cal500Move };
-import { drawDeck, dealFromDeckToHand } from "../lib/CardDeckFunctions.js";
+export { start500Game, call500Move };
+import { drawDeck, dealFromDeckToHand, randomShuffle } from "../lib/CardDeckFunctions.js";
 import { nextPlayer } from "./Battle7.js";
 
 
@@ -21,7 +21,7 @@ function start500Game(roomData, socketID, io, roomID) {
 
     for (let [playerID, player] of roomData.players) {
         let personnalData = { hand: roomData.gameData.players[playerID].hand, ...startedGameData }; // ✅ Correct way to access player hand
-        io.to(playerID).emit("startedGame500", personnalData); // ✅ Send data with the event
+        io.to(playerID).emit("startedGame500", personnalData); // Send data with the event
     }
 
     // io.to(roomID).emit("startedGame500", startedGameData);
@@ -29,12 +29,11 @@ function start500Game(roomData, socketID, io, roomID) {
 }
 
 
-function cal500Move(roomData, socketData, playerID, io, roomID) {
+function call500Move(roomData, socketData, playerID, io, roomID) {
     let moveType = socketData.moveType;
-
     switch (moveType) {
         case "draw":
-            draw500Move(roomData, socketData, playerID, io, roomID, moveType.drawKind);
+            draw500Move(roomData, socketData, playerID, io, roomID, socketData.drawKind);
             break;
         case "endTurn":
             break;
@@ -52,7 +51,7 @@ function draw500Move(roomData, socketData, playerID, io, roomID, drawKind) {
             drawStack(roomData.gameData, playerID);
             break;
         case "decktop":
-            drawDecktop();
+            drawDecktop(roomData.gameData, playerID);
             break;
     }
 }
@@ -67,12 +66,16 @@ function drawStacktop(gameData, playerID) {
 function drawStack(gameData, playerID) {
     if (gameData.stack.length === 0) return;//TODO SEND ERROR
 
+    gameData.players[playerID].needsToTrick = true;
     gameData.players[playerID].hand = [...gameData.players[playerID].hand, ...gameData.stack];
     gameData.stack = [];
 }
 
-function drawDecktop() {
+function drawDecktop(gameData, playerID) {
+    if (gameData.deck.length === 0) return;//TODO SEND ERROR
 
+    let decktopCard = gameData.deck.pop();
+    gameData.players[playerID].hand.push(decktopCard);
 }
 
 function endTurnMove(roomData, socketData, socketID, io, roomID) {
@@ -122,10 +125,11 @@ function dealCards500(gameData, players) {
     gameData.players = {};
 
     for (let [playerID, player] of players) {
-        gameData.players[playerID] = { hand: [], tricks: [] };
+        gameData.players[playerID] = { hand: [], tricks: [], needsToTrick: false };
         dealFromDeckToHand(gameData.players[playerID].hand, gameData.deck, 7);
     }
     gameData.stack = [];
     dealFromDeckToHand(gameData.stack, gameData.deck, 1);
+    randomShuffle(gameData.deck);
     console.log(gameData)
 }

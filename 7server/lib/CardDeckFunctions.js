@@ -1,4 +1,4 @@
-export { drawDeck, dealFromDeckToHand };
+export { drawDeck, dealFromDeckToHand, randomShuffle };
 
 function drawDeck(deckVar, jokerAmount = 0) {
     let deck = []
@@ -16,4 +16,13 @@ function dealFromDeckToHand(placement, deck, amount) {
         deck.splice(randomNum, 1);
         i++;
     }
+}
+
+// Makes use of Fisher-Tates Shuffle
+function randomShuffle(deck) {
+    for (let i = deck.length - 1; i > 0; i--) {
+        let randomIndex = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[randomIndex]] = [deck[randomIndex], deck[i]]; // Swap elements
+    }
+    return deck;
 }

@@ -26,7 +26,7 @@ import {
 } from "./gamelogic/Battle31.js";
 import {
   start500Game,
-  cal500Move,
+  call500Move,
 } from "./gamelogic/Battle500.js"
 
 const server = http.createServer();
@@ -216,7 +216,7 @@ io.on("connection", (socket) => {
     const roomID = PlayerRooms.get(socket.id)
     const roomData = Rooms.get(roomID)
 
-    cal500Move(roomData, data, socket.id, io, roomID);
+    call500Move(roomData, data, socket.id, io, roomID);
 
   });
 });
