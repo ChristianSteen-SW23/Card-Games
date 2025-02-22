@@ -8,9 +8,13 @@
     "dotenv": "^16.4.7",
     "http": "^0.0.1-security",
     "path": "^0.12.7",
-    "socket.io": "^4.7.5"
+    "socket.io": "^4.7.5",
+    "@vitest/coverage-v8": "^1.6.0",
+    "vitest": "^1.6.0"
   },
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "coverage": "vitest run --coverage --fileParallelism=false",
+    "test": "vitest run --fileParallelism=false"
   }
 }

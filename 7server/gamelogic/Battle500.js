@@ -29,12 +29,12 @@ function start500Game(roomData, socketID, io, roomID) {
 }
 
 
-function cal500Move(roomData, socketData, socketID, io, roomID) {
+function cal500Move(roomData, socketData, playerID, io, roomID) {
     let moveType = socketData.moveType;
 
     switch (moveType) {
         case "draw":
-            draw500Move(roomData, socketData, socketID, io, roomID, moveType.drawKind);
+            draw500Move(roomData, socketData, playerID, io, roomID, moveType.drawKind);
             break;
         case "endTurn":
             break;
@@ -43,13 +43,13 @@ function cal500Move(roomData, socketData, socketID, io, roomID) {
     }
 }
 
-function draw500Move(roomData, socketData, socketID, io, roomID, drawKind) {
+function draw500Move(roomData, socketData, playerID, io, roomID, drawKind) {
     switch (drawKind) {
         case "stacktop":
-            drawStacktop();
+            drawStacktop(roomData.gameData, playerID);
             break;
         case "stack":
-            drawStack();
+            drawStack(roomData.gameData, playerID);
             break;
         case "decktop":
             drawDecktop();
@@ -57,12 +57,18 @@ function draw500Move(roomData, socketData, socketID, io, roomID, drawKind) {
     }
 }
 
-function drawStacktop() {
+function drawStacktop(gameData, playerID) {
+    if (gameData.stack.length === 0) return;//TODO SEND ERROR
 
+    let stacktopCard = gameData.stack.pop();
+    gameData.players[playerID].hand.push(stacktopCard);
 }
 
-function drawStack() {
+function drawStack(gameData, playerID) {
+    if (gameData.stack.length === 0) return;//TODO SEND ERROR
 
+    gameData.players[playerID].hand = [...gameData.players[playerID].hand, ...gameData.stack];
+    gameData.stack = [];
 }
 
 function drawDecktop() {
