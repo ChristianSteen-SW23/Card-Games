@@ -5,9 +5,7 @@ import { Server } from "socket.io";
 import {
   createLobby,
   joinLobby,
-  leaveLobby,
   deleteLobby,
-  mapToArrayObj,
   isUsernameValid
 } from "./Lobby.js";
 import {
@@ -55,7 +53,7 @@ io.on("connection", (socket) => {
       const roomData = Rooms.get(roomID);
 
       socket.to(roomID).emit("leaveLobby");
-      deleteLobby(roomID, io);
+      deleteLobby(roomID, io, Rooms, PlayerRooms);
     }
   });
 
@@ -63,7 +61,7 @@ io.on("connection", (socket) => {
   socket.on("createLobby", (username) => {
     if (isUsernameValid(username)) {
       console.log("Lobby was created by", socket.id);
-      const createLobbyObj = createLobby(socket, username);
+      const createLobbyObj = createLobby(socket, username, Rooms, PlayerRooms);
       socket.emit("conToLobby", createLobbyObj);
     } else {
       socket.emit("invalidUsername");
@@ -75,7 +73,7 @@ io.on("connection", (socket) => {
     const roomData = Rooms.get(roomID);
     if (roomData && !roomData.gameStarted) {
       if (isUsernameValid(joined.name)) {
-        const playersArr = joinLobby(joined, roomID, socket);
+        const playersArr = joinLobby(joined, roomID, socket, Rooms, PlayerRooms);
         socket.to(roomID).emit("playerHandler", playersArr);
 
         //Adds the current settings to the Object for the joining player
@@ -228,3 +226,4 @@ const HOST = process.env.BACKEND_IP || "0.0.0.0";
 server.listen(PORT, HOST, () => {
   console.log(`Server started on LAN at: http://${HOST}:${PORT}`);
 });
+

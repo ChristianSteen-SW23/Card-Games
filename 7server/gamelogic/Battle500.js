@@ -1,6 +1,6 @@
 export { start500Game, call500Move };
 import { drawDeck, dealFromDeckToHand, randomShuffle } from "../lib/CardDeckFunctions.js";
-import { nextPlayer } from "../lib/TurnManagement.js";
+import { nextPlayer, swapOneTurn } from "../lib/TurnManagement.js";
 
 
 function start500Game(roomData, socketID, io, roomID) {
@@ -25,7 +25,7 @@ function start500Game(roomData, socketID, io, roomID) {
     }
 
     // io.to(roomID).emit("startedGame500", startedGameData);
-    console.log("Started game 500 made by", socketID);
+    // console.log("Started game 500 made by", socketID);
 }
 
 
@@ -81,18 +81,47 @@ function drawDecktop(gameData, playerID) {
     gameData.players[playerID].hand.push(decktopCard);
 }
 
-function endTurnMove(roomData, socketData, socketID, io, roomID) {
+function endTurnMove(roomData, socketData, playerID, io, roomID) {
+    let playerHand = roomData.gameData.players[playerID].hand;
+    // No cards left in hand
+    if (playerHand.length === 0) return nextPlayerTurn(roomData, socketData, playerID, io, roomID);//TODO send request
 
+    let playedCard = socketData.cardToPlay;
+    if (playerHand.includes(playedCard)) {
+        let index = playerHand.indexOf(playedCard); // Find index of the value
+        playerHand.splice(index, 1); // Remove the value
+    } else {
+        return; //TODO you can not play that card
+    }
 
+    roomData.gameData.stack.push(playedCard);
+    nextPlayerTurn(roomData, socketData, playerID, io, roomID);
+
+    if (playerHand.length === 0) return sendGameOver(roomID, roomData, io);
 }
+
+function nextPlayerTurn(roomData, socketData, playerID, io, roomID) {
+    if (roomData.gameData.players[playerID].needsToTrick) {
+        roomData.gameData.players[playerID].gamePoints += -50;
+        roomData.gameData.players[playerID].needsToTrick = false;
+    }
+    swapOneTurn(roomData);
+    sendGameInformation(roomID, roomData, io);
+    sendHandInformation(playerID, roomData, io);
+}
+
 
 function playTrickMove(roomData, socketData, socketID, io, roomID) {
 
 
 }
 
+function sendGameOver(roomID, roomData, io) {
+    io.to(roomID).emit("gameEnded", { contineAllowed: false });
+}
+
+
 function sendGameInformation(roomID, roomData, io) {
-    console.log(roomData)
     const playersInfo = mapPlayerInfo500(roomData.players, roomData.gameData?.players);
     const stackSize = roomData.gameData.stack.length - 1;
     const curGameData = {
@@ -128,11 +157,10 @@ function dealCards500(gameData, players) {
     gameData.players = {};
 
     for (let [playerID, player] of players) {
-        gameData.players[playerID] = { hand: [], tricks: [], needsToTrick: false };
+        gameData.players[playerID] = { hand: [], tricks: [], needsToTrick: false, gamePoints: 0, totalPoints: 0 };
         dealFromDeckToHand(gameData.players[playerID].hand, gameData.deck, 7);
     }
     gameData.stack = [];
     dealFromDeckToHand(gameData.stack, gameData.deck, 1);
     randomShuffle(gameData.deck);
-    console.log(gameData)
 }

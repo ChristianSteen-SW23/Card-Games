@@ -16,5 +16,8 @@
     "start": "node index.js",
     "coverage": "vitest run --coverage --fileParallelism=false",
     "test": "vitest run --fileParallelism=false"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3"
   }
 }

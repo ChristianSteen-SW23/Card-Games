@@ -1,4 +1,3 @@
-import { PlayerRooms, Rooms } from "../index.js";
 export { mapPlayerInfo, nextPlayer, switchRoles, dealCards, playCard, cardPlayable, possibleSkip };
 
 function mapPlayerInfo(map) {
