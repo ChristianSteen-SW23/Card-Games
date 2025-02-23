@@ -1,7 +1,6 @@
-import { expect, it, describe } from "vitest";
+import { expect, it, describe, vi } from "vitest";
 import { createLobby, joinLobby, Rooms } from "../Lobby";
 import { start500Game, call500Move } from "../gamelogic/Battle500.js"
-import { vi, expect } from "vitest";
 
 
 
@@ -204,14 +203,6 @@ describe("game 500 move types", () => {
 
 
     });
-
-
-
-
-
-
-
-
 });
 
 describe("game 500 functions", () => {
@@ -244,16 +235,188 @@ describe("game 500 functions", () => {
         expect(roomData.turn.next).toBe("ghu45DxGsxgy5VCls8Zs")
     });
 
+});
 
-    it("draw stack", () => {
-        let roomData = helperMake500Lobby();
+describe("game 500 play trick logic", () => {
 
+    it("Does nothing when no card is selected", () => {
+        const { roomData, socket1, io, roomID } = helperMake500Lobby();
 
+        // Save initial state
+        const initialHand = [...roomData.gameData.players[socket1].hand];
+        const initialTricks = [...roomData.gameData.players[socket1].tricks];
 
+        // Call function with no card
+        call500Move(roomData, { moveType: "playTrick", cardToPlay: [] }, socket1, io, roomID);
+
+        // ✅ Expect the game state to remain unchanged
+        expect(roomData.gameData.players[socket1].hand).toEqual(initialHand);
+        expect(roomData.gameData.players[socket1].tricks).toEqual(initialTricks);
     });
 
+    it("Removes the card from hand and adds to tricks when a valid single trick is played", () => {
+        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+
+        // Set up game state
+        roomData.gameData.players[socket1].hand = [5, 6, 7]; // Player's hand
+        roomData.gameData.players[socket1].tricks = [4]; // Empty tricks initially
+
+        // Call function with a valid trick
+        call500Move(roomData, { moveType: "playTrick", cardToPlay: [5] }, socket1, io, roomID);
+
+        // ✅ Expect card to be removed from the hand
+        expect(roomData.gameData.players[socket1].hand).toEqual([6, 7]);
+
+        // ✅ Expect card to be added to tricks
+        expect(roomData.gameData.players[socket1].tricks).toEqual([4, 5]);
+    });
+
+    it("Does not remove card from hand when trick is invalid (no adjacency)", () => {
+        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+
+        // Set up game state
+        roomData.gameData.players[socket1].hand = [5, 6, 7]; // Player hand
+        roomData.gameData.players[socket1].tricks = [3]; // No tricks initially
+
+        // Save initial hand
+        const initialHand = [...roomData.gameData.players[socket1].hand];
+
+        // Call function with a non-adjacent trick card
+        call500Move(roomData, { moveType: "playTrick", cardToPlay: [5] }, socket1, io, roomID);
+
+        // ✅ Expect the card to remain in hand
+        expect(roomData.gameData.players[socket1].hand).toEqual(initialHand);
+
+        // ✅ Expect tricks to remain unchanged
+        expect(roomData.gameData.players[socket1].tricks).toEqual([3]);
+    });
+
+    it("Does not remove card from hand if the card is missing", () => {
+        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+
+        // Set up game state
+        roomData.gameData.players[socket1].hand = [6, 7]; // Player hand (5 is missing)
+        roomData.gameData.players[socket1].tricks = [4];
+
+        // Save initial hand
+        const initialHand = [...roomData.gameData.players[socket1].hand];
+
+        // Call function with a missing card
+        call500Move(roomData, { moveType: "playTrick", cardToPlay: [5] }, socket1, io, roomID);
+
+        // ✅ Expect hand to remain unchanged
+        expect(roomData.gameData.players[socket1].hand).toEqual(initialHand);
+
+        // ✅ Expect tricks to remain unchanged
+        expect(roomData.gameData.players[socket1].tricks).toEqual([4]);
+    });
 
 });
+
+describe("game 500 multi trick logic", () => {
+
+    it("Does nothing when no cards are selected", () => {
+        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+
+        // Save initial state
+        const initialHand = [...roomData.gameData.players[socket1].hand];
+        const initialTricks = [...roomData.gameData.players[socket1].tricks];
+
+        // Call function with an empty trick
+        call500Move(roomData, { moveType: "playTrick", cardToPlay: [] }, socket1, io, roomID);
+
+        // ✅ Expect the game state to remain unchanged
+        expect(roomData.gameData.players[socket1].hand).toEqual(initialHand);
+        expect(roomData.gameData.players[socket1].tricks).toEqual(initialTricks);
+    });
+
+    it("Removes multiple adjacent cards from hand and adds them to tricks", () => {
+        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+
+        // Set up game state
+        roomData.gameData.players[socket1].hand = [5, 6, 7, 8, 9]; // Player's hand
+        roomData.gameData.players[socket1].tricks = [4]; // Existing tricks
+        const trickCards = [6, 7, 8]; // Valid multi-trick (adjacent)
+
+        // Call function with a valid trick
+        call500Move(roomData, { moveType: "playTrick", cardToPlay: trickCards }, socket1, io, roomID);
+
+        // ✅ Expect cards to be removed from the hand
+        expect(roomData.gameData.players[socket1].hand).toEqual([5, 9]);
+
+        // ✅ Expect cards to be added to tricks
+        expect(roomData.gameData.players[socket1].tricks).toEqual([4, 6, 7, 8]);
+    });
+
+    it("Does not remove cards when multi-trick is invalid (not adjacent)", () => {
+        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+
+        // Set up game state
+        roomData.gameData.players[socket1].hand = [5, 6, 7, 10]; // Player hand
+        roomData.gameData.players[socket1].tricks = [4]; // Existing tricks
+        const trickCards = [6, 7, 10]; // ❌ Not fully adjacent
+
+        // Save initial hand and tricks
+        const initialHand = [...roomData.gameData.players[socket1].hand];
+        const initialTricks = [...roomData.gameData.players[socket1].tricks];
+
+        // Call function with an invalid multi-trick
+        call500Move(roomData, { moveType: "playTrick", cardToPlay: trickCards }, socket1, io, roomID);
+
+        // ✅ Expect hand to remain unchanged
+        expect(roomData.gameData.players[socket1].hand).toEqual(initialHand);
+
+        // ✅ Expect tricks to remain unchanged
+        expect(roomData.gameData.players[socket1].tricks).toEqual(initialTricks);
+    });
+
+    it("Does not remove cards when at least one is missing", () => {
+        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+
+        // Set up game state
+        roomData.gameData.players[socket1].hand = [6, 8]; // ❌ Missing 7
+        roomData.gameData.players[socket1].tricks = [4]; // Existing tricks
+        const trickCards = [6, 7, 8]; // Would be valid, but 7 is missing
+
+        // Save initial hand and tricks
+        const initialHand = [...roomData.gameData.players[socket1].hand];
+        const initialTricks = [...roomData.gameData.players[socket1].tricks];
+
+        // Call function with missing cards
+        call500Move(roomData, { moveType: "playTrick", cardToPlay: trickCards }, socket1, io, roomID);
+
+        // ✅ Expect hand to remain unchanged
+        expect(roomData.gameData.players[socket1].hand).toEqual(initialHand);
+
+        // ✅ Expect tricks to remain unchanged
+        expect(roomData.gameData.players[socket1].tricks).toEqual(initialTricks);
+    });
+
+    it("Sets needsToTrick to false after a valid multi-trick", () => {
+        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+
+        // Set up game state
+        roomData.gameData.players[socket1].hand = [5, 6, 7, 8]; // Player's hand
+        roomData.gameData.players[socket1].tricks = [4]; // Existing tricks
+        roomData.gameData.players[socket1].needsToTrick = true; // ✅ Initially true
+        const trickCards = [6, 7, 8]; // Valid multi-trick (adjacent)
+
+        // Call function with a valid trick
+        call500Move(roomData, { moveType: "playTrick", cardToPlay: trickCards }, socket1, io, roomID);
+
+        // ✅ Expect cards to be removed from the hand
+        expect(roomData.gameData.players[socket1].hand).toEqual([5]);
+
+        // ✅ Expect cards to be added to tricks
+        expect(roomData.gameData.players[socket1].tricks).toEqual([4, 6, 7, 8]);
+
+        // ✅ Expect `needsToTrick` to be set to false
+        expect(roomData.gameData.players[socket1].needsToTrick).toBe(false);
+    });
+
+});
+
+
 
 function helperMake500Lobby() {
     // This map contains all rooms and every room's states

@@ -1,5 +1,5 @@
 export { start500Game, call500Move };
-import { drawDeck, dealFromDeckToHand, randomShuffle } from "../lib/CardDeckFunctions.js";
+import { drawDeck, dealFromDeckToHand, randomShuffle, isAdjacentCardsOverflow, isCardAdjacentToStack, areCardsAdjacentSet } from "../lib/CardDeckFunctions.js";
 import { nextPlayer, swapOneTurn } from "../lib/TurnManagement.js";
 
 
@@ -39,6 +39,7 @@ function call500Move(roomData, socketData, playerID, io, roomID) {
             endTurnMove(roomData, socketData, playerID, io, roomID);
             break;
         case "playTrick":
+            playTrickMove(roomData, socketData, playerID, io, roomID)
             break;
     }
 }
@@ -111,15 +112,69 @@ function nextPlayerTurn(roomData, socketData, playerID, io, roomID) {
 }
 
 
-function playTrickMove(roomData, socketData, socketID, io, roomID) {
+function playTrickMove(roomData, socketData, playerID, io, roomID) {
+    if (socketData.cardToPlay.length == 0) return sendErrorMessage(playerID, io, "No Card Picked", "Trick"); // Do nothing
+
+    if (socketData.cardToPlay.length == 1) return singleTrick(roomData, socketData.cardToPlay[0], playerID, io, roomID);
+
+    multiTrick(roomData, socketData.cardToPlay, playerID, io, roomID);
+}
+
+function multiTrick(roomData, trickCards, playerID, io, roomID) {
+    if (!areCardsAdjacentSet(trickCards)) return sendErrorMessage(playerID, io, "Multi Trick Not Possible", "Trick");
 
 
+    let hand = roomData.gameData.players[playerID].hand;
+    let missingCards = trickCards.filter(card => !hand.includes(card));
+    if (missingCards.length > 0) {
+        return sendErrorMessage(playerID, io, `Missing Cards: ${missingCards.join(", ")}`, "Trick");
+    }
+
+    trickCards.forEach(card => {
+        hand.splice(hand.indexOf(card), 1);
+    });
+
+    roomData.gameData.players[playerID].tricks.push(...trickCards)
+
+    roomData.gameData.players[playerID].needsToTrick = false;
+
+    sendGameAndHandInformation(roomID, roomData, io);
+}
+
+function singleTrick(roomData, trickCard, playerID, io, roomID) {
+    let gameData = roomData.gameData;
+    let possibleTrick = false;
+    for (const player of Object.values(gameData.players)) {
+        if (isCardAdjacentToStack(trickCard, player.tricks)) {
+            possibleTrick = true;
+            break;
+        }
+    }
+
+    if (!possibleTrick) return sendErrorMessage(playerID, io, "Single Trick Not Possible", "Trick"); 
+
+    let hand = gameData.players[playerID].hand;
+    let tricks = gameData.players[playerID].tricks;
+    let index = hand.indexOf(trickCard);
+    if (index === -1) return sendErrorMessage(playerID, io, "Card Not Found In Hand (Error Bug)", "Trick");
+    hand.splice(index, 1);
+    tricks.push(trickCard);
+
+    sendGameAndHandInformation(roomID, roomData, io);
 }
 
 function sendGameOver(roomID, roomData, io) {
     io.to(roomID).emit("gameEnded", { contineAllowed: false });
 }
 
+function sendErrorMessage(playerID, io, message, type) {
+    io.to(playerID).emit("error500Message", { message: message, type: type });
+}
+
+function sendGameAndHandInformation(roomID, roomData, io) {
+    sendGameInformation(roomID, roomData, io);
+    sendHandInformation(roomID, roomData, io);
+}
 
 function sendGameInformation(roomID, roomData, io) {
     const playersInfo = mapPlayerInfo500(roomData.players, roomData.gameData?.players);
@@ -135,7 +190,7 @@ function sendGameInformation(roomID, roomData, io) {
 }
 
 function sendHandInformation(playerID, roomData, io) {
-    const data = { hand: roomData.gameData.players[playerID].hand }
+    const data = { hand: roomData.gameData.players[playerID]?.hand }
     io.to(playerID).emit("handInformation", data);
 }
 
