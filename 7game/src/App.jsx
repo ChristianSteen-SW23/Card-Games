@@ -5,8 +5,10 @@ import StartPage from "./components/StartPage.jsx"
 import Lobby from "./components/Lobby.jsx"
 import GamePage7 from "./components/7game.jsx"
 import GamePage31 from './components/31game.jsx';
+import GamePage500 from './components/500game.jsx';
 
 function App() {
+    const [tempData, setTempData] = useState({});
     const [lobbyState, setLobbyState] = useState({});
     const [currentPage, setCurrentPage] = useState('StartPage');
     const [hand, setHand] = useState([]);
@@ -55,6 +57,10 @@ function App() {
             setLobbyState(data)
             setCurrentPage('GameMode: 31')
         }
+        function startedGameFunc500(data) {
+            setTempData(data);
+            setCurrentPage('GameMode: 500')
+        }
 
         socket.on('disconnect', onDisconnect);
         socket.on('leaveLobby', leaveLobbyFunc);
@@ -67,6 +73,7 @@ function App() {
         socket.on('playable', playableFunc);
         socket.on('gameInfo', gameInfoFunc);
         socket.on('noSkip', noSkipFunc);
+        socket.on('startedGame500', startedGameFunc500);
         return () => {
             socket.off('disconnect', onDisconnect);
             socket.off("leaveLobby");
@@ -79,6 +86,7 @@ function App() {
             socket.off("playable");
             socket.off("gameInfo");
             socket.off("noSkip");
+            socket.off("startedGame500");
         };
     }, []);
 
@@ -91,6 +99,8 @@ function App() {
             return <GamePage31 lobbyState={lobbyState} hand={hand} setHand={setHand} />
         case 'GameMode: 7':
             return <GamePage7 lobbyState={lobbyState} hand={hand} setHand={setHand} />
+        case 'GameMode: 500':
+            return <GamePage500 startHand={tempData.hand} startPlayerInfo={tempData.playersInfo} startStackTop={tempData.stack} startStackSize={tempData.stackSize} />
         default:
             console.log("Default")
     }
