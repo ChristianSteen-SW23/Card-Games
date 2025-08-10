@@ -1,9 +1,8 @@
-import { Rooms, PlayerRooms } from "./index.js";
 export { createLobbyID, createLobby, joinLobby, leaveLobby, deleteLobby, shouldStartGame, mapToArrayObj, isUsernameValid };
 
 //* =================================================== host lobby =============================================================== *\\
-function createLobby(socket, displayName) {
-    const id = createLobbyID();
+function createLobby(socket, displayName, Rooms, PlayerRooms) {
+    const id = createLobbyID(Rooms);
     const roomID = `/${id}`;
     socket.join(roomID);
 
@@ -21,7 +20,7 @@ function createLobby(socket, displayName) {
     };
 }
 
-function createLobbyID() {
+function createLobbyID(Rooms) {
     let id;
     do {
         id = "";
@@ -37,14 +36,14 @@ function roomStateObj(socket, username) {
     let lobbyStateObj = {
         "players": new Map(),
         "turn": { current: undefined, next: undefined },
-        "board": [[null,null,null,null],[null,null,null,null],[null,null,null,null]],
+        "board": [[null, null, null, null], [null, null, null, null], [null, null, null, null]],
         "startingPlayerID": null
     };
     lobbyStateObj.players.set(socket.id, createPlayer(username, true, socket.id));
     return lobbyStateObj;
 }
 
-function deleteLobby(roomID, io) {
+function deleteLobby(roomID, io, Rooms, PlayerRooms) {
     io.to(roomID).emit("leaveLobby");
     //Deletes the key-value pairs from the PlayerRooms map
     const players = Rooms.get(roomID).players;
@@ -55,7 +54,7 @@ function deleteLobby(roomID, io) {
     Rooms.delete(roomID);
 }
 
-function shouldStartGame(roomID) {
+function shouldStartGame(roomID, Rooms) {
     const players = Rooms.get(roomID).players;
     if (players.size < 2) {
         return false;
@@ -65,7 +64,7 @@ function shouldStartGame(roomID) {
 
 //* ============================================= joined lobby ============================================================== *\\
 
-function joinLobby(playerObj, roomID, socket) {
+function joinLobby(playerObj, roomID, socket, Rooms, PlayerRooms) {
     socket.join(roomID);
 
     const Players = Rooms.get(roomID).players;
@@ -77,7 +76,7 @@ function joinLobby(playerObj, roomID, socket) {
     return mapToArrayObj(Players);
 }
 
-function leaveLobby(socket, roomID) {
+function leaveLobby(socket, roomID, PlayerRooms, Rooms) {
     //Delete the player from the PlayerRoom map
     PlayerRooms.delete(socket.id);
 
@@ -119,5 +118,3 @@ function isUsernameValid(username) {
     }
     return true;
 }
-
-export { Rooms };

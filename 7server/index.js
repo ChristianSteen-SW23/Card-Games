@@ -5,9 +5,7 @@ import { Server } from "socket.io";
 import {
   createLobby,
   joinLobby,
-  leaveLobby,
   deleteLobby,
-  mapToArrayObj,
   isUsernameValid
 } from "./Lobby.js";
 import {
@@ -17,13 +15,17 @@ import {
   cardPlayable,
   playCard,
   possibleSkip
-} from "./Battle7.js";
+} from "./gamelogic/Battle7.js";
 import {
   dealCards31,
   mapPlayerInfo31,
   cal31Move,
   start31Game
-} from "./Battle31.js";
+} from "./gamelogic/Battle31.js";
+import {
+  start500Game,
+  call500Move,
+} from "./gamelogic/Battle500.js"
 
 const server = http.createServer();
 
@@ -51,7 +53,7 @@ io.on("connection", (socket) => {
       const roomData = Rooms.get(roomID);
 
       socket.to(roomID).emit("leaveLobby");
-      deleteLobby(roomID, io);
+      deleteLobby(roomID, io, Rooms, PlayerRooms);
     }
   });
 
@@ -59,7 +61,7 @@ io.on("connection", (socket) => {
   socket.on("createLobby", (username) => {
     if (isUsernameValid(username)) {
       console.log("Lobby was created by", socket.id);
-      const createLobbyObj = createLobby(socket, username);
+      const createLobbyObj = createLobby(socket, username, Rooms, PlayerRooms);
       socket.emit("conToLobby", createLobbyObj);
     } else {
       socket.emit("invalidUsername");
@@ -71,7 +73,7 @@ io.on("connection", (socket) => {
     const roomData = Rooms.get(roomID);
     if (roomData && !roomData.gameStarted) {
       if (isUsernameValid(joined.name)) {
-        const playersArr = joinLobby(joined, roomID, socket);
+        const playersArr = joinLobby(joined, roomID, socket, Rooms, PlayerRooms);
         socket.to(roomID).emit("playerHandler", playersArr);
 
         //Adds the current settings to the Object for the joining player
@@ -127,7 +129,13 @@ io.on("connection", (socket) => {
       case "31":
         start31Game(roomData, socket.id, io, roomID)
         break;
+      case "500":
+        start500Game(roomData, socket.id, io, roomID)
+        break;
     }
+    // console.log(Rooms)
+    // console.log("\n\n\n")
+    // console.log(PlayerRooms)
   });
 
   socket.on("playCard", (card) => {
@@ -200,6 +208,15 @@ io.on("connection", (socket) => {
 
     cal31Move(roomData, data, socket.id, io, roomID);
   })
+
+  socket.on("500Move", (data) => {
+    console.log(data)
+    const roomID = PlayerRooms.get(socket.id)
+    const roomData = Rooms.get(roomID)
+
+    call500Move(roomData, data, socket.id, io, roomID);
+
+  });
 });
 
 // Start application server
@@ -209,3 +226,4 @@ const HOST = process.env.BACKEND_IP || "0.0.0.0";
 server.listen(PORT, HOST, () => {
   console.log(`Server started on LAN at: http://${HOST}:${PORT}`);
 });
+

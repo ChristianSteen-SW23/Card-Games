@@ -9,8 +9,8 @@ import GameModeDropDown from "./subComponents/lobby/GameModeDropDown";
 export default function Lobby({ lobbyState }) {
     // All the variables that changes throughout the lobby lifetime
     const [players, setPlayers] = useState(lobbyState.players);
-    const [gameMode, setGameMode] = useState("7");
-    const availableGames = ["7", "31"];
+    const [gameMode, setGameMode] = useState("500");
+    const availableGames = ["7", "31", "500"];
 
     const player = players.find(player => player.playerid === socket.id);
     const isHost = player.host;
