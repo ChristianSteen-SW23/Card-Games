@@ -18,27 +18,27 @@ function App() {
             setCurrentPage('StartPage')
         }
 
-        function leaveLobbyFunc(){
+        function leaveLobbyFunc() {
             setCurrentPage('StartPage')
         }
-        function conToLobbyFunc(data){
+        function conToLobbyFunc(data) {
             setLobbyState(data);
             setCurrentPage('Lobby')
         }
-        function startedGameFunc7(data){
+        function startedGameFunc7(data) {
             setLobbyState(data)
             setCurrentPage('GameMode: 7')
         }
-        function handInfoFunc(data){
+        function handInfoFunc(data) {
             console.log(data)
             let newHand = data;
             newHand.sort((a, b) => a - b)
             setHand(newHand);
         }
-        function outOfTurnFunc(){
+        function outOfTurnFunc() {
             alert("Not your turn...")
         }
-        function notPlayableFunc(){
+        function notPlayableFunc() {
             alert("You can not play that card")
         }
         function playableFunc(data) {
@@ -47,13 +47,13 @@ function App() {
             newHand.sort((a, b) => a - b)
             setHand(newHand);
         }
-        function gameInfoFunc(data){
+        function gameInfoFunc(data) {
             setLobbyState(data)
         }
-        function noSkipFunc(){
+        function noSkipFunc() {
             alert("You can play a card. Please stop the cheating")
         }
-        function startedGameFunc31(data){
+        function startedGameFunc31(data) {
             setLobbyState(data)
             setCurrentPage('GameMode: 31')
         }
@@ -92,15 +92,15 @@ function App() {
 
     switch (currentPage) {
         case 'StartPage':
-            return <StartPage/>
+            return <StartPage />
         case 'Lobby':
-            return <Lobby lobbyState={lobbyState}/>
+            return <Lobby lobbyState={lobbyState} />
         case 'GameMode: 31':
             return <GamePage31 lobbyState={lobbyState} hand={hand} setHand={setHand} />
         case 'GameMode: 7':
             return <GamePage7 lobbyState={lobbyState} hand={hand} setHand={setHand} />
         case 'GameMode: 500':
-            return <GamePage500 startHand={tempData.hand} startPlayerInfo={tempData.playersInfo} startStackTop={tempData.stack} startStackSize={tempData.stackSize} />
+            return <GamePage500 startingTurn={tempData.turn} startHand={tempData.hand} startPlayerInfo={tempData.playersInfo} startStackTop={tempData.stack} startStackSize={tempData.stackSize} deckSizeStart={tempData.deckSize} />
         default:
             console.log("Default")
     }

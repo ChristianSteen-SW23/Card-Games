@@ -1,69 +1,114 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { socket } from "./../socket";
-import DeckAndStack from "./subComponents/game500/DeckAndStack"
-import SelectableHand from "./subComponents/cardMakeing/SelectableHand";
+import BottomOfScreen from "./subComponents/game500/BottomOfScreen";
+import PlayersPage from "./subComponents/game500/PlayersPage";
+import GameDoneModal from "./subComponents/game500/GameDoneModal";
+import Popup from "./subComponents/helperComponents/Popup";
 
+export default function GamePage500({ startHand, startPlayerInfo, startStackTop, startStackSize, startingTurn, deckSizeStart }) {
+    const popupRef = useRef();
 
-export default function GamePage500({ startHand, startPlayerInfo, startStackTop, startStackSize }) {
-    // ✅ Correctly declare useState hooks
+    // Correctly declare useState hooks
+    const [yourTurn, setYourTurn] = useState(socket.id == startingTurn.current);
+    const [turn, setTurn] = useState(startingTurn);
     const [hand, setHand] = useState(startHand);
     const [playerInfo, setPlayerInfo] = useState(startPlayerInfo);
     const [stackTop, setStackTop] = useState(startStackTop);
     const [stackSize, setStackSize] = useState(startStackSize);
-    const [selectedCards, setSelectedCards] = useState([]); 
+    const [deckSize, setDeckSize] = useState(deckSizeStart);
+    const [selectedCards, setSelectedCards] = useState([]);
+    const [turnStep, setTurnStep] = useState("draw");
+    const [winPop, setWinPop] = useState(false);
+    const [winData, setWinData] = useState([]);
 
     useEffect(() => {
-        function elseKnockedFunc() {
-            alert("You can not knock, someone else has knocked");
+        function gameInformation(data) {
+            let saveTurn = yourTurn;
+
+            setYourTurn(socket.id == data.turn.current);
+            setTurn(data.turn);
+            setPlayerInfo(data.playersInfo);
+            setStackTop(data.stack);
+            setStackSize(data.stackSize);
+            setDeckSize(data.deckSize);
+            setSelectedCards([]);
+            setTurnStep(data.gameStep);
+
+            if (socket.id == data.turn.current && data.gameStep == "draw")
+                popupRef.current.show("It is your turn🥳", "success");
+
         }
 
-        socket.on("New31Game", elseKnockedFunc);
+        function handInformation(data) {
+            let newData = data
+            setHand(newData.hand);
+        }
+
+        function error500Message(data) {
+            popupRef.current.show(`Error ${data.type}: ${data.message}`, "error");
+        }
+
+        function gameEnded(data) {
+            setWinPop(true);
+            setWinData(data.winData);
+        }
+
+        function newRound(data) {
+            console.log("NewRound")
+            setWinPop(false);
+            setHand(data.hand);
+            gameInformation({ ...data, gameStep: "draw" });
+        }
+
+        socket.on("gameInformation", gameInformation);
+        socket.on("handInformation", handInformation);
+        socket.on("error500Message", error500Message);
+        socket.on("gameEnded", gameEnded);
+        socket.on("newRound", newRound);
 
         return () => {
-            socket.off("New31Game", elseKnockedFunc); // ✅ Correct cleanup
+            socket.off("gameInformation");
+            socket.off("handInformation");
+            socket.off("error500Message");
+            socket.off("gameEnded");
         };
     }, []);
 
     return (
         <>
-            <div className="container text-center">
+            {/* <div className="container text-center">
+                <p><strong>Lobby:</strong> {JSON.stringify(turn)}</p>
                 <p><strong>Hand:</strong> {JSON.stringify(hand)}</p>
                 <p><strong>Player Info:</strong> {JSON.stringify(playerInfo)}</p>
                 <p><strong>Stack Top:</strong> {stackTop}</p>
                 <p><strong>Stack Size:</strong> {stackSize}</p>
+                <p><strong>GameState:</strong> {turnStep}</p>
+            </div> */}
+            <div className="p-5">
+                <PlayersPage
+                    playerInfo={playerInfo}
+                    turn={turn}
+                />
             </div>
-            <div className="container text-center d-flex flex-column min-vh-100">
-                {/* Row 1: 2 | 8 | 2 */}
-                <div className="row">
-                    <div className="col-6 bg-light border">
-                        <SelectableHand initialHand={hand} selectedCards={selectedCards}
-                            setSelectedCards={setSelectedCards} />
+            <BottomOfScreen
+                hand={hand}
+                selectedCards={selectedCards}
+                setSelectedCards={setSelectedCards}
+                stackTop={stackTop}
+                stackSize={stackSize}
+                deckSize={deckSize}
+                yourTurn={yourTurn}
+                turnStep={turnStep}
+                popupRef={popupRef}
+            />
 
-                    </div>
-                    <div className="col-6 bg-primary text-white border">
-                        <DeckAndStack stackTop={stackTop} stackSize={stackSize} deckSize={5} />
-                    </div>
-                </div>
+            <Popup ref={popupRef} duration={5000} />
 
-                {/* Row 2: 6 | 6 */}
-                <div className="row">
-                    <div className="col-6 bg-secondary text-white border">Left Half
-                    </div>
-                    <div className="col-6 bg-dark text-white border">Right Half</div>
-                </div>
-
-                {/* Row 3: 6 | 6 */}
-                <div className="row">
-                    <div className="col-6 bg-warning border">Left Half</div>
-                    <div className="col-6 bg-success text-white border">Right Half</div>
-                </div>
-
-                {/* Row 4: 12 (Sticky to Bottom) */}
-                <div className="row mt-auto">
-                    <div className="col-12 bg-danger text-white border">Sticky Bottom</div>
-                </div>
-            </div>
+            <GameDoneModal winPop={winPop} winData={winData} />
 
         </>
     );
 }
+
+
+

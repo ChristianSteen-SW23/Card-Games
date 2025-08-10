@@ -123,9 +123,9 @@ export default function GamePage31({ lobbyState, hand, setHand }) {
                         </div>
                         <div className='modal-footer'>
                             <button type="button" className="btn btn-success" data-bs-dismiss="modal"
-                                onClick={()=>{socket.emit("31Move", { moveType: "NewGame", data: true }); console.log("Hejsss")}}>Play again?</button>
+                                onClick={() => { socket.emit("31Move", { moveType: "NewGame", data: true }); console.log("Hejsss") }}>Play again?</button>
                             <button type="button" className="btn btn-danger" data-bs-dismiss="modal"
-                                onClick={()=>{socket.emit("31Move", { moveType: "NewGame", data: false }); console.log("Hejssssss")}}>Leave lobby</button>
+                                onClick={() => { socket.emit("31Move", { moveType: "NewGame", data: false }); console.log("Hejssssss") }}>Leave lobby</button>
                         </div>
                     </div>
                 </div>

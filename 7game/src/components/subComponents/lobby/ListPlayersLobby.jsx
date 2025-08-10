@@ -12,7 +12,7 @@ export default function ListPlayersLobby({ players }) {
                             Players in lobby
                         </li>
                         {players.map((player, index) =>
-                            <li className="list-group-item d-flex justify-content-between align-items-center">
+                            <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
                                 {player.name}
                                 {player.playerid === socket.id ? <span className="badge text-bg-primary rounded-pill">You</span> : ""}
                                 {player.host ? <span className="badge text-bg-success rounded-pill">Host</span> : ""}

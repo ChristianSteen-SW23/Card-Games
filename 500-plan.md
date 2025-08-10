@@ -41,6 +41,11 @@ With data:
     cardsToPlay: [indexs from hand] 
 }
 ```
+```JSON
+{
+    moveType: "playAgain"
+}
+```
 
 ## From backend
 ### Send player information
@@ -67,11 +72,13 @@ Send over information `gameInformation`
     "next": "qc7ePPHrFh9fpsGEAAAD"
   },
   "stack": 7, // The topcard. -1 if no card
-  "stackSize": 1
+  "stackSize": 1,
+  "deckSize": 10,
+  "gameStep": "draw"/"trick"
 } 
 ```
 
-Send over hand information:
+Send over hand information `handInformation`:
 ```JSON
 {
   hand:[]
@@ -79,7 +86,7 @@ Send over hand information:
 ```
 
 ### Start game
-Send over information `startedGame500`
+Send over information `startedGame500` and `newRound`
 Same data as for gameInformation
 ```JSON
 {
@@ -120,7 +127,7 @@ Send over `gameEnded`
 ```JSON
 {
     contineAllowed: false/true // Shall be false if one player have over 500
-    playerPoints: [PLAYER SCORE]
+    playerPoints: [ { name, totalScore, roundScore } ]
 }
 ```
 
@@ -148,7 +155,7 @@ gameData: {
         ID: {
             needsToTrick: false, // Used if entire stack have been drawn
             gamePoints: Num,
-            totalPoints: Num,
+            totalScore: Num,
             hand:[cards],
             tricks: [],
 
@@ -171,8 +178,8 @@ gameData: {
 3. Implement logik for draw ✅
 4. Implement end turn logik ✅
 5. Implement trick logik ✅\
-Frontend ends to follow up ❌
-6. Winlogik
+Frontend ends to follow up ✅
+6. Winlogik ✅
 
 ## Frontend
 

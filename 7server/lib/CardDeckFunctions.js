@@ -37,7 +37,8 @@ function randomShuffle(deck) {
 }
 
 function areCardsAdjacentSet(cards) {
-    if (cards.length < 2) return 1; // ✅ A single card or empty array is trivially adjacent
+    cards.sort((a, b) => a - b);
+    if (cards.length < 2) return 1;
 
     let stack = [...cards]; // Copy to avoid modifying original array
     let currentCard = stack.shift(); // Take the first card
@@ -53,10 +54,10 @@ function areCardsAdjacentSet(cards) {
             }
         }
 
-        if (!foundAdjacent) return 0; // ❌ Found a non-adjacent card
+        if (!foundAdjacent) return 0;
     }
 
-    return 1; // ✅ All cards are adjacent
+    return 1;
 }
 
 

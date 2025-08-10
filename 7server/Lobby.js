@@ -36,7 +36,7 @@ function roomStateObj(socket, username) {
     let lobbyStateObj = {
         "players": new Map(),
         "turn": { current: undefined, next: undefined },
-        "board": [[null,null,null,null],[null,null,null,null],[null,null,null,null]],
+        "board": [[null, null, null, null], [null, null, null, null], [null, null, null, null]],
         "startingPlayerID": null
     };
     lobbyStateObj.players.set(socket.id, createPlayer(username, true, socket.id));

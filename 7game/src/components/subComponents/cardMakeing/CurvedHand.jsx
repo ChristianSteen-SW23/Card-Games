@@ -1,28 +1,14 @@
-export default function SelectableHand({ initialHand, selectedCards, setSelectedCards }) {
-
-    function toggleCardSelection(card) {
-        setSelectedCards(prevSelected =>
-            prevSelected.includes(card)
-                ? prevSelected.filter(c => c !== card) // Remove if already selected
-                : [...prevSelected, card] // Add if not selected
-        );
-    }
-
-    function isSelected(card) {
-        return selectedCards.includes(card);
-    }
-
+export function CurvedHand({ hand }) {
     return (
         <>
-            {/*<div className="playingCards rotateHand fourColours">*/}
-            <div className="playingCards fourColours">
+            <div className="playingCards rotateHand fourColours">
                 <ul className="hand">
-                    {initialHand?.map((card, index) => (
-                        <li key={card} onClick={() => toggleCardSelection(card)}>
-                            {index === initialHand.length - 1 ? (
-                                <CardWithFront card={card} strong={isSelected(card)} />
+                    {hand?.map((card, index) => (
+                        <li key={card}>
+                            {index === hand.length - 1 ? (
+                                <CardWithFront card={card} />
                             ) : (
-                                <CardWithoutFront card={card} strong={isSelected(card)} />
+                                <CardWithoutFront card={card} />
                             )}
                         </li>
                     ))}

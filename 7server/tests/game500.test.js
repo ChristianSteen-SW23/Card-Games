@@ -172,7 +172,7 @@ describe("game 500 move types", () => {
         const originalStack = [...roomData.gameData.stack];
 
         // Call function
-        call500Move(roomData, { moveType: "endTurn", cardToPlay: invalidCard }, socket1, io, roomID);
+        call500Move(roomData, { moveType: "endTurn", cardsToPlay: invalidCard }, socket1, io, roomID);
 
         // ✅ Hand should remain unchanged
         expect(roomData.gameData.players[socket1].hand).toEqual([5, 6, 7]);
@@ -247,7 +247,7 @@ describe("game 500 play trick logic", () => {
         const initialTricks = [...roomData.gameData.players[socket1].tricks];
 
         // Call function with no card
-        call500Move(roomData, { moveType: "playTrick", cardToPlay: [] }, socket1, io, roomID);
+        call500Move(roomData, { moveType: "playTrick", cardsToPlay: [] }, socket1, io, roomID);
 
         // ✅ Expect the game state to remain unchanged
         expect(roomData.gameData.players[socket1].hand).toEqual(initialHand);
@@ -262,7 +262,7 @@ describe("game 500 play trick logic", () => {
         roomData.gameData.players[socket1].tricks = [4]; // Empty tricks initially
 
         // Call function with a valid trick
-        call500Move(roomData, { moveType: "playTrick", cardToPlay: [5] }, socket1, io, roomID);
+        call500Move(roomData, { moveType: "playTrick", cardsToPlay: [5] }, socket1, io, roomID);
 
         // ✅ Expect card to be removed from the hand
         expect(roomData.gameData.players[socket1].hand).toEqual([6, 7]);
@@ -282,7 +282,7 @@ describe("game 500 play trick logic", () => {
         const initialHand = [...roomData.gameData.players[socket1].hand];
 
         // Call function with a non-adjacent trick card
-        call500Move(roomData, { moveType: "playTrick", cardToPlay: [5] }, socket1, io, roomID);
+        call500Move(roomData, { moveType: "playTrick", cardsToPlay: [5] }, socket1, io, roomID);
 
         // ✅ Expect the card to remain in hand
         expect(roomData.gameData.players[socket1].hand).toEqual(initialHand);
@@ -302,7 +302,7 @@ describe("game 500 play trick logic", () => {
         const initialHand = [...roomData.gameData.players[socket1].hand];
 
         // Call function with a missing card
-        call500Move(roomData, { moveType: "playTrick", cardToPlay: [5] }, socket1, io, roomID);
+        call500Move(roomData, { moveType: "playTrick", cardsToPlay: [5] }, socket1, io, roomID);
 
         // ✅ Expect hand to remain unchanged
         expect(roomData.gameData.players[socket1].hand).toEqual(initialHand);
@@ -323,7 +323,7 @@ describe("game 500 multi trick logic", () => {
         const initialTricks = [...roomData.gameData.players[socket1].tricks];
 
         // Call function with an empty trick
-        call500Move(roomData, { moveType: "playTrick", cardToPlay: [] }, socket1, io, roomID);
+        call500Move(roomData, { moveType: "playTrick", cardsToPlay: [] }, socket1, io, roomID);
 
         // ✅ Expect the game state to remain unchanged
         expect(roomData.gameData.players[socket1].hand).toEqual(initialHand);
@@ -339,7 +339,7 @@ describe("game 500 multi trick logic", () => {
         const trickCards = [6, 7, 8]; // Valid multi-trick (adjacent)
 
         // Call function with a valid trick
-        call500Move(roomData, { moveType: "playTrick", cardToPlay: trickCards }, socket1, io, roomID);
+        call500Move(roomData, { moveType: "playTrick", cardsToPlay: trickCards }, socket1, io, roomID);
 
         // ✅ Expect cards to be removed from the hand
         expect(roomData.gameData.players[socket1].hand).toEqual([5, 9]);
@@ -361,7 +361,7 @@ describe("game 500 multi trick logic", () => {
         const initialTricks = [...roomData.gameData.players[socket1].tricks];
 
         // Call function with an invalid multi-trick
-        call500Move(roomData, { moveType: "playTrick", cardToPlay: trickCards }, socket1, io, roomID);
+        call500Move(roomData, { moveType: "playTrick", cardsToPlay: trickCards }, socket1, io, roomID);
 
         // ✅ Expect hand to remain unchanged
         expect(roomData.gameData.players[socket1].hand).toEqual(initialHand);
@@ -383,7 +383,7 @@ describe("game 500 multi trick logic", () => {
         const initialTricks = [...roomData.gameData.players[socket1].tricks];
 
         // Call function with missing cards
-        call500Move(roomData, { moveType: "playTrick", cardToPlay: trickCards }, socket1, io, roomID);
+        call500Move(roomData, { moveType: "playTrick", cardsToPlay: trickCards }, socket1, io, roomID);
 
         // ✅ Expect hand to remain unchanged
         expect(roomData.gameData.players[socket1].hand).toEqual(initialHand);
@@ -402,7 +402,7 @@ describe("game 500 multi trick logic", () => {
         const trickCards = [6, 7, 8]; // Valid multi-trick (adjacent)
 
         // Call function with a valid trick
-        call500Move(roomData, { moveType: "playTrick", cardToPlay: trickCards }, socket1, io, roomID);
+        call500Move(roomData, { moveType: "playTrick", cardsToPlay: trickCards }, socket1, io, roomID);
 
         // ✅ Expect cards to be removed from the hand
         expect(roomData.gameData.players[socket1].hand).toEqual([5]);
