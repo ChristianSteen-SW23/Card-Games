@@ -13,7 +13,7 @@ services:
       context: ./7game
       dockerfile: Dockerfile
       args:
-        VITE_FRONT_SOCKET_IP: "49.13.58.73:3069"
+        VITE_FRONT_SOCKET_IP: "91.99.223.75:3069"
     container_name: card-front
     ports:
       - "80:8081"
