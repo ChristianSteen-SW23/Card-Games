@@ -1,7 +1,7 @@
 services:
   backend:
     build:
-      context: ./7server
+      context: ./server
       dockerfile: Dockerfile
     container_name: card-back
     ports:
@@ -10,7 +10,7 @@ services:
 
   frontend:
     build:
-      context: ./7game
+      context: ./client
       dockerfile: Dockerfile
       args:
         VITE_FRONT_SOCKET_IP: "91.99.223.75:3069"
