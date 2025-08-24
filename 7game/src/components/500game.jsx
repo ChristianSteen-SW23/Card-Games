@@ -44,7 +44,7 @@ export default function GamePage500({ startHand, startPlayerInfo, startStackTop,
             setHand(newData.hand);
         }
 
-        function error500Message(data) {
+        function errorMessage(data) {
             popupRef.current.show(`Error ${data.type}: ${data.message}`, "error");
         }
 
@@ -62,15 +62,16 @@ export default function GamePage500({ startHand, startPlayerInfo, startStackTop,
 
         socket.on("gameInformation", gameInformation);
         socket.on("handInformation", handInformation);
-        socket.on("error500Message", error500Message);
+        socket.on("errorMessage", errorMessage);
         socket.on("gameEnded", gameEnded);
         socket.on("newRound", newRound);
 
         return () => {
             socket.off("gameInformation");
             socket.off("handInformation");
-            socket.off("error500Message");
+            socket.off("errorMessage");
             socket.off("gameEnded");
+            socket.off("newRound");
         };
     }, []);
 

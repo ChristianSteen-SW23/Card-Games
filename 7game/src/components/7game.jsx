@@ -1,19 +1,23 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { socket } from "./../socket";
 import InGamePlayerList from "./subComponents/game7/InGamePlayerList";
 import MakeBoard from "./subComponents/game7/MakeBoard";
 import MakeHand from "./subComponents/game7/MakeHand";
+import Popup from "./subComponents/helperComponents/Popup";
 
 
 export default function GamePage7({ lobbyState, hand, setHand }) {
-    /*useEffect(() => {
-        socket.on("gameInfo", (players) => {
-            setPlayers(players);
-        });
+    const popupRef = useRef();
+
+    useEffect(() => {
+        function errorMessage(data) {
+            popupRef.current.show(`Error ${data.type}: ${data.message}`, "error");
+        }
+        socket.on("errorMessage", errorMessage);
         return () => {
-            socket.off("gameInfo");
+            socket.off("errorMessage");
         };
-    }, []);*/
+    }, []);
 
     return (
         <>
@@ -28,9 +32,10 @@ export default function GamePage7({ lobbyState, hand, setHand }) {
                     </div>
                 </div>
                 <div className="row">
-                    <MakeHand hand={hand} setHand={setHand}/>
+                    <MakeHand hand={hand} setHand={setHand} />
                 </div>
             </div>
+            <Popup ref={popupRef} duration={5000} />
         </>
     );
 }

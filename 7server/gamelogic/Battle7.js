@@ -1,4 +1,5 @@
 export { mapPlayerInfo, nextPlayer, switchRoles, dealCards, playCard, cardPlayable, possibleSkip, start7Game, call7Move };
+import { sendErrorMessage } from "../lib/InfoMessage.js";
 
 function start7Game(roomData, socketID, io, roomID) {
     let startedGameData;
@@ -29,62 +30,52 @@ function start7Game(roomData, socketID, io, roomID) {
 
 function call7Move(roomData, socketData, playerID, io, roomID) {
     let moveType = socketData.moveType;
-    //const roomID = PlayerRooms.get(socket.id)
-    //const roomData = Rooms.get(roomID)
+    if (playerID != roomData.turn.current) return sendErrorMessage(playerID, io, "It is not your turn", "Out of turn");
     switch (moveType) {
         case "skipTurn":
-            if (playerID == roomData.turn.current) {
-                if (possibleSkip(roomData, playerID)) {
+            if (possibleSkip(roomData, playerID)) {
 
-                    // Set next turn
-                    roomData.turn.current = roomData.turn.next;
-                    roomData.turn.next = nextPlayer(roomData);
+                // Set next turn
+                roomData.turn.current = roomData.turn.next;
+                roomData.turn.next = nextPlayer(roomData);
 
-                    // Send out new game info
-                    const playersInfo = mapPlayerInfo(roomData.players);
-                    const gameInfo = {
-                        playersInfo,
-                        turn: roomData.turn,
-                        board: roomData.board
-                    };
-                    io.to(roomID).emit("gameInfo", gameInfo);
-                } else {
-                    io.to(playerID).emit("noSkip")
-                }
-
+                // Send out new game info
+                const playersInfo = mapPlayerInfo(roomData.players);
+                const gameInfo = {
+                    playersInfo,
+                    turn: roomData.turn,
+                    board: roomData.board
+                };
+                io.to(roomID).emit("gameInfo", gameInfo);
             } else {
-                io.to(playerID).emit("outOfTurn")
+                sendErrorMessage(playerID, io, "You can play a card. Please stop the cheating", "Card playable");
             }
             break;
         case "playCard":
-            if (playerID == roomData.turn.current) {
-                const card = socketData.card;
-                if (cardPlayable(card, roomData)) {
-                    roomData.players.get(roomData.turn.current).cardsLeft--;
-                    playCard(card, roomData)
-                    const playersInfo = mapPlayerInfo(roomData.players);
+            const card = socketData.card;
+            if (cardPlayable(card, roomData)) {
+                roomData.players.get(roomData.turn.current).cardsLeft--;
+                playCard(card, roomData)
+                const playersInfo = mapPlayerInfo(roomData.players);
 
-                    // Remove card from hand and sent it out
-                    let indexToRemove = roomData.players.get(roomData.turn.current).hand.indexOf(card);
-                    roomData.players.get(roomData.turn.current).hand.splice(indexToRemove, 1);
-                    io.to(playerID).emit("playable", roomData.players.get(roomData.turn.current).hand)
+                // Remove card from hand and sent it out
+                let indexToRemove = roomData.players.get(roomData.turn.current).hand.indexOf(card);
+                roomData.players.get(roomData.turn.current).hand.splice(indexToRemove, 1);
+                io.to(playerID).emit("playable", roomData.players.get(roomData.turn.current).hand)
 
-                    // Set next turn
-                    roomData.turn.current = roomData.turn.next;
-                    roomData.turn.next = nextPlayer(roomData);
+                // Set next turn
+                roomData.turn.current = roomData.turn.next;
+                roomData.turn.next = nextPlayer(roomData);
 
-                    // Send out new game info
-                    const gameInfo = {
-                        playersInfo,
-                        turn: roomData.turn,
-                        board: roomData.board
-                    };
-                    io.to(roomID).emit("gameInfo", gameInfo);
-                } else {
-                    io.to(playerID).emit("notPlayable")
-                }
+                // Send out new game info
+                const gameInfo = {
+                    playersInfo,
+                    turn: roomData.turn,
+                    board: roomData.board
+                };
+                io.to(roomID).emit("gameInfo", gameInfo);
             } else {
-                io.to(playerID).emit("outOfTurn")
+                sendErrorMessage(playerID, io, "You can not play this card", "Card not playable");
             }
             break;
     }

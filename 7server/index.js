@@ -9,12 +9,6 @@ import {
   isUsernameValid
 } from "./Lobby.js";
 import {
-  mapPlayerInfo,
-  nextPlayer,
-  dealCards as dealCards7,
-  cardPlayable,
-  playCard,
-  possibleSkip,
   start7Game,
   call7Move
 } from "./gamelogic/Battle7.js";
@@ -95,6 +89,8 @@ io.on("connection", (socket) => {
     }
   });
 
+
+  //* ================================================= Game Logic Handler ======================================================== *\\
   //Listens for a 'startGame' event and either emits a 'startedGame' event to all clients in a room if conditions are met, or sends a 'cantStartGame' event to the initiating client if not.
   socket.on("startGame", (gameMode) => {
     const roomID = PlayerRooms.get(socket.id);
@@ -109,69 +105,6 @@ io.on("connection", (socket) => {
       case "500":
         start500Game(roomData, socket.id, io, roomID)
         break;
-    }
-  });
-
-  socket.on("playCard", (card) => {
-    const roomID = PlayerRooms.get(socket.id)
-    const roomData = Rooms.get(roomID)
-    if (socket.id == roomData.turn.current) {
-      if (cardPlayable(card, roomData)) {
-        roomData.players.get(roomData.turn.current).cardsLeft--;
-        playCard(card, roomData)
-        const playersInfo = mapPlayerInfo(roomData.players);
-
-        // Remove card from hand and sent it out
-        let indexToRemove = roomData.players.get(roomData.turn.current).hand.indexOf(card);
-        roomData.players.get(roomData.turn.current).hand.splice(indexToRemove, 1);
-        io.to(socket.id).emit("playable", roomData.players.get(roomData.turn.current).hand)
-
-
-        // Set next turn
-        roomData.turn.current = roomData.turn.next;
-        roomData.turn.next = nextPlayer(roomData);
-
-        // Send out new game info
-        const gameInfo = {
-          playersInfo,
-          turn: roomData.turn,
-          board: roomData.board
-        };
-        io.to(roomID).emit("gameInfo", gameInfo);
-
-      } else {
-        io.to(socket.id).emit("notPlayable")
-      }
-    } else {
-      io.to(socket.id).emit("outOfTurn")
-    }
-
-  });
-
-  socket.on("skipTurn", (card) => {
-    const roomID = PlayerRooms.get(socket.id)
-    const roomData = Rooms.get(roomID)
-    if (socket.id == roomData.turn.current) {
-      if (possibleSkip(roomData, socket.id)) {
-
-        // Set next turn
-        roomData.turn.current = roomData.turn.next;
-        roomData.turn.next = nextPlayer(roomData);
-
-        // Send out new game info
-        const playersInfo = mapPlayerInfo(roomData.players);
-        const gameInfo = {
-          playersInfo,
-          turn: roomData.turn,
-          board: roomData.board
-        };
-        io.to(roomID).emit("gameInfo", gameInfo);
-      } else {
-        io.to(socket.id).emit("noSkip")
-      }
-
-    } else {
-      io.to(socket.id).emit("outOfTurn")
     }
   });
 

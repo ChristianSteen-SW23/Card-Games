@@ -2,6 +2,7 @@ export { start500Game, call500Move };
 import { drawDeck, dealFromDeckToHand, randomShuffle, isAdjacentCardsOverflow, isCardAdjacentToStack, areCardsAdjacentSet } from "../lib/CardDeckFunctions.js";
 import { nextPlayer, swapOneTurn } from "../lib/TurnManagement.js";
 import { countPointScore } from "../lib/PointCounter.js";
+import { sendErrorMessage } from "../lib/InfoMessage.js";
 
 
 function start500Game(roomData, socketID, io, roomID) {
@@ -204,9 +205,7 @@ function sendGameOver(roomID, data, io) {
     io.to(roomID).emit("gameEnded", { contineAllowed: false, winData: data });
 }
 
-function sendErrorMessage(playerID, io, message, type) {
-    io.to(playerID).emit("error500Message", { message: message, type: type });
-}
+
 
 function sendGameAndHandInformation(roomID, playerID, roomData, io) {
     sendGameInformation(roomID, roomData, io, "trick");
