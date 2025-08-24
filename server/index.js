@@ -9,17 +9,13 @@ import {
   isUsernameValid
 } from "./Lobby.js";
 import {
-  mapPlayerInfo,
-  nextPlayer,
-  dealCards as dealCards7,
-  cardPlayable,
-  playCard,
-  possibleSkip
+  start7Game,
+  call7Move
 } from "./gamelogic/Battle7.js";
 import {
   dealCards31,
   mapPlayerInfo31,
-  cal31Move,
+  call31Move,
   start31Game
 } from "./gamelogic/Battle31.js";
 import {
@@ -92,39 +88,16 @@ io.on("connection", (socket) => {
       socket.emit("roomNotExist");
     }
   });
-  //7---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+  //* ================================================= Game Logic Handler ======================================================== *\\
   //Listens for a 'startGame' event and either emits a 'startedGame' event to all clients in a room if conditions are met, or sends a 'cantStartGame' event to the initiating client if not.
   socket.on("startGame", (gameMode) => {
     const roomID = PlayerRooms.get(socket.id);
     const roomData = Rooms.get(roomID);
-
-    let startedGameData;
-    let playersInfo;
-
     switch (gameMode) {
       case "7":
-        roomData.turn.current = socket.id;
-        roomData.turn.next = nextPlayer(roomData);
-        roomData.gameStarted = true;
-
-        dealCards7(roomData)
-        roomData.turn.current = roomData.startingPlayerID
-        roomData.turn.next = nextPlayer(roomData);
-
-        // Gives players their hand
-        for (let [playerid, player] of roomData.players.entries()) {
-          player.cardsLeft = player.hand.length;
-          io.to(playerid).emit("handInfo", player.hand);
-        }
-
-        playersInfo = mapPlayerInfo(roomData.players);
-        startedGameData = {
-          playersInfo,
-          turn: roomData.turn,
-          board: roomData.board
-        };
-        io.to(roomID).emit("startedGame7", startedGameData);
-        console.log("Started game 7 made by", socket.id);
+        start7Game(roomData, socket.id, io, roomID);
         break;
       case "31":
         start31Game(roomData, socket.id, io, roomID)
@@ -133,80 +106,22 @@ io.on("connection", (socket) => {
         start500Game(roomData, socket.id, io, roomID)
         break;
     }
-    // console.log(Rooms)
-    // console.log("\n\n\n")
-    // console.log(PlayerRooms)
   });
 
-  socket.on("playCard", (card) => {
+  socket.on("7Move", (data) => {
+    console.log(data)
     const roomID = PlayerRooms.get(socket.id)
     const roomData = Rooms.get(roomID)
-    if (socket.id == roomData.turn.current) {
-      if (cardPlayable(card, roomData)) {
-        roomData.players.get(roomData.turn.current).cardsLeft--;
-        playCard(card, roomData)
-        const playersInfo = mapPlayerInfo(roomData.players);
 
-        // Remove card from hand and sent it out
-        let indexToRemove = roomData.players.get(roomData.turn.current).hand.indexOf(card);
-        roomData.players.get(roomData.turn.current).hand.splice(indexToRemove, 1);
-        io.to(socket.id).emit("playable", roomData.players.get(roomData.turn.current).hand)
-
-
-        // Set next turn
-        roomData.turn.current = roomData.turn.next;
-        roomData.turn.next = nextPlayer(roomData);
-
-        // Send out new game info
-        const gameInfo = {
-          playersInfo,
-          turn: roomData.turn,
-          board: roomData.board
-        };
-        io.to(roomID).emit("gameInfo", gameInfo);
-
-      } else {
-        io.to(socket.id).emit("notPlayable")
-      }
-    } else {
-      io.to(socket.id).emit("outOfTurn")
-    }
-
-  });
-
-  socket.on("skipTurn", (card) => {
-    const roomID = PlayerRooms.get(socket.id)
-    const roomData = Rooms.get(roomID)
-    if (socket.id == roomData.turn.current) {
-      if (possibleSkip(roomData, socket.id)) {
-
-        // Set next turn
-        roomData.turn.current = roomData.turn.next;
-        roomData.turn.next = nextPlayer(roomData);
-
-        // Send out new game info
-        const playersInfo = mapPlayerInfo(roomData.players);
-        const gameInfo = {
-          playersInfo,
-          turn: roomData.turn,
-          board: roomData.board
-        };
-        io.to(roomID).emit("gameInfo", gameInfo);
-      } else {
-        io.to(socket.id).emit("noSkip")
-      }
-
-    } else {
-      io.to(socket.id).emit("outOfTurn")
-    }
-  });
+    call7Move(roomData, data, socket.id, io, roomID);
+  })
 
   socket.on("31Move", (data) => {
     console.log(data)
     const roomID = PlayerRooms.get(socket.id)
     const roomData = Rooms.get(roomID)
 
-    cal31Move(roomData, data, socket.id, io, roomID);
+    call31Move(roomData, data, socket.id, io, roomID);
   })
 
   socket.on("500Move", (data) => {

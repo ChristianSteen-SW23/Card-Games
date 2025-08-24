@@ -35,12 +35,6 @@ function App() {
             newHand.sort((a, b) => a - b)
             setHand(newHand);
         }
-        function outOfTurnFunc() {
-            alert("Not your turn...")
-        }
-        function notPlayableFunc() {
-            alert("You can not play that card")
-        }
         function playableFunc(data) {
             console.log(data)
             let newHand = data;
@@ -49,9 +43,6 @@ function App() {
         }
         function gameInfoFunc(data) {
             setLobbyState(data)
-        }
-        function noSkipFunc() {
-            alert("You can play a card. Please stop the cheating")
         }
         function startedGameFunc31(data) {
             setLobbyState(data)
@@ -68,24 +59,18 @@ function App() {
         socket.on('startedGame7', startedGameFunc7);
         socket.on('startedGame31', startedGameFunc31);
         socket.on('handInfo', handInfoFunc);
-        socket.on('outOfTurn', outOfTurnFunc);
-        socket.on('notPlayable', notPlayableFunc);
         socket.on('playable', playableFunc);
         socket.on('gameInfo', gameInfoFunc);
-        socket.on('noSkip', noSkipFunc);
         socket.on('startedGame500', startedGameFunc500);
         return () => {
-            socket.off('disconnect', onDisconnect);
+            socket.off("disconnect", onDisconnect);
             socket.off("leaveLobby");
             socket.off("conToLobby");
             socket.off("startedGame7");
             socket.off("startedGame31");
             socket.off("handInfo");
-            socket.off("outOfTurn");
-            socket.off("notPlayable");
             socket.off("playable");
             socket.off("gameInfo");
-            socket.off("noSkip");
             socket.off("startedGame500");
         };
     }, []);
