@@ -14,7 +14,8 @@ import {
   dealCards as dealCards7,
   cardPlayable,
   playCard,
-  possibleSkip
+  possibleSkip,
+  start7Game
 } from "./gamelogic/Battle7.js";
 import {
   dealCards31,
@@ -98,33 +99,11 @@ io.on("connection", (socket) => {
     const roomID = PlayerRooms.get(socket.id);
     const roomData = Rooms.get(roomID);
 
-    let startedGameData;
-    let playersInfo;
+
 
     switch (gameMode) {
       case "7":
-        roomData.turn.current = socket.id;
-        roomData.turn.next = nextPlayer(roomData);
-        roomData.gameStarted = true;
-
-        dealCards7(roomData)
-        roomData.turn.current = roomData.startingPlayerID
-        roomData.turn.next = nextPlayer(roomData);
-
-        // Gives players their hand
-        for (let [playerid, player] of roomData.players.entries()) {
-          player.cardsLeft = player.hand.length;
-          io.to(playerid).emit("handInfo", player.hand);
-        }
-
-        playersInfo = mapPlayerInfo(roomData.players);
-        startedGameData = {
-          playersInfo,
-          turn: roomData.turn,
-          board: roomData.board
-        };
-        io.to(roomID).emit("startedGame7", startedGameData);
-        console.log("Started game 7 made by", socket.id);
+        start7Game(roomData, socket.id, io, roomID);
         break;
       case "31":
         start31Game(roomData, socket.id, io, roomID)

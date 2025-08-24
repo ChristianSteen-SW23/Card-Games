@@ -1,4 +1,32 @@
-export { mapPlayerInfo, nextPlayer, switchRoles, dealCards, playCard, cardPlayable, possibleSkip };
+export { mapPlayerInfo, nextPlayer, switchRoles, dealCards, playCard, cardPlayable, possibleSkip, start7Game };
+
+function start7Game(roomData, socketID, io, roomID) {
+    let startedGameData;
+    let playersInfo;
+    roomData.turn.current = socketID;
+    roomData.turn.next = nextPlayer(roomData);
+    roomData.gameStarted = true;
+
+    dealCards(roomData)
+    roomData.turn.current = roomData.startingPlayerID
+    roomData.turn.next = nextPlayer(roomData);
+
+    // Gives players their hand
+    for (let [playerid, player] of roomData.players.entries()) {
+        player.cardsLeft = player.hand.length;
+        io.to(playerid).emit("handInfo", player.hand);
+    }
+
+    playersInfo = mapPlayerInfo(roomData.players);
+    startedGameData = {
+        playersInfo,
+        turn: roomData.turn,
+        board: roomData.board
+    };
+    io.to(roomID).emit("startedGame7", startedGameData);
+    console.log("Started game 7 made by", socketID);
+}
+
 
 function mapPlayerInfo(map) {
     let array = [];
