@@ -1,4 +1,4 @@
-export { mapPlayerInfo, nextPlayer, switchRoles, dealCards, playCard, cardPlayable, possibleSkip, start7Game };
+export { mapPlayerInfo, nextPlayer, switchRoles, dealCards, playCard, cardPlayable, possibleSkip, start7Game, call7Move };
 
 function start7Game(roomData, socketID, io, roomID) {
     let startedGameData;
@@ -27,6 +27,68 @@ function start7Game(roomData, socketID, io, roomID) {
     console.log("Started game 7 made by", socketID);
 }
 
+function call7Move(roomData, socketData, playerID, io, roomID) {
+    let moveType = socketData.moveType;
+    //const roomID = PlayerRooms.get(socket.id)
+    //const roomData = Rooms.get(roomID)
+    switch (moveType) {
+        case "skipTurn":
+            if (playerID == roomData.turn.current) {
+                if (possibleSkip(roomData, playerID)) {
+
+                    // Set next turn
+                    roomData.turn.current = roomData.turn.next;
+                    roomData.turn.next = nextPlayer(roomData);
+
+                    // Send out new game info
+                    const playersInfo = mapPlayerInfo(roomData.players);
+                    const gameInfo = {
+                        playersInfo,
+                        turn: roomData.turn,
+                        board: roomData.board
+                    };
+                    io.to(roomID).emit("gameInfo", gameInfo);
+                } else {
+                    io.to(playerID).emit("noSkip")
+                }
+
+            } else {
+                io.to(playerID).emit("outOfTurn")
+            }
+            break;
+        case "playCard":
+            if (playerID == roomData.turn.current) {
+                const card = socketData.card;
+                if (cardPlayable(card, roomData)) {
+                    roomData.players.get(roomData.turn.current).cardsLeft--;
+                    playCard(card, roomData)
+                    const playersInfo = mapPlayerInfo(roomData.players);
+
+                    // Remove card from hand and sent it out
+                    let indexToRemove = roomData.players.get(roomData.turn.current).hand.indexOf(card);
+                    roomData.players.get(roomData.turn.current).hand.splice(indexToRemove, 1);
+                    io.to(playerID).emit("playable", roomData.players.get(roomData.turn.current).hand)
+
+                    // Set next turn
+                    roomData.turn.current = roomData.turn.next;
+                    roomData.turn.next = nextPlayer(roomData);
+
+                    // Send out new game info
+                    const gameInfo = {
+                        playersInfo,
+                        turn: roomData.turn,
+                        board: roomData.board
+                    };
+                    io.to(roomID).emit("gameInfo", gameInfo);
+                } else {
+                    io.to(playerID).emit("notPlayable")
+                }
+            } else {
+                io.to(playerID).emit("outOfTurn")
+            }
+            break;
+    }
+}
 
 function mapPlayerInfo(map) {
     let array = [];

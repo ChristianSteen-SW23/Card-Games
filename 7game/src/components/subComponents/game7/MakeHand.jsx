@@ -14,7 +14,7 @@ export default function MakeHand({ hand, setHand }) {
                         <CalNeedCard card={card} />
                     )}
                     <li>
-                        <div className="playingCards fourColours" onClick={() => socket.emit("skipTurn")}>
+                        <div className="playingCards fourColours" onClick={() => socket.emit("7Move", { moveType: "skipTurn" })}>
                             <div className="card little joker">
                                 <span className="rank">&nbsp;&nbsp;&nbsp;Skip </span>
                                 <span class="suit">Joker</span>
@@ -87,7 +87,7 @@ function CalNeedCard({ card }) {
     }
 
     function playCard() {
-        socket.emit("playCard", card)
+        socket.emit("7Move", { card: card, moveType: "playCard" });
     }
     return (
         <li>

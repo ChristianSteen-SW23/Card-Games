@@ -1,6 +1,6 @@
 import { nextPlayer } from "./Battle7.js";
 import { Server } from "socket.io";
-export { dealCards31, mapPlayerInfo31, cal31Move, start31Game };
+export { dealCards31, mapPlayerInfo31, call31Move, start31Game };
 import { deleteLobby } from "../Lobby.js";
 
 
@@ -45,7 +45,7 @@ function outOfTurn(roomData, socketID, io) {
     }
 }
 
-function cal31Move(roomData, socketData, socketID, io, roomID) {
+function call31Move(roomData, socketData, socketID, io, roomID) {
     let playerData = roomData.players.get(socketID);
     let playersInfo;
     let startedGameData;

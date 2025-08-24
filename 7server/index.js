@@ -15,12 +15,13 @@ import {
   cardPlayable,
   playCard,
   possibleSkip,
-  start7Game
+  start7Game,
+  call7Move
 } from "./gamelogic/Battle7.js";
 import {
   dealCards31,
   mapPlayerInfo31,
-  cal31Move,
+  call31Move,
   start31Game
 } from "./gamelogic/Battle31.js";
 import {
@@ -93,14 +94,11 @@ io.on("connection", (socket) => {
       socket.emit("roomNotExist");
     }
   });
-  //7---------------------------------------------------------------------------------------------------------------------------------------------------------
+
   //Listens for a 'startGame' event and either emits a 'startedGame' event to all clients in a room if conditions are met, or sends a 'cantStartGame' event to the initiating client if not.
   socket.on("startGame", (gameMode) => {
     const roomID = PlayerRooms.get(socket.id);
     const roomData = Rooms.get(roomID);
-
-
-
     switch (gameMode) {
       case "7":
         start7Game(roomData, socket.id, io, roomID);
@@ -112,9 +110,6 @@ io.on("connection", (socket) => {
         start500Game(roomData, socket.id, io, roomID)
         break;
     }
-    // console.log(Rooms)
-    // console.log("\n\n\n")
-    // console.log(PlayerRooms)
   });
 
   socket.on("playCard", (card) => {
@@ -180,12 +175,20 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("7Move", (data) => {
+    console.log(data)
+    const roomID = PlayerRooms.get(socket.id)
+    const roomData = Rooms.get(roomID)
+
+    call7Move(roomData, data, socket.id, io, roomID);
+  })
+
   socket.on("31Move", (data) => {
     console.log(data)
     const roomID = PlayerRooms.get(socket.id)
     const roomData = Rooms.get(roomID)
 
-    cal31Move(roomData, data, socket.id, io, roomID);
+    call31Move(roomData, data, socket.id, io, roomID);
   })
 
   socket.on("500Move", (data) => {
