@@ -1,4 +1,41 @@
-export { createLobbyID, createLobby, joinLobby, leaveLobby, deleteLobby, shouldStartGame, mapToArrayObj, isUsernameValid };
+export { createLobbyID, createLobby, joinLobby, leaveLobby, deleteLobby, shouldStartGame, mapToArrayObj, isUsernameValid, lobbyController };
+import { sendErrorMessage } from "./lib/InfoMessage.js";
+import { Rooms, PlayerRooms } from "./index.js";
+//* =================================================== Event controller =============================================================== *\\
+
+function lobbyController(socketData, io, socket) {
+    const type = socketData.eventType;
+    switch (type) {
+        case "joinLobby":
+            joinLobbyController(socketData, socket, io);
+            break;
+        case "createLobby":
+            if (!isUsernameValid(socketData.username)) return sendErrorMessage(socket.id, io, "Invalided user name", "Lobby")
+            const createLobbyObj = createLobby(socket, socketData.username, Rooms, PlayerRooms);
+            socket.emit("conToLobby", createLobbyObj);
+            break;
+    }
+}
+
+function joinLobbyController(joined, socket, io) {
+    const roomID = `/${joined.id}`;
+    const roomData = Rooms.get(roomID);
+    if (roomData === undefined) return sendErrorMessage(socket.id, io, "Lobby code does not exit", "Lobby");
+    if (roomData && roomData.gameStarted) return sendErrorMessage(socket.id, io, "The lobby has start their game", "Lobby");
+    if (!isUsernameValid(joined.name)) return sendErrorMessage(socket.id, io, "Invalided user name", "Lobby");
+
+    const playersArr = joinLobby(joined, roomID, socket, Rooms, PlayerRooms);
+    socket.to(roomID).emit("playerHandler", playersArr);
+
+    //Adds the current settings to the Object for the joining player
+    const joinedreturnData = {
+        id: joined.id,
+        players: playersArr,
+    };
+    socket.emit("conToLobby", joinedreturnData);
+    console.log(joined.name, "/", socket.id, "has joined the lobby with id:", roomID);
+}
+
 
 //* =================================================== host lobby =============================================================== *\\
 function createLobby(socket, displayName, Rooms, PlayerRooms) {

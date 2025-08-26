@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import path from "path";
 import { Server } from "socket.io";
 import {
+  lobbyController,
   createLobby,
   joinLobby,
   deleteLobby,
@@ -13,8 +14,6 @@ import {
   call7Move
 } from "./gamelogic/Battle7.js";
 import {
-  dealCards31,
-  mapPlayerInfo31,
   call31Move,
   start31Game
 } from "./gamelogic/Battle31.js";
@@ -54,41 +53,10 @@ io.on("connection", (socket) => {
   });
 
   //* ================================================= Lobby Handler ======================================================== *\\
-  socket.on("createLobby", (username) => {
-    if (isUsernameValid(username)) {
-      console.log("Lobby was created by", socket.id);
-      const createLobbyObj = createLobby(socket, username, Rooms, PlayerRooms);
-      socket.emit("conToLobby", createLobbyObj);
-    } else {
-      socket.emit("invalidUsername");
-    }
+  socket.on(("lobbyControl"), (data) => {
+    console.log(data);
+    lobbyController(data, io, socket);
   });
-
-  socket.on("joinLobby", (joined) => {
-    const roomID = `/${joined.id}`;
-    const roomData = Rooms.get(roomID);
-    if (roomData && !roomData.gameStarted) {
-      if (isUsernameValid(joined.name)) {
-        const playersArr = joinLobby(joined, roomID, socket, Rooms, PlayerRooms);
-        socket.to(roomID).emit("playerHandler", playersArr);
-
-        //Adds the current settings to the Object for the joining player
-        const joinedreturnData = {
-          id: joined.id,
-          players: playersArr,
-        };
-        socket.emit("conToLobby", joinedreturnData);
-        console.log(joined.name, "/", socket.id, "has joined the lobby with id:", roomID);
-      } else {
-        socket.emit("invalidUsername");
-      }
-    } else if (roomData && !roomData.gameStarted) {
-      socket.emit("roomFull");
-    } else {
-      socket.emit("roomNotExist");
-    }
-  });
-
 
   //* ================================================= Game Logic Handler ======================================================== *\\
   //Listens for a 'startGame' event and either emits a 'startedGame' event to all clients in a room if conditions are met, or sends a 'cantStartGame' event to the initiating client if not.
@@ -114,7 +82,7 @@ io.on("connection", (socket) => {
     const roomData = Rooms.get(roomID)
 
     call7Move(roomData, data, socket.id, io, roomID);
-  })
+  });
 
   socket.on("31Move", (data) => {
     console.log(data)
@@ -122,7 +90,7 @@ io.on("connection", (socket) => {
     const roomData = Rooms.get(roomID)
 
     call31Move(roomData, data, socket.id, io, roomID);
-  })
+  });
 
   socket.on("500Move", (data) => {
     console.log(data)
@@ -130,8 +98,8 @@ io.on("connection", (socket) => {
     const roomData = Rooms.get(roomID)
 
     call500Move(roomData, data, socket.id, io, roomID);
-
   });
+
 });
 
 // Start application server

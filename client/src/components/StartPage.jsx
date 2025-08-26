@@ -1,22 +1,38 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { socket } from "../socket";
+import Popup from "./subComponents/helperComponents/Popup";
 
 export default function StartPage() {
+    const popupRef = useRef();
+
+    useEffect(() => {
+        function errorMessage(data) {
+            popupRef.current.show(`Error ${data.type}: ${data.message}`, "error");
+        }
+        socket.on("errorMessage", errorMessage);
+        return () => {
+            socket.off("errorMessage");
+        };
+    }, []);
+
     return (
-        <div className="container text-center">
-            <h1 className="p-4 text-center">Card Games</h1>
-            <h4 className="p-1 text-center">Game modes are:</h4>
-            <h4 className="p-1 text-center">7 | 31 | 500</h4>
-            <div className="p-5"></div>
-            <div className="row justify-content-md-center">
-                <div className="d-grid gap-2 col-6">
-                    <JoinGameModalButton />
-                </div>
-                <div className="d-grid gap-2 col-6">
-                    <HostGameModalButton />
+        <>
+            <div className="container text-center">
+                <h1 className="p-4 text-center">Card Games</h1>
+                <h4 className="p-1 text-center">Game modes are:</h4>
+                <h4 className="p-1 text-center">7 | 31 | 500</h4>
+                <div className="p-5"></div>
+                <div className="row justify-content-md-center">
+                    <div className="d-grid gap-2 col-6">
+                        <JoinGameModalButton />
+                    </div>
+                    <div className="d-grid gap-2 col-6">
+                        <HostGameModalButton />
+                    </div>
                 </div>
             </div>
-        </div>
+            <Popup ref={popupRef} duration={5000} />
+        </>
     );
 }
 
@@ -24,7 +40,7 @@ function HostGameModalButton() {
     const [displayName, setDisplayName] = useState("");
 
     function hostGame() {
-        socket.emit("createLobby", displayName);
+        socket.emit("lobbyControl", { eventType: "createLobby", username: displayName });
     }
 
     return (
@@ -102,7 +118,7 @@ function JoinGameModalButton() {
     const [gameCode, setGameCode] = useState("");
 
     function joinGame() {
-        socket.emit("joinLobby", { name: displayName, id: gameCode });
+        socket.emit("lobbyControl", { eventType: "joinLobby", name: displayName, id: gameCode });
     }
 
     return (
