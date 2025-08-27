@@ -13,10 +13,8 @@ function start7Game(roomData, socketID, io, roomID) {
     roomData.turn.next = nextPlayer(roomData);
 
     // Gives players their hand
-    for (let [playerid, player] of roomData.players.entries()) {
+    for (let [playerid, player] of roomData.players.entries())
         player.cardsLeft = player.hand.length;
-        io.to(playerid).emit("handInfo", player.hand);
-    }
 
     playersInfo = mapPlayerInfo(roomData.players);
     startedGameData = {
@@ -24,7 +22,11 @@ function start7Game(roomData, socketID, io, roomID) {
         turn: roomData.turn,
         board: roomData.board
     };
-    io.to(roomID).emit("startedGame7", startedGameData);
+
+    for (let [playerid, player] of roomData.players.entries()) {
+        io.to(playerid).emit("startedGame7", { ...startedGameData, handInfo: player.hand });
+    }
+
     console.log("Started game 7 made by", socketID);
 }
 
@@ -33,23 +35,19 @@ function call7Move(roomData, socketData, playerID, io, roomID) {
     if (playerID != roomData.turn.current) return sendErrorMessage(playerID, io, "It is not your turn", "Out of turn");
     switch (moveType) {
         case "skipTurn":
-            if (possibleSkip(roomData, playerID)) {
+            if (!possibleSkip(roomData, playerID)) return sendErrorMessage(playerID, io, "You can play a card. Please stop the cheating", "Card playable");
+            // Set next turn
+            roomData.turn.current = roomData.turn.next;
+            roomData.turn.next = nextPlayer(roomData);
 
-                // Set next turn
-                roomData.turn.current = roomData.turn.next;
-                roomData.turn.next = nextPlayer(roomData);
-
-                // Send out new game info
-                const playersInfo = mapPlayerInfo(roomData.players);
-                const gameInfo = {
-                    playersInfo,
-                    turn: roomData.turn,
-                    board: roomData.board
-                };
-                io.to(roomID).emit("gameInfo", gameInfo);
-            } else {
-                sendErrorMessage(playerID, io, "You can play a card. Please stop the cheating", "Card playable");
-            }
+            // Send out new game info
+            const playersInfo = mapPlayerInfo(roomData.players);
+            const gameInfo = {
+                playersInfo,
+                turn: roomData.turn,
+                board: roomData.board
+            };
+            io.to(roomID).emit("gameInfo", gameInfo);
             break;
         case "playCard":
             const card = socketData.card;

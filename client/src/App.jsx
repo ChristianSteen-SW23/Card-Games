@@ -11,7 +11,6 @@ function App() {
     const [tempData, setTempData] = useState({});
     const [lobbyState, setLobbyState] = useState({});
     const [currentPage, setCurrentPage] = useState('StartPage');
-    const [hand, setHand] = useState([]);
 
     useEffect(() => {
         function onDisconnect() {
@@ -26,26 +25,11 @@ function App() {
             setCurrentPage('Lobby')
         }
         function startedGameFunc7(data) {
-            setLobbyState(data)
+            setTempData(data)
             setCurrentPage('GameMode: 7')
         }
-        function handInfoFunc(data) {
-            console.log(data)
-            let newHand = data;
-            newHand.sort((a, b) => a - b)
-            setHand(newHand);
-        }
-        function playableFunc(data) {
-            console.log(data)
-            let newHand = data;
-            newHand.sort((a, b) => a - b)
-            setHand(newHand);
-        }
-        function gameInfoFunc(data) {
-            setLobbyState(data)
-        }
         function startedGameFunc31(data) {
-            setLobbyState(data)
+            setTempData(data)
             setCurrentPage('GameMode: 31')
         }
         function startedGameFunc500(data) {
@@ -58,9 +42,6 @@ function App() {
         socket.on('conToLobby', conToLobbyFunc);
         socket.on('startedGame7', startedGameFunc7);
         socket.on('startedGame31', startedGameFunc31);
-        socket.on('handInfo', handInfoFunc);
-        socket.on('playable', playableFunc);
-        socket.on('gameInfo', gameInfoFunc);
         socket.on('startedGame500', startedGameFunc500);
         return () => {
             socket.off("disconnect", onDisconnect);
@@ -68,9 +49,6 @@ function App() {
             socket.off("conToLobby");
             socket.off("startedGame7");
             socket.off("startedGame31");
-            socket.off("handInfo");
-            socket.off("playable");
-            socket.off("gameInfo");
             socket.off("startedGame500");
         };
     }, []);
@@ -81,9 +59,9 @@ function App() {
         case 'Lobby':
             return <Lobby lobbyState={lobbyState} />
         case 'GameMode: 31':
-            return <GamePage31 lobbyState={lobbyState} hand={hand} setHand={setHand} />
+            return <GamePage31 lobbyStateStart={tempData} />
         case 'GameMode: 7':
-            return <GamePage7 lobbyState={lobbyState} hand={hand} setHand={setHand} />
+            return <GamePage7 lobbyStateStart={tempData} />
         case 'GameMode: 500':
             return <GamePage500 startingTurn={tempData.turn} startHand={tempData.hand} startPlayerInfo={tempData.playersInfo} startStackTop={tempData.stack} startStackSize={tempData.stackSize} deckSizeStart={tempData.deckSize} />
         default:

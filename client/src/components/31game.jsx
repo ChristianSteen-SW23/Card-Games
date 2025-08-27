@@ -5,11 +5,12 @@ import MakeBoard31 from "./subComponents/game31/MakeBoard31"
 import MakeHand31 from "./subComponents/game31/MakeHand31";
 
 
-export default function GamePage31({ lobbyState, hand, setHand }) {
+export default function GamePage31({ lobbyStateStart }) {
     const [winPop, setWinPop] = useState(false);
     const [winData, setWinData] = useState([]);
     const [pickedCard, setPickedCard] = useState(-1);
     const [mustPickCard, setMustPickCard] = useState(false);
+    const [hand, setHand] = useState([]);
 
     useEffect(() => {
         function elseKnockedFunc() {
@@ -80,10 +81,10 @@ export default function GamePage31({ lobbyState, hand, setHand }) {
                 <div className="row p-3"></div>
                 <div className="row">
                     <div className="col-4">
-                        <InGamePlayerList31 lobbyState={lobbyState} />
+                        <InGamePlayerList31 lobbyState={lobbyStateStart} />
                     </div>
                     <div className="col-8">
-                        <MakeBoard31 stack={lobbyState.stack} pickedCard={pickedCard} mustPickCard={mustPickCard} />
+                        <MakeBoard31 stack={lobbyStateStart.stack} pickedCard={pickedCard} mustPickCard={mustPickCard} />
                     </div>
                 </div>
                 <div className="row">
