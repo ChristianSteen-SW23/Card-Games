@@ -1,5 +1,5 @@
 import React, { useState, useRef, useImperativeHandle, forwardRef } from "react";
-import "./../../../Popup.css"; // We'll move the styles here
+import "./../../../css/Popup.css"; // We'll move the styles here
 
 const Popup = forwardRef(({ message: defaultMessage = "Saved!", type: defaultType = "", duration = 3000 }, ref) => {
     const [visible, setVisible] = useState(false);

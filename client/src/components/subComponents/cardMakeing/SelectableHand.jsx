@@ -1,3 +1,6 @@
+import { getSetting } from "../../../js/settings";
+const useFourColours = getSetting("fourColours");
+
 export default function SelectableHand({ initialHand, selectedCards, setSelectedCards }) {
 
     function toggleCardSelection(card) {
@@ -15,7 +18,7 @@ export default function SelectableHand({ initialHand, selectedCards, setSelected
     return (
         <>
             {/*<div className="playingCards rotateHand fourColours">*/}
-            <div className="playingCards fourColours">
+            <div className={`playingCards ${useFourColours ? "fourColours" : ""}`}>
                 <ul className="hand">
                     {initialHand?.map((card, index) => (
                         <li key={card} onClick={() => toggleCardSelection(card)}>

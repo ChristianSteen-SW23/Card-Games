@@ -4,6 +4,7 @@ import BottomOfScreen from "./subComponents/game500/BottomOfScreen";
 import PlayersPage from "./subComponents/game500/PlayersPage";
 import GameDoneModal from "./subComponents/game500/GameDoneModal";
 import Popup from "./subComponents/helperComponents/Popup";
+import { getSetting } from "../js/settings";
 
 export default function GamePage500({ startHand, startPlayerInfo, startStackTop, startStackSize, startingTurn, deckSizeStart }) {
     const popupRef = useRef();
@@ -103,7 +104,7 @@ export default function GamePage500({ startHand, startPlayerInfo, startStackTop,
                 popupRef={popupRef}
             />
 
-            <Popup ref={popupRef} duration={5000} />
+            <Popup ref={popupRef} duration={getSetting("popupTime")} />
 
             <GameDoneModal winPop={winPop} winData={winData} />
 

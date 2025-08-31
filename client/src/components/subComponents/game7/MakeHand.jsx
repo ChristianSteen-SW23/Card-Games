@@ -2,6 +2,9 @@ import { useState } from "react";
 import { socket } from "../../../socket";
 import MakeCardWithSuit from "./MakeCardWithSuit";
 import MakeCard from "./MakeCard";
+import { getSetting } from "../../../js/settings";
+
+const useFourColours = getSetting("fourColours");
 
 export default function MakeHand({ hand, setHand }) {
     return (
@@ -14,10 +17,10 @@ export default function MakeHand({ hand, setHand }) {
                         <CalNeedCard card={card} />
                     )}
                     <li>
-                        <div className="playingCards fourColours" onClick={() => socket.emit("7Move", { moveType: "skipTurn" })}>
+                        <div className={`playingCards ${useFourColours ? "fourColours" : ""}`} onClick={() => socket.emit("7Move", { moveType: "skipTurn" })}>
                             <div className="card little joker">
                                 <span className="rank">&nbsp;&nbsp;&nbsp;Skip </span>
-                                <span class="suit">Joker</span>
+                                <span className="suit">Joker</span>
                             </div>
                         </div>
                     </li>
@@ -92,7 +95,6 @@ function CalNeedCard({ card }) {
     return (
         <li>
             <div onClick={playCard}><MakeCard suit={suit} rank={rank} /></div>
-
         </li>
     )
 }

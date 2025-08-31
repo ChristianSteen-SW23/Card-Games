@@ -1,7 +1,11 @@
+import { getSetting } from "../../../js/settings";
+
+const useFourColours = getSetting("fourColours");
+
 export function CurvedHand({ hand }) {
     return (
         <>
-            <div className="playingCards rotateHand fourColours">
+            <div className={`playingCards rotateHand ${useFourColours ? "fourColours" : ""}`}>
                 <ul className="hand">
                     {hand?.map((card, index) => (
                         <li key={card}>

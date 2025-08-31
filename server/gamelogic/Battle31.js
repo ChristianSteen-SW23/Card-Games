@@ -57,7 +57,7 @@ function call31Move(roomData, socketData, socketID, io, roomID) {
                 for (let [playerid, player] of roomData.players.entries()) {
                     player.hand = [];
                 }
-                start31Game(roomData, socketID, io, roomID)
+                start31Game(roomData, socketID, io, roomID);
                 io.to(roomID).emit("New31Game");
             } else {
                 deleteLobby(roomID, io);
@@ -92,7 +92,7 @@ function call31Move(roomData, socketData, socketID, io, roomID) {
                 stack: roomData.stack[roomData.stack.length - 1],
                 endPlayer: roomData.endPlayer
             };
-            io.to(roomID).emit("startedGame31", startedGameData);
+            io.to(roomID).emit("gameInfo", startedGameData);
             break;
         case "swap":
             if (outOfTurn(roomData, socketID, io)) return
@@ -113,7 +113,7 @@ function call31Move(roomData, socketData, socketID, io, roomID) {
                 stack: roomData.stack[roomData.stack.length - 1],
                 endPlayer: roomData.endPlayer
             };
-            io.to(roomID).emit("startedGame31", startedGameData);
+            io.to(roomID).emit("gameInfo", startedGameData);
             break;
         case "Knock":
             if (outOfTurn(roomData, socketID, io)) return
@@ -134,7 +134,7 @@ function call31Move(roomData, socketData, socketID, io, roomID) {
                 stack: roomData.stack[roomData.stack.length - 1],
                 endPlayer: roomData.endPlayer
             };
-            io.to(roomID).emit("startedGame31", startedGameData);
+            io.to(roomID).emit("gameInfo", startedGameData);
             break;
     }
     if (calPointForOne(playerData.hand) == 31) {
@@ -149,7 +149,7 @@ function sendWinner(roomData, roomID, io) {
     let winnerData = calculatePoints(roomData, roomID, io)
     winnerData = winnerData.sort((a, b) => b.point - a.point);
     io.to(roomID).emit("GameOver31", winnerData);
-    console.log(winnerData)
+    //console.log(winnerData)
     //deleteLobby(roomID, io);
 }
 
@@ -184,7 +184,6 @@ function calPointForOne(hand) {
 function start31Game(roomData, socketID, io, roomID) {
     roomData.turn.current = socketID;
     roomData.turn.next = nextPlayer(roomData);
-    roomData.gameStarted = true;
     dealCards31(roomData);
 
     roomData.endPlayer = null;
@@ -197,7 +196,13 @@ function start31Game(roomData, socketID, io, roomID) {
         endPlayer: roomData.endPlayer
     };
 
+    if (roomData.gameStarted != true) {
+        io.to(roomID).emit("startedGame31", startedGameData);
+        roomData.gameStarted = true;
+        console.log("Started game 31 made by", socketID);
+    } else {
+        io.to(roomID).emit("gameInfo", startedGameData);
+        console.log("Play again 31 game by", socketID);
 
-    io.to(roomID).emit("startedGame31", startedGameData);
-    console.log("Started game 31 made by", socketID);
+    }
 }

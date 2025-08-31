@@ -1,19 +1,23 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { socket } from "./../socket";
 import InGamePlayerList31 from "./subComponents/game31/InGamePlayerList31";
 import MakeBoard31 from "./subComponents/game31/MakeBoard31"
 import MakeHand31 from "./subComponents/game31/MakeHand31";
+import Popup from "./subComponents/helperComponents/Popup";
+import { getSetting } from "../js/settings";
 
-
-export default function GamePage31({ lobbyState, hand, setHand }) {
+export default function GamePage31({ lobbyStateStart }) {
+    const popupRef = useRef();
+    const [lobbyState, setLobbyState] = useState(lobbyStateStart);
     const [winPop, setWinPop] = useState(false);
     const [winData, setWinData] = useState([]);
     const [pickedCard, setPickedCard] = useState(-1);
     const [mustPickCard, setMustPickCard] = useState(false);
+    const [hand, setHand] = useState([]);
 
     useEffect(() => {
         function elseKnockedFunc() {
-            alert("You can not knock, someone else have knocked")
+            popupRef.current.show(`Error Not Possible: You can not knock, someone have knocked`, "error");
         }
 
         function GameOver31Func(data) {
@@ -34,6 +38,7 @@ export default function GamePage31({ lobbyState, hand, setHand }) {
             setHand(newHand);
             if (pickedCard == 3) setPickedCard(-1);
             setMustPickCard(false)
+            console.log("new hand" + data)
         }
 
         function New31GameFunc() {
@@ -41,11 +46,18 @@ export default function GamePage31({ lobbyState, hand, setHand }) {
             socket.emit("31Move", { moveType: "ReadyForHand" });
         }
 
+        function gameInfoFunc(data) {
+            setLobbyState(data);
+            if (socket.id == data.turn.current)
+                popupRef.current.show("It is your turn🥳", "success");
+        }
+
         socket.on('elseKnocked', elseKnockedFunc);
         socket.on('GameOver31', GameOver31Func);
         socket.on('MustDrawFromHand', MustDrawFromHandFunc);
         socket.on('hand31', hand31Func);
         socket.on('New31Game', New31GameFunc);
+        socket.on('gameInfo', gameInfoFunc);
 
         return () => {
             socket.off("elseKnocked");
@@ -53,6 +65,7 @@ export default function GamePage31({ lobbyState, hand, setHand }) {
             socket.off('MustDrawFromHand');
             socket.off("hand31");
             socket.off("New31Game");
+            socket.off("gameInfo");
         };
     }, []);
 
@@ -123,9 +136,9 @@ export default function GamePage31({ lobbyState, hand, setHand }) {
                         </div>
                         <div className='modal-footer'>
                             <button type="button" className="btn btn-success" data-bs-dismiss="modal"
-                                onClick={() => { socket.emit("31Move", { moveType: "NewGame", data: true }); console.log("Hejsss") }}>Play again?</button>
+                                onClick={() => { socket.emit("31Move", { moveType: "NewGame", data: true }) }}>Play again?</button>
                             <button type="button" className="btn btn-danger" data-bs-dismiss="modal"
-                                onClick={() => { socket.emit("31Move", { moveType: "NewGame", data: false }); console.log("Hejssssss") }}>Leave lobby</button>
+                                onClick={() => { socket.emit("31Move", { moveType: "NewGame", data: false }) }}>Leave lobby</button>
                         </div>
                     </div>
                 </div>
@@ -133,6 +146,7 @@ export default function GamePage31({ lobbyState, hand, setHand }) {
             {(winPop == true) && (
                 <div className="modal-backdrop fade show" />
             )}
+            <Popup ref={popupRef} duration={getSetting("popupTime")} />
         </>
     );
 }
