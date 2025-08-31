@@ -9,7 +9,6 @@ import GamePage500 from './components/500game.jsx';
 
 function App() {
     const [tempData, setTempData] = useState({});
-    const [lobbyState, setLobbyState] = useState({});
     const [currentPage, setCurrentPage] = useState('StartPage');
 
     useEffect(() => {
@@ -21,7 +20,7 @@ function App() {
             setCurrentPage('StartPage')
         }
         function conToLobbyFunc(data) {
-            setLobbyState(data);
+            setTempData(data);
             setCurrentPage('Lobby')
         }
         function startedGameFunc7(data) {
@@ -57,7 +56,7 @@ function App() {
         case 'StartPage':
             return <StartPage />
         case 'Lobby':
-            return <Lobby lobbyState={lobbyState} />
+            return <Lobby lobbyState={tempData} />
         case 'GameMode: 31':
             return <GamePage31 lobbyStateStart={tempData} />
         case 'GameMode: 7':

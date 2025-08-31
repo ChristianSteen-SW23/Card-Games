@@ -48,7 +48,7 @@ io.on("connection", (socket) => {
       const roomData = Rooms.get(roomID);
 
       socket.to(roomID).emit("leaveLobby");
-      deleteLobby(roomID, io, Rooms, PlayerRooms);
+      deleteLobby(roomID, io);
     }
   });
 

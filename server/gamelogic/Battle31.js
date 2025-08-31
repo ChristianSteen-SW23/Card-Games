@@ -92,7 +92,7 @@ function call31Move(roomData, socketData, socketID, io, roomID) {
                 stack: roomData.stack[roomData.stack.length - 1],
                 endPlayer: roomData.endPlayer
             };
-            io.to(roomID).emit("startedGame31", startedGameData);
+            io.to(roomID).emit("gameInfo", startedGameData);
             break;
         case "swap":
             if (outOfTurn(roomData, socketID, io)) return
@@ -113,7 +113,7 @@ function call31Move(roomData, socketData, socketID, io, roomID) {
                 stack: roomData.stack[roomData.stack.length - 1],
                 endPlayer: roomData.endPlayer
             };
-            io.to(roomID).emit("startedGame31", startedGameData);
+            io.to(roomID).emit("gameInfo", startedGameData);
             break;
         case "Knock":
             if (outOfTurn(roomData, socketID, io)) return
@@ -134,7 +134,7 @@ function call31Move(roomData, socketData, socketID, io, roomID) {
                 stack: roomData.stack[roomData.stack.length - 1],
                 endPlayer: roomData.endPlayer
             };
-            io.to(roomID).emit("startedGame31", startedGameData);
+            io.to(roomID).emit("gameInfo", startedGameData);
             break;
     }
     if (calPointForOne(playerData.hand) == 31) {
