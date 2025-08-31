@@ -4,7 +4,7 @@ import InGamePlayerList31 from "./subComponents/game31/InGamePlayerList31";
 import MakeBoard31 from "./subComponents/game31/MakeBoard31"
 import MakeHand31 from "./subComponents/game31/MakeHand31";
 import Popup from "./subComponents/helperComponents/Popup";
-
+import { getSetting } from "../js/settings";
 
 export default function GamePage31({ lobbyStateStart }) {
     const popupRef = useRef();
@@ -146,7 +146,7 @@ export default function GamePage31({ lobbyStateStart }) {
             {(winPop == true) && (
                 <div className="modal-backdrop fade show" />
             )}
-            <Popup ref={popupRef} duration={5000} />
+            <Popup ref={popupRef} duration={getSetting("popupTime")} />
         </>
     );
 }

@@ -1,8 +1,12 @@
+import { getSetting } from "../../../js/settings";
+
+const useFourColours = getSetting("fourColours");
+
 export default function MakeCard({ suit, rank, backSide = false }) {
     return (
         <>
             {!backSide ?
-                <div className="playingCards fourColours">
+                <div className={`playingCards ${useFourColours ? "fourColours" : ""}`}>
                     <div className={"rank-" + rank + " " + suit + " card"}>
                         <span className="rank">{rank}</span>
                         {rank == "a" || rank == "j" || rank == "q" || rank == "k" ?
@@ -13,9 +17,9 @@ export default function MakeCard({ suit, rank, backSide = false }) {
                             : <span className="suit">&nbsp;</span>
                         }
                     </div>
-                </div>
+                </div >
                 :
-                <div className="playingCards fourColours">
+                <div className={`playingCards ${useFourColours ? "fourColours" : ""}`}>
                     <div className="card back">*</div>
                 </div>
 

@@ -4,7 +4,7 @@ import InGamePlayerList from "./subComponents/game7/InGamePlayerList";
 import MakeBoard from "./subComponents/game7/MakeBoard";
 import MakeHand from "./subComponents/game7/MakeHand";
 import Popup from "./subComponents/helperComponents/Popup";
-
+import { getSetting } from "../js/settings";
 
 export default function GamePage7({ lobbyStateStart }) {
     const popupRef = useRef();
@@ -54,7 +54,7 @@ export default function GamePage7({ lobbyStateStart }) {
                     <MakeHand hand={hand} setHand={setHand} />
                 </div>
             </div>
-            <Popup ref={popupRef} duration={5000} />
+            <Popup ref={popupRef} duration={getSetting("popupTime")} />
         </>
     );
 }

@@ -1,9 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { socket } from "../socket";
 import Popup from "./subComponents/helperComponents/Popup";
+import { getSetting } from "../js/settings";
+import SettingsModal from "./subComponents/helperComponents/SettingsModal";
 
 export default function StartPage() {
     const popupRef = useRef();
+
+    const [showSettings, setShowSettings] = useState(false);
 
     useEffect(() => {
         function errorMessage(data) {
@@ -17,6 +21,15 @@ export default function StartPage() {
 
     return (
         <>
+            <button
+                type="button"
+                className="btn btn-outline-secondary position-absolute top-0 end-0 m-3 fs-4 py-2 px-3"
+                onClick={() => setShowSettings(true)}
+                title="Open settings"
+            >
+                <i className="bi bi-person-fill-gear"></i>
+            </button>
+
             <div className="container text-center">
                 <h1 className="p-4 text-center">Card Games</h1>
                 <h4 className="p-1 text-center">Game modes are:</h4>
@@ -31,7 +44,10 @@ export default function StartPage() {
                     </div>
                 </div>
             </div>
-            <Popup ref={popupRef} duration={5000} />
+
+            <Popup ref={popupRef} duration={getSetting("popupTime")} />
+            <SettingsModal show={showSettings} onClose={() => setShowSettings(false)} />
+
         </>
     );
 }
