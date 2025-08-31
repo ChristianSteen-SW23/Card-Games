@@ -17,14 +17,15 @@ export default function GamePage7({ lobbyStateStart }) {
             popupRef.current.show(`Error ${data.type}: ${data.message}`, "error");
         }
         function playableFunc(data) {
-            console.log(data)
             let newHand = data;
             newHand.sort((a, b) => a - b)
             setHand(newHand);
         }
 
         function gameInfoFunc(data) {
-            setLobbyState(data)
+            setLobbyState(data);
+            if (socket.id == data.turn.current)
+                popupRef.current.show("It is your turn🥳", "success");
         }
         socket.on("errorMessage", errorMessage);
         socket.on('playable', playableFunc);
