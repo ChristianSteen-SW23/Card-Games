@@ -42,7 +42,7 @@ export default function GamePage500({ startHand, startPlayerInfo, startStackTop,
 
         function handInformation(data) {
             let newData = data
-            setHand(newData.hand);
+            setHand(newData.hand.sort((a, b) => a - b));
         }
 
         function errorMessage(data) {

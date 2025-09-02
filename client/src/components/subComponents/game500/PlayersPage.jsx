@@ -1,14 +1,11 @@
 import PlayerPage from "./PlayerPage";
 
 export default function PlayersPage({ playerInfo, turn }) {
-    const cols =
-        playerInfo.length === 2
-            ? "col-6"
-            : playerInfo.length === 3
-                ? "col-4"
-                : playerInfo.length === 4
-                    ? "col-3"
-                    : "col-2";
+    const cols = {
+        2: "col-6",
+        3: "col-4",
+        4: "col-3"
+    }[playerInfo.length] ?? "col-2";
 
     return (
         <div className="border p-3 bg-light rounded">

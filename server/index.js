@@ -4,10 +4,7 @@ import path from "path";
 import { Server } from "socket.io";
 import {
   lobbyController,
-  createLobby,
-  joinLobby,
   deleteLobby,
-  isUsernameValid
 } from "./Lobby.js";
 import {
   start7Game,
