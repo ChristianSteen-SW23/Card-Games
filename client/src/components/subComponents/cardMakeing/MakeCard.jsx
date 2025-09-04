@@ -8,7 +8,7 @@ export default function MakeCard({ suit, rank, backSide = false }) {
             {!backSide ?
                 <div className={`playingCards ${useFourColours ? "fourColours" : ""}`}>
                     <div className={"rank-" + rank + " " + suit + " card"}>
-                        <span className="rank">{rank}</span>
+                        <span className="rank">{rank == 0 ? "" : `${rank}`}</span>
                         {rank == "a" || rank == "j" || rank == "q" || rank == "k" ?
                             suit == "diams" ? <span className="suit">&diams;</span> :
                                 suit == "spades" ? <span className="suit">&spades;</span> :
