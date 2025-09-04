@@ -13,14 +13,21 @@ export default function PlayerPage({ info, turn }) {
     function adjacentNumbers(arr) {
         if (arr.length === 0) return [];
 
+        if (arr[0] % 13 === 0 && arr[arr.length - 1] % 13 === 12) {
+            for (let i = arr.length - 1; i > 0; i--)
+                if (!(arr[i] - 1 === arr[i - 1])) {
+                    arr = [...arr.slice(i), ...arr.slice(0, i)];
+                    break;
+                }
+        }
+        console.log(arr)
+
         let result = [];
         let group = [arr[0]];
 
         for (let i = 1; i < arr.length; i++) {
-            if (arr[i] === arr[i - 1] + 1) {
+            if ((arr[i] === arr[i - 1] + 1) || (arr[i - 1] === 12 && arr[i] === 0)) {
                 group.push(arr[i]);
-            } else if (arr[0] == 0 && arr[i] == 12) {
-                result[0] = [arr[i], ...result[0]];
             } else {
                 result.push(group);
                 group = [arr[i]];
@@ -28,6 +35,8 @@ export default function PlayerPage({ info, turn }) {
         }
 
         result.push(group);
+
+        console.log(result)
 
         return result;
     }

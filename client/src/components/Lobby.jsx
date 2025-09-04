@@ -4,13 +4,12 @@ import LobbyID from "./subComponents/lobby/LobbyID";
 import ListPlayersLobby from "./subComponents/lobby/ListPlayersLobby";
 import StartGameBTN from "./subComponents/lobby/StartGameBTN";
 import GameModeDropDown from "./subComponents/lobby/GameModeDropDown";
-
+import { getSetting } from "../js/settings";
 
 export default function Lobby({ lobbyState }) {
     // All the variables that changes throughout the lobby lifetime
     const [players, setPlayers] = useState(lobbyState.players);
-    const [gameMode, setGameMode] = useState("7");
-    const availableGames = ["7", "31", "500"];
+    const [gameMode, setGameMode] = useState(getSetting("defaultGame"));
 
     const player = players.find(player => player.playerid === socket.id);
     const isHost = player.host;
@@ -30,7 +29,7 @@ export default function Lobby({ lobbyState }) {
             <LobbyID roomID={roomID} />
             <ListPlayersLobby players={players} />
 
-            {player.host ? <GameModeDropDown gameMode={gameMode} setGameMode={setGameMode} availableGames={availableGames} /> : <></>}
+            {player.host ? <GameModeDropDown gameMode={gameMode} setGameMode={setGameMode} /> : <></>}
             {player.host ? <StartGameBTN players={players} gameMode={gameMode} /> : <></>}
         </div>
     );

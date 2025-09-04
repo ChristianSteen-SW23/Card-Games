@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { GAME_MODES } from "../../../js/gameModes";
 
-export default function GameModeDropDown({ gameMode, setGameMode, availableGames }) {
+export default function GameModeDropDown({ gameMode, setGameMode }) {
     const handleSelect = (option) => {
         setGameMode(option);
     };
@@ -16,7 +17,7 @@ export default function GameModeDropDown({ gameMode, setGameMode, availableGames
                 {gameMode}
             </button>
             <ul className="dropdown-menu">
-                {availableGames.map((option, index) => (
+                {GAME_MODES.map((option, index) => (
                     <li key={index}>
                         <button className="dropdown-item" onClick={() => handleSelect(option)}>
                             {option}

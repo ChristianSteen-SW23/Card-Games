@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getSettings, updateSetting, DEFAULT_SETTINGS } from "./../../../js/settings";
+import { GAME_MODES } from "../../../js/gameModes";
 
 export default function SettingsModal({ show, onClose }) {
     const [settings, setSettings] = useState(DEFAULT_SETTINGS);
@@ -46,7 +47,24 @@ export default function SettingsModal({ show, onClose }) {
                                 onChange={handleChange}
                             >
                                 <option value="light">Light</option>
-                                <option value="dark" disabled>Dark</option>
+                                <option value="dark">Dark</option>
+                            </select>
+                        </div>
+
+                        {/* Default Game */}
+                        <div className="mb-3">
+                            <label htmlFor="defaultGame" className="form-label">Default Game Mode</label>
+                            <select
+                                className="form-select"
+                                id="defaultGame"
+                                name="defaultGame"
+                                value={settings.defaultGame}
+                                onChange={handleChange}
+                            >
+                                {GAME_MODES.map((mode, index) =>
+                                    <option key={index} value={mode}>{mode}</option>
+                                )
+                                }
                             </select>
                         </div>
 
@@ -61,7 +79,8 @@ export default function SettingsModal({ show, onClose }) {
                                 value={settings.popupTime}
                                 onChange={handleChange}
                                 min={1000}
-                                step={1000}
+                                max={20000}
+                                step={500}
                             />
                         </div>
 
