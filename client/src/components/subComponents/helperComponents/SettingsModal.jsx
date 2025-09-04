@@ -47,7 +47,7 @@ export default function SettingsModal({ show, onClose }) {
                                 onChange={handleChange}
                             >
                                 <option value="light">Light</option>
-                                <option value="dark">Dark</option>
+                                <option value="dark" disabled>Dark</option>
                             </select>
                         </div>
 
