@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getSettings, updateSetting, DEFAULT_SETTINGS } from "./../../../js/settings";
 import { GAME_MODES } from "../../../js/gameModes";
+import { showPopup } from "../../../js/popupController";
 
 export default function SettingsModal({ show, onClose }) {
     const [settings, setSettings] = useState(DEFAULT_SETTINGS);
@@ -22,6 +23,7 @@ export default function SettingsModal({ show, onClose }) {
         for (const [key, value] of Object.entries(settings)) {
             updateSetting(key, value);
         }
+        showPopup("Saved settings", "success");
         onClose(); // close modal after saving
     };
 
