@@ -1,9 +1,13 @@
+import { GAME_MODES } from "./gameModes";
+
 const SETTINGS_KEY = "userSettings";
+
 
 const DEFAULT_SETTINGS = {
     popupTime: 5000,
     theme: "light",
     fourColours: true,
+    defaultGame: GAME_MODES[0],
 };
 
 let cachedSettings = null;

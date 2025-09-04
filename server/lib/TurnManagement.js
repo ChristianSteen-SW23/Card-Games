@@ -7,13 +7,13 @@ function swapOneTurn(roomData) {
 }
 
 function nextPlayer(roomData) {
-    let playersLeft = mapPlayerInfo(roomData.players);
-    let currentIndex = playersLeft.findIndex(player => roomData.turn.current == player.id);
+    let players = mapPlayerInfo(roomData.players);
+    let currentIndex = players.findIndex(player => roomData.turn.current == player.id);
     if (currentIndex === -1) {
         console.error("Error: Current player not found in player list.");
         return null;
     }
-    return playersLeft[(currentIndex + 1) % playersLeft.length].id;
+    return players[(currentIndex + 1) % players.length].id;
 }
 
 function mapPlayerInfo(map) {

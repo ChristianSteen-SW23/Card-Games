@@ -4,10 +4,7 @@ import path from "path";
 import { Server } from "socket.io";
 import {
   lobbyController,
-  createLobby,
-  joinLobby,
   deleteLobby,
-  isUsernameValid
 } from "./Lobby.js";
 import {
   start7Game,
@@ -104,7 +101,7 @@ io.on("connection", (socket) => {
 
 // Start application server
 dotenv.config({ path: path.resolve("./../.env") });
-const PORT = 3069;
+const PORT = 443;
 const HOST = process.env.BACKEND_IP || "0.0.0.0";
 server.listen(PORT, HOST, () => {
   console.log(`Server started on LAN at: http://${HOST}:${PORT}`);

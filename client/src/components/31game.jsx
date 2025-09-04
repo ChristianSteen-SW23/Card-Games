@@ -1,13 +1,12 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { socket } from "./../socket";
 import InGamePlayerList31 from "./subComponents/game31/InGamePlayerList31";
 import MakeBoard31 from "./subComponents/game31/MakeBoard31"
 import MakeHand31 from "./subComponents/game31/MakeHand31";
 import Popup from "./subComponents/helperComponents/Popup";
-import { getSetting } from "../js/settings";
+import { showPopup } from "../js/popupController";
 
 export default function GamePage31({ lobbyStateStart }) {
-    const popupRef = useRef();
     const [lobbyState, setLobbyState] = useState(lobbyStateStart);
     const [winPop, setWinPop] = useState(false);
     const [winData, setWinData] = useState([]);
@@ -17,7 +16,7 @@ export default function GamePage31({ lobbyStateStart }) {
 
     useEffect(() => {
         function elseKnockedFunc() {
-            popupRef.current.show(`Error Not Possible: You can not knock, someone have knocked`, "error");
+            showPopup(`Error Not Possible: You can not knock, someone have knocked`, "error");
         }
 
         function GameOver31Func(data) {
@@ -49,7 +48,7 @@ export default function GamePage31({ lobbyStateStart }) {
         function gameInfoFunc(data) {
             setLobbyState(data);
             if (socket.id == data.turn.current)
-                popupRef.current.show("It is your turn🥳", "success");
+                showPopup("It is your turn🥳", "success");
         }
 
         socket.on('elseKnocked', elseKnockedFunc);
@@ -146,7 +145,6 @@ export default function GamePage31({ lobbyStateStart }) {
             {(winPop == true) && (
                 <div className="modal-backdrop fade show" />
             )}
-            <Popup ref={popupRef} duration={getSetting("popupTime")} />
         </>
     );
 }

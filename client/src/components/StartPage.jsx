@@ -1,17 +1,15 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { socket } from "../socket";
-import Popup from "./subComponents/helperComponents/Popup";
-import { getSetting } from "../js/settings";
 import SettingsModal from "./subComponents/helperComponents/SettingsModal";
+import { GAME_MODES } from "../js/gameModes";
+import { showPopup } from "../js/popupController";
 
 export default function StartPage() {
-    const popupRef = useRef();
-
     const [showSettings, setShowSettings] = useState(false);
 
     useEffect(() => {
         function errorMessage(data) {
-            popupRef.current.show(`Error ${data.type}: ${data.message}`, "error");
+            showPopup(`Error ${data.type}: ${data.message}`, "error");
         }
         socket.on("errorMessage", errorMessage);
         return () => {
@@ -33,7 +31,7 @@ export default function StartPage() {
             <div className="container text-center">
                 <h1 className="p-4 text-center">Card Games</h1>
                 <h4 className="p-1 text-center">Game modes are:</h4>
-                <h4 className="p-1 text-center">7 | 31 | 500</h4>
+                <h4 className="p-1 text-center">{GAME_MODES.join(" | ")}</h4>
                 <div className="p-5"></div>
                 <div className="row justify-content-md-center">
                     <div className="d-grid gap-2 col-6">
@@ -45,9 +43,7 @@ export default function StartPage() {
                 </div>
             </div>
 
-            <Popup ref={popupRef} duration={getSetting("popupTime")} />
             <SettingsModal show={showSettings} onClose={() => setShowSettings(false)} />
-
         </>
     );
 }

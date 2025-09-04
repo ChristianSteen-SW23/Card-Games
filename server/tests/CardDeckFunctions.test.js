@@ -112,6 +112,28 @@ describe("areCardsAdjacentSet function", () => {
         expect(areCardsAdjacentSet([11, 12, 0])).toBe(1);  // ✅ King (12) and Ace (0) are adjacent
     });
 
+    it("Returns wraparound adjacency", () => {
+        expect(areCardsAdjacentSet([11, 12, 0, 1])).toBe(1);  // ✅ King (12) and Ace (0) are adjacent
+    });
+    it("Returns wraparound adjacency", () => {
+        expect(areCardsAdjacentSet([11, 12, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])).toBe(1);  // ✅ King (12) and Ace (0) are adjacent
+    });
+    it("Returns wraparound adjacency", () => {
+        expect(areCardsAdjacentSet([10, 11, 12, 0, 1, 2])).toBe(1);  // ✅ King (12) and Ace (0) are adjacent
+    });
+    it("Returns wraparound adjacency", () => {
+        expect(areCardsAdjacentSet([10, 11, 0, 1, 2])).toBe(0);  // ✅ King (12) and Ace (0) are adjacent
+    });
+    it("Returns wraparound adjacency", () => {
+        expect(areCardsAdjacentSet([10, 11, 12, 0, 1, 2])).toBe(1);  // ✅ King (12) and Ace (0) are adjacent
+    });
+    it("Returns wraparound adjacency", () => {
+        expect(areCardsAdjacentSet([2, 3, 4, 6, 7, 8])).toBe(0);  // ✅ King (12) and Ace (0) are adjacent
+    });
+    it("Returns wraparound adjacency", () => {
+        expect(areCardsAdjacentSet([2, 3, 4, 6, 7, 8])).toBe(0);  // ✅ King (12) and Ace (0) are adjacent
+    });
+
     it("Returns 0 for non-adjacent sets", () => {
         expect(areCardsAdjacentSet([7, 9, 10])).toBe(0);  // ❌ 8 is missing
         expect(areCardsAdjacentSet([2, 5, 7])).toBe(0);   // ❌ Not consecutive
