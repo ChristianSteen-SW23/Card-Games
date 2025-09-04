@@ -10,7 +10,7 @@ export default function GamePage500({ startHand, startPlayerInfo, startStackTop,
     // Correctly declare useState hooks
     const [yourTurn, setYourTurn] = useState(socket.id == startingTurn.current);
     const [turn, setTurn] = useState(startingTurn);
-    const [hand, setHand] = useState(startHand);
+    const [hand, setHand] = useState(startHand.sort((a, b) => a - b));
     const [playerInfo, setPlayerInfo] = useState(startPlayerInfo);
     const [stackTop, setStackTop] = useState(startStackTop);
     const [stackSize, setStackSize] = useState(startStackSize);
