@@ -3,11 +3,9 @@ import { socket } from "./../socket";
 import BottomOfScreen from "./subComponents/game500/BottomOfScreen";
 import PlayersPage from "./subComponents/game500/PlayersPage";
 import GameDoneModal from "./subComponents/game500/GameDoneModal";
-import Popup from "./subComponents/helperComponents/Popup";
-import { getSetting } from "../js/settings";
+import { showPopup } from "../js/popupController";
 
 export default function GamePage500({ startHand, startPlayerInfo, startStackTop, startStackSize, startingTurn, deckSizeStart }) {
-    const popupRef = useRef();
 
     // Correctly declare useState hooks
     const [yourTurn, setYourTurn] = useState(socket.id == startingTurn.current);
@@ -36,7 +34,7 @@ export default function GamePage500({ startHand, startPlayerInfo, startStackTop,
             setTurnStep(data.gameStep);
 
             if (socket.id == data.turn.current && data.gameStep == "draw")
-                popupRef.current.show("It is your turn🥳", "success");
+                showPopup("It is your turn🥳", "success");
 
         }
 
@@ -46,7 +44,7 @@ export default function GamePage500({ startHand, startPlayerInfo, startStackTop,
         }
 
         function errorMessage(data) {
-            popupRef.current.show(`Error ${data.type}: ${data.message}`, "error");
+            showPopup(`Error ${data.type}: ${data.message}`, "error");
         }
 
         function gameEnded(data) {
@@ -101,13 +99,9 @@ export default function GamePage500({ startHand, startPlayerInfo, startStackTop,
                 deckSize={deckSize}
                 yourTurn={yourTurn}
                 turnStep={turnStep}
-                popupRef={popupRef}
             />
 
-            <Popup ref={popupRef} duration={getSetting("popupTime")} />
-
             <GameDoneModal winPop={winPop} winData={winData} />
-
         </>
     );
 }

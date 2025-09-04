@@ -1,9 +1,10 @@
 import SelectableHand from "./../cardMakeing/SelectableHand";
 import DeckAndStack from "./DeckAndStack";
 import { socket } from "./../../../socket";
+import { showPopup } from "../../../js/popupController";
 
 
-export default function BottomOfScreen({ hand, selectedCards, setSelectedCards, stackSize, stackTop, deckSize, yourTurn, turnStep, popupRef }) {
+export default function BottomOfScreen({ hand, selectedCards, setSelectedCards, stackSize, stackTop, deckSize, yourTurn, turnStep }) {
     function makeTrick() {
         socket.emit("500Move", { "moveType": "playTrick", "cardsToPlay": selectedCards });
     }
@@ -14,7 +15,7 @@ export default function BottomOfScreen({ hand, selectedCards, setSelectedCards, 
 
     function endTurn() {
         if (hand.length == 0) return socket.emit("500Move", { "moveType": "endTurn", "cardToPlay": -1 });
-        if (selectedCards.length != 1) return popupRef.current.show("Pick 1 card to end your turn !!!", "error");;
+        if (selectedCards.length != 1) return showPopup("Pick 1 card to end your turn !!!", "error");;
         socket.emit("500Move", { "moveType": "endTurn", "cardToPlay": selectedCards[0] });
     }
 
