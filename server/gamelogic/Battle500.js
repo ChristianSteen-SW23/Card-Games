@@ -255,7 +255,7 @@ function dealCards500(gameData, players, firstGame = true) {
             gameData.players[playerID] = { hand: [], tricks: [], needsToTrick: false, gamePoints: 0, totalScore: 0 };
         else
             gameData.players[playerID] = { hand: [], tricks: [], needsToTrick: false, gamePoints: 0, totalScore: gameData.players[playerID].totalScore };
-        //dealFromDeckToHand(gameData.players[playerID].hand, gameData.deck, 7);
+        dealFromDeckToHand(gameData.players[playerID].hand, gameData.deck, 7);
     }
     gameData.stack = [];
     dealFromDeckToHand(gameData.stack, gameData.deck, 1);
