@@ -20,13 +20,12 @@ export default function PlayerPage({ info, turn }) {
                     break;
                 }
         }
-        console.log(arr)
 
         let result = [];
         let group = [arr[0]];
 
         for (let i = 1; i < arr.length; i++) {
-            if ((arr[i] === arr[i - 1] + 1) || (arr[i - 1] === 12 && arr[i] === 0)) {
+            if ((arr[i] === arr[i - 1] + 1) || (arr[i - 1] % 13 === 12 && arr[i] % 13 === 0)) {
                 group.push(arr[i]);
             } else {
                 result.push(group);
