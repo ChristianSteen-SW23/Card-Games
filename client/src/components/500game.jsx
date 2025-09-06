@@ -53,7 +53,6 @@ export default function GamePage500({ startHand, startPlayerInfo, startStackTop,
         }
 
         function newRound(data) {
-            console.log("NewRound")
             setWinPop(false);
             setHand(data.hand);
             gameInformation({ ...data, gameStep: "draw" });

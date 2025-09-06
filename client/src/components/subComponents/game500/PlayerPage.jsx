@@ -35,8 +35,6 @@ export default function PlayerPage({ info, turn }) {
 
         result.push(group);
 
-        console.log(result)
-
         return result;
     }
     let trickGroupsAdjacent = [adjacentNumbers(trickGroups[0]), adjacentNumbers(trickGroups[1]), adjacentNumbers(trickGroups[2]), adjacentNumbers(trickGroups[3])];

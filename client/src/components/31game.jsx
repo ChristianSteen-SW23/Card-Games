@@ -37,7 +37,6 @@ export default function GamePage31({ lobbyStateStart }) {
             setHand(newHand);
             if (pickedCard == 3) setPickedCard(-1);
             setMustPickCard(false)
-            console.log("new hand" + data)
         }
 
         function New31GameFunc() {
