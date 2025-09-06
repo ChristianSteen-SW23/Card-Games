@@ -3,7 +3,6 @@ import { socket } from "../../../socket";
 
 export default function StartGameBTN({ players, gameMode }) {
     function startGame() {
-        console.log(gameMode)
         socket.emit("startGame", gameMode)
     }
 
