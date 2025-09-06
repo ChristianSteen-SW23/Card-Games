@@ -101,7 +101,7 @@ io.on("connection", (socket) => {
 
 // Start application server
 dotenv.config({ path: path.resolve("./../.env") });
-const PORT = 3000;
+const PORT = 3100;
 const HOST = process.env.BACKEND_IP || "0.0.0.0";
 server.listen(PORT, HOST, () => {
   console.log(`Server started on LAN at: http://${HOST}:${PORT}`);
