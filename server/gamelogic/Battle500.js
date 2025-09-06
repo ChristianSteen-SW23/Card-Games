@@ -105,14 +105,14 @@ function drawDecktop(gameData, playerID, io) {
 function endTurnMove(roomData, socketData, playerID, io, roomID) {
     let playerHand = roomData.gameData.players[playerID].hand;
     // No cards left in hand
-    if (playerHand.length === 0) return nextPlayerTurn(roomData, socketData, playerID, io, roomID);//TODO send request
+    if (playerHand.length === 0) return nextPlayerTurn(roomData, socketData, playerID, io, roomID);
 
     let playedCard = socketData.cardToPlay;
     if (playerHand.includes(playedCard)) {
         let index = playerHand.indexOf(playedCard); // Find index of the value
         playerHand.splice(index, 1); // Remove the value
     } else {
-        return; //TODO you can not play that card
+        return;
     }
 
     roomData.gameData.stack.push(playedCard);
@@ -127,7 +127,7 @@ function updateScore(roomData) {
     let scoreData = [];
 
     for (const [key, value] of Object.entries(roomData.gameData.players)) {
-        let score = countPointScore(value.tricks, 10, 15, 5) + value.gamePoints;
+        let score = countPointScore(value.tricks, 10, 15, 5) - countPointScore(value.hand, 10, 15, 5) + value.gamePoints;
         roomData.gameData.players[key].totalScore += score;
         let curScore = {
             name: roomData.players.get(key).name,
