@@ -17,7 +17,7 @@ function App() {
             <div className="position-relative min-vh-100">
                 <ScreenController />
             </div>
-            <Popup ref={popupRef} duration={getSetting("popupTime")} />
+            <Popup ref={popupRef} />
         </>
     );
 }

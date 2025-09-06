@@ -1,7 +1,8 @@
 import React, { useState, useRef, useImperativeHandle, forwardRef } from "react";
 import "./../../../css/Popup.css"; // We'll move the styles here
+import { getSetting } from "../../../js/settings";
 
-const Popup = forwardRef(({ message: defaultMessage = "Saved!", type: defaultType = "", duration = 3000 }, ref) => {
+const Popup = forwardRef(({ message: defaultMessage = "Saved!", type: defaultType = "" }, ref) => {
     const [visible, setVisible] = useState(false);
     const [message, setMessage] = useState(defaultMessage);
     const [type, setType] = useState(defaultType);
@@ -19,7 +20,7 @@ const Popup = forwardRef(({ message: defaultMessage = "Saved!", type: defaultTyp
 
             timeoutRef.current = setTimeout(() => {
                 setVisible(false);
-            }, duration);
+            }, getSetting("popupTime"));
         }
     }));
 

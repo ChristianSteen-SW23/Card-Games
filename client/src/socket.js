@@ -5,9 +5,9 @@ Note: The following document here uses guidelines from:
 import { io } from "socket.io-client";
 import { showPopup } from "./js/popupController";
 
-const SOCKET_IP = import.meta.env.VITE_FRONT_SOCKET_IP || "0.0.0.0:443";
+const SOCKET_IP = import.meta.env.VITE_FRONT_SOCKET_IP || "0.0.0.0:3000";
 console.log("IP", SOCKET_IP)
-const URL = import.meta.env.MODE === "production" ? `http://${SOCKET_IP}` : "http://localhost:443";
+const URL = import.meta.env.MODE === "production" ? `http://${SOCKET_IP}` : "http://localhost:3000";
 
 export const socket = io(URL);
 
