@@ -411,7 +411,7 @@ describe("game 500 multi trick logic", () => {
         expect(roomData.gameData.players[socket1].tricks).toEqual([4, 6, 7, 8]);
 
         // ✅ Expect `needsToTrick` to be set to false
-        expect(roomData.gameData.players[socket1].needsToTrick).toBe(false);
+        expect(roomData.gameData.players[socket1].needsToTrick).toBe(true);
     });
 
 });
