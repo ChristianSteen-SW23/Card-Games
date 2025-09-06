@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     container_name: card-back
     ports:
-      - "443:3000"
+      - "443:3100"
     restart: unless-stopped
 
   frontend:
