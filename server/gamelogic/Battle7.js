@@ -1,5 +1,6 @@
-export { mapPlayerInfo, nextPlayer, switchRoles, dealCards, playCard, cardPlayable, possibleSkip, start7Game, call7Move };
+export { start7Game, call7Move };
 import { sendErrorMessage } from "../lib/InfoMessage.js";
+import { nextPlayer } from "../lib/TurnManagement.js";
 
 function start7Game(roomData, socketID, io, roomID) {
     let startedGameData;
@@ -7,6 +8,7 @@ function start7Game(roomData, socketID, io, roomID) {
     roomData.turn.current = socketID;
     roomData.turn.next = nextPlayer(roomData);
     roomData.gameStarted = true;
+    roomData.board = [[null, null, null, null], [null, null, null, null], [null, null, null, null]];
 
     dealCards(roomData)
     roomData.turn.current = roomData.startingPlayerID
@@ -16,7 +18,7 @@ function start7Game(roomData, socketID, io, roomID) {
     for (let [playerid, player] of roomData.players.entries())
         player.cardsLeft = player.hand.length;
 
-    playersInfo = mapPlayerInfo(roomData.players);
+    playersInfo = mapPlayerInfo7(roomData.players);
     startedGameData = {
         playersInfo,
         turn: roomData.turn,
@@ -41,7 +43,7 @@ function call7Move(roomData, socketData, playerID, io, roomID) {
             roomData.turn.next = nextPlayer(roomData);
 
             // Send out new game info
-            const playersInfo = mapPlayerInfo(roomData.players);
+            const playersInfo = mapPlayerInfo7(roomData.players);
             const gameInfo = {
                 playersInfo,
                 turn: roomData.turn,
@@ -54,7 +56,7 @@ function call7Move(roomData, socketData, playerID, io, roomID) {
             if (cardPlayable(card, roomData)) {
                 roomData.players.get(roomData.turn.current).cardsLeft--;
                 playCard(card, roomData)
-                const playersInfo = mapPlayerInfo(roomData.players);
+                const playersInfo = mapPlayerInfo7(roomData.players);
 
                 // Remove card from hand and sent it out
                 let indexToRemove = roomData.players.get(roomData.turn.current).hand.indexOf(card);
@@ -79,7 +81,7 @@ function call7Move(roomData, socketData, playerID, io, roomID) {
     }
 }
 
-function mapPlayerInfo(map) {
+function mapPlayerInfo7(map) {
     let array = [];
     for (const [key, value] of map.entries()) {
         array.push({
@@ -88,29 +90,30 @@ function mapPlayerInfo(map) {
             cardsLeft: value.cardsLeft
         });
     }
+
     return array;
 }
 
-function nextPlayer(roomData) {
-    let playersLeft = mapPlayerInfo(roomData.players).filter(player => player.lives !== 0);
-    let currentIndex = playersLeft.findIndex(player => roomData.turn.current === player.id);
-    return playersLeft[(currentIndex + 1) % playersLeft.length].id;
-}
+// function nextPlayer(roomData) {
+//     let playersLeft = mapPlayerInfo(roomData.players).filter(player => player.lives !== 0);
+//     let currentIndex = playersLeft.findIndex(player => roomData.turn.current === player.id);
+//     return playersLeft[(currentIndex + 1) % playersLeft.length].id;
+// }
 
 // Assign new player to select card and new player to answer.
-function switchRoles(roomID, roomData, socket) {
-    // Check if current next player is alive, else they should be skipped.
-    if (roomData.players.get(roomData.turn.next).lives === 0) {
-        // Set next player to a player alive.
-        roomData.turn.next = nextPlayer(roomData);
-    }
-    // Shift players alive
-    roomData.turn.current = roomData.turn.next;
-    roomData.turn.next = nextPlayer(roomData);
+// function switchRoles(roomID, roomData, socket) {
+//     // Check if current next player is alive, else they should be skipped.
+//     if (roomData.players.get(roomData.turn.next).lives === 0) {
+//         // Set next player to a player alive.
+//         roomData.turn.next = nextPlayer(roomData);
+//     }
+//     // Shift players alive
+//     roomData.turn.current = roomData.turn.next;
+//     roomData.turn.next = nextPlayer(roomData);
 
-    socket.to(roomID).emit("switchRoles", { turn: roomData.turn });
-    socket.emit("switchRoles", { turn: roomData.turn, hand: roomData.players.get(socket.id).hand });
-}
+//     socket.to(roomID).emit("switchRoles", { turn: roomData.turn });
+//     socket.emit("switchRoles", { turn: roomData.turn, hand: roomData.players.get(socket.id).hand });
+// }
 
 function dealCards(roomData) {
     let cardDeck = []

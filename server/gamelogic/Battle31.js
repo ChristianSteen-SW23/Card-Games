@@ -1,7 +1,8 @@
-import { nextPlayer } from "./Battle7.js";
+import { nextPlayer } from "../lib/TurnManagement.js";
 import { Server } from "socket.io";
 export { dealCards31, mapPlayerInfo31, call31Move, start31Game };
 import { deleteLobby } from "../Lobby.js";
+
 
 
 function dealCards31(roomData) {
