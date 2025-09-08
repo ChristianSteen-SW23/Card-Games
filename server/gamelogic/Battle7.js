@@ -1,84 +1,112 @@
 export { start7Game, call7Move };
 import { sendErrorMessage } from "../lib/InfoMessage.js";
 import { nextPlayer } from "../lib/TurnManagement.js";
+import { countPointScore } from "../lib/PointCounter.js";
 
 function start7Game(roomData, socketID, io, roomID) {
-    let startedGameData;
-    let playersInfo;
-    roomData.turn.current = socketID;
-    roomData.turn.next = nextPlayer(roomData);
     roomData.gameStarted = true;
-    roomData.board = [[null, null, null, null], [null, null, null, null], [null, null, null, null]];
+    roomData.turn.current = socketID;
 
-    dealCards(roomData)
-    roomData.turn.current = roomData.startingPlayerID
-    roomData.turn.next = nextPlayer(roomData);
-
-    // Gives players their hand
-    for (let [playerid, player] of roomData.players.entries())
-        player.cardsLeft = player.hand.length;
-
-    playersInfo = mapPlayerInfo7(roomData.players);
-    startedGameData = {
-        playersInfo,
-        turn: roomData.turn,
-        board: roomData.board
-    };
+    const startedGameData = startGameHelper(roomData, true);
 
     for (let [playerid, player] of roomData.players.entries()) {
         io.to(playerid).emit("startedGame7", { ...startedGameData, handInfo: player.hand });
     }
-
     console.log("Started game 7 made by", socketID);
+}
+
+function startGameAgain(roomData, io, socketID) {
+    const startedGameData = startGameHelper(roomData, false);
+    for (let [playerid, player] of roomData.players.entries()) {
+        io.to(playerid).emit("gameInfo", startedGameData);
+        io.to(playerid).emit("handInfo", player.hand);
+    }
+}
+
+function startGameHelper(roomData, firstGame) {
+    roomData.box = null;
+    roomData.board = [[null, null, null, null], [null, null, null, null], [null, null, null, null]];
+    roomData.turn.next = nextPlayer(roomData);
+    dealCards(roomData)
+    roomData.turn.current = roomData.startingPlayerID
+    roomData.turn.next = nextPlayer(roomData);
+
+    for (let [playerid, player] of roomData.players.entries()) {
+        player.cardsLeft = player.hand.length;
+        if (firstGame) player.totalScore = 0;
+    }
+
+    return {
+        playersInfo: mapPlayerInfo7(roomData.players),
+        turn: roomData.turn,
+        board: roomData.board
+    };
 }
 
 function call7Move(roomData, socketData, playerID, io, roomID) {
     let moveType = socketData.moveType;
-    if (playerID != roomData.turn.current) return sendErrorMessage(playerID, io, "It is not your turn", "Out of turn");
+    if (playerID != roomData.turn.current && moveType != "playAgain") return sendErrorMessage(playerID, io, "It is not your turn", "Out of turn");
     switch (moveType) {
+        case "playAgain":
+            startGameAgain(roomData, io, playerID);
+            break;
         case "skipTurn":
             if (!possibleSkip(roomData, playerID)) return sendErrorMessage(playerID, io, "You can play a card. Please stop the cheating", "Card playable");
-            // Set next turn
+
+            roomData.box = roomData.turn.current;
             roomData.turn.current = roomData.turn.next;
             roomData.turn.next = nextPlayer(roomData);
 
-            // Send out new game info
-            const playersInfo = mapPlayerInfo7(roomData.players);
-            const gameInfo = {
-                playersInfo,
-                turn: roomData.turn,
-                board: roomData.board
-            };
-            io.to(roomID).emit("gameInfo", gameInfo);
+            sendGameInfo(roomData, roomID, io);
             break;
         case "playCard":
             const card = socketData.card;
-            if (cardPlayable(card, roomData)) {
-                roomData.players.get(roomData.turn.current).cardsLeft--;
-                playCard(card, roomData)
-                const playersInfo = mapPlayerInfo7(roomData.players);
+            if (!cardPlayable(card, roomData)) return sendErrorMessage(playerID, io, "You can not play this card", "Card not playable");
+            roomData.players.get(roomData.turn.current).cardsLeft--;
+            playCard(card, roomData)
 
-                // Remove card from hand and sent it out
-                let indexToRemove = roomData.players.get(roomData.turn.current).hand.indexOf(card);
-                roomData.players.get(roomData.turn.current).hand.splice(indexToRemove, 1);
-                io.to(playerID).emit("playable", roomData.players.get(roomData.turn.current).hand)
+            // Remove card from hand and sent it out
+            let indexToRemove = roomData.players.get(roomData.turn.current).hand.indexOf(card);
+            roomData.players.get(roomData.turn.current).hand.splice(indexToRemove, 1);
+            io.to(playerID).emit("handInfo", roomData.players.get(roomData.turn.current).hand)
 
-                // Set next turn
-                roomData.turn.current = roomData.turn.next;
-                roomData.turn.next = nextPlayer(roomData);
+            roomData.turn.current = roomData.turn.next;
+            roomData.turn.next = nextPlayer(roomData);
 
-                // Send out new game info
-                const gameInfo = {
-                    playersInfo,
-                    turn: roomData.turn,
-                    board: roomData.board
-                };
-                io.to(roomID).emit("gameInfo", gameInfo);
-            } else {
-                sendErrorMessage(playerID, io, "You can not play this card", "Card not playable");
-            }
+            sendGameInfo(roomData, roomID, io);
+
+            if (roomData.players.get(playerID).hand.length === 0) return sendGameOver(roomID, updateScore(roomData), io);;
             break;
     }
+}
+
+function sendGameInfo(roomData, roomID, io) {
+    const gameInfo = {
+        playersInfo: mapPlayerInfo7(roomData.players),
+        turn: roomData.turn,
+        board: roomData.board
+    };
+    io.to(roomID).emit("gameInfo", gameInfo);
+}
+
+function updateScore(roomData) {
+    let scoreData = [];
+
+    for (const [key, value] of roomData.players.entries()) {
+        let score = countPointScore(value.hand, 10, 15, 5) + ((roomData.box === key) ? 25 : 0);
+        value.totalScore += score;
+
+        scoreData.push({
+            name: value.name,
+            totalScore: value.totalScore,
+            roundScore: score
+        });
+    }
+    return scoreData;
+}
+
+function sendGameOver(roomID, data, io) {
+    io.to(roomID).emit("gameEnded", { contineAllowed: false, winData: data });
 }
 
 function mapPlayerInfo7(map) {
@@ -94,32 +122,17 @@ function mapPlayerInfo7(map) {
     return array;
 }
 
-// function nextPlayer(roomData) {
-//     let playersLeft = mapPlayerInfo(roomData.players).filter(player => player.lives !== 0);
-//     let currentIndex = playersLeft.findIndex(player => roomData.turn.current === player.id);
-//     return playersLeft[(currentIndex + 1) % playersLeft.length].id;
-// }
-
-// Assign new player to select card and new player to answer.
-// function switchRoles(roomID, roomData, socket) {
-//     // Check if current next player is alive, else they should be skipped.
-//     if (roomData.players.get(roomData.turn.next).lives === 0) {
-//         // Set next player to a player alive.
-//         roomData.turn.next = nextPlayer(roomData);
-//     }
-//     // Shift players alive
-//     roomData.turn.current = roomData.turn.next;
-//     roomData.turn.next = nextPlayer(roomData);
-
-//     socket.to(roomID).emit("switchRoles", { turn: roomData.turn });
-//     socket.emit("switchRoles", { turn: roomData.turn, hand: roomData.players.get(socket.id).hand });
-// }
-
 function dealCards(roomData) {
-    let cardDeck = []
-    for (let i = 0; i < 52; i++) {
-        cardDeck.push(i)
-    }
+    for (let [_, player] of roomData.players.entries())
+        player.hand = [];
+
+    let cardDeck = Array.from({ length: 52 }, (_, i) => i);
+
+    roomData.players.get(roomData.turn.current).hand.push(19)
+    roomData.players.get(roomData.turn.current).hand.push(18)
+    roomData.players.get(roomData.turn.next).hand.push(0)
+    roomData.startingPlayerID = roomData.turn.current
+    return;
 
     let randomNum;
     while (cardDeck.length != 0) {

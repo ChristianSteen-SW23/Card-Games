@@ -50,7 +50,6 @@ export default function GamePage500({ startHand, startPlayerInfo, startStackTop,
         function gameEnded(data) {
             setWinPop(true);
             setWinData(data.winData);
-            console.log(data)
         }
 
         function newRound(data) {
