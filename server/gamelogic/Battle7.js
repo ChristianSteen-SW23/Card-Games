@@ -128,12 +128,6 @@ function dealCards(roomData) {
 
     let cardDeck = Array.from({ length: 52 }, (_, i) => i);
 
-    roomData.players.get(roomData.turn.current).hand.push(19)
-    roomData.players.get(roomData.turn.current).hand.push(18)
-    roomData.players.get(roomData.turn.next).hand.push(0)
-    roomData.startingPlayerID = roomData.turn.current
-    return;
-
     let randomNum;
     while (cardDeck.length != 0) {
         randomNum = Math.floor(Math.random() * cardDeck.length);
