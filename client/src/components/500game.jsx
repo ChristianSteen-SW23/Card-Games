@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { socket } from "./../socket";
 import BottomOfScreen from "./subComponents/game500/BottomOfScreen";
 import PlayersPage from "./subComponents/game500/PlayersPage";
-import GameDoneModal from "./subComponents/game500/GameDoneModal";
 import { showPopup } from "../js/popupController";
+import WinModal from "./subComponents/helperComponents/WinModal";
 
 export default function GamePage500({ startHand, startPlayerInfo, startStackTop, startStackSize, startingTurn, deckSizeStart }) {
 
@@ -50,6 +50,7 @@ export default function GamePage500({ startHand, startPlayerInfo, startStackTop,
         function gameEnded(data) {
             setWinPop(true);
             setWinData(data.winData);
+            console.log(data)
         }
 
         function newRound(data) {
@@ -100,7 +101,14 @@ export default function GamePage500({ startHand, startPlayerInfo, startStackTop,
                 turnStep={turnStep}
             />
 
-            <GameDoneModal winPop={winPop} winData={winData} />
+            <WinModal show={winPop} data={winData.map(player => ({
+                name: player.name,
+                "Round Score": player.roundScore,
+                "Total Score": player.totalScore,
+            }))}
+                btns={<button type="button" className="btn btn-success" data-bs-dismiss="modal"
+                    onClick={() => { socket.emit("500Move", { "moveType": "playAgain" }) }}>Keep Going</button>}
+            />
         </>
     );
 }
