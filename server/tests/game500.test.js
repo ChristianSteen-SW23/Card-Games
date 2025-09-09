@@ -8,7 +8,7 @@ import { start500Game, call500Move } from "../gamelogic/Battle500.js"
 describe("game 500 move types", () => {
     it("Handles 500Move (draw from stacktop)", () => {
         // Use helper function to create game state
-        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+        const { roomData, socket1, socket2, socket3, io, roomID } = helperMake500Lobby();
 
         // Set up test conditions
         roomData.gameData.stack = [1, 2, 3]; // Mock stack with 3 cards
@@ -24,7 +24,7 @@ describe("game 500 move types", () => {
 
     it("Handles 500Move (draw from stacktop) with no stack", () => {
         // Use helper function to create game state
-        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+        const { roomData, socket1, socket2, socket3, io, roomID } = helperMake500Lobby();
 
         // Set up test conditions
         roomData.gameData.stack = []; // Mock stack with 3 cards
@@ -40,7 +40,7 @@ describe("game 500 move types", () => {
 
     it("Handles 500Move (draw from stack)", () => {
         // Use helper function to create game state
-        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+        const { roomData, socket1, socket2, socket3, io, roomID } = helperMake500Lobby();
 
         // Set up test conditions
         roomData.gameData.stack = [1, 2, 3, 4]; // Mock stack with 3 cards
@@ -57,7 +57,7 @@ describe("game 500 move types", () => {
 
     it("Handles 500Move (draw from stack) with empty stack", () => {
         // Use helper function to create game state
-        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+        const { roomData, socket1, socket2, socket3, io, roomID } = helperMake500Lobby();
 
         // Set up test conditions
         roomData.gameData.stack = []; // Mock stack with 3 cards
@@ -74,7 +74,7 @@ describe("game 500 move types", () => {
 
     it("Handles 500Move (draw from decktop)", () => {
         // Use helper function to create game state
-        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+        const { roomData, socket1, socket2, socket3, io, roomID } = helperMake500Lobby();
 
         const currentDeckSize = roomData.gameData.deck.length;
         // Mock `call500Move`
@@ -86,7 +86,7 @@ describe("game 500 move types", () => {
 
     it("Handles 500Move (draw from decktop) with no stack", () => {
         // Use helper function to create game state
-        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+        const { roomData, socket1, socket2, socket3, io, roomID } = helperMake500Lobby();
 
         roomData.gameData.deck = []; // Mock stack with 3 cards
 
@@ -98,7 +98,7 @@ describe("game 500 move types", () => {
     });
 
     it("Handles endTurnMove when player has no cards left", () => {
-        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+        const { roomData, socket1, socket2, socket3, io, roomID } = helperMake500Lobby();
 
         // Set up test conditions
         roomData.gameData.players[socket1].hand = []; // No cards left
@@ -113,7 +113,7 @@ describe("game 500 move types", () => {
     });
 
     it("Handles endTurnMove when player plays a valid card", () => {
-        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+        const { roomData, socket1, socket2, socket3, io, roomID } = helperMake500Lobby();
 
         // Set up test conditions
         roomData.gameData.players[socket1].hand = [5, 6, 7]; // Player's hand before playing
@@ -136,7 +136,7 @@ describe("game 500 move types", () => {
     });
 
     it("Handles endTurnMove when player plays a valid card but needs to trick", () => {
-        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+        const { roomData, socket1, socket2, socket3, io, roomID } = helperMake500Lobby();
 
         // Set up test conditions
         roomData.gameData.players[socket1].needsToTrick = true;
@@ -162,7 +162,7 @@ describe("game 500 move types", () => {
     });
 
     it("Handles endTurnMove when player tries to play an invalid card", () => {
-        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+        const { roomData, socket1, socket2, socket3, io, roomID } = helperMake500Lobby();
 
         // Set up test conditions
         roomData.gameData.players[socket1].hand = [5, 6, 7]; // Player's hand before playing
@@ -185,7 +185,7 @@ describe("game 500 move types", () => {
     });
 
     it("Handles endTurnMove when player plays their last card (Game Over)", () => {
-        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+        const { roomData, socket1, socket2, socket3, io, roomID } = helperMake500Lobby();
 
         // Set up test conditions
         roomData.gameData.players[socket1].hand = [8]; // Player has only 1 card left
@@ -212,7 +212,7 @@ describe("game 500 functions", () => {
     });
 
     it("Start 500 game", () => {
-        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+        const { roomData, socket1, socket2, socket3, io, roomID } = helperMake500Lobby();
         const gameData = roomData.gameData;
 
         // Assert that all players have exactly 7 cards
@@ -240,7 +240,7 @@ describe("game 500 functions", () => {
 describe("game 500 play trick logic", () => {
 
     it("Does nothing when no card is selected", () => {
-        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+        const { roomData, socket1, socket2, socket3, io, roomID } = helperMake500Lobby();
 
         // Save initial state
         const initialHand = [...roomData.gameData.players[socket1].hand];
@@ -255,7 +255,7 @@ describe("game 500 play trick logic", () => {
     });
 
     it("Removes the card from hand and adds to tricks when a valid single trick is played", () => {
-        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+        const { roomData, socket1, socket2, socket3, io, roomID } = helperMake500Lobby();
 
         // Set up game state
         roomData.gameData.players[socket1].hand = [5, 6, 7]; // Player's hand
@@ -272,7 +272,7 @@ describe("game 500 play trick logic", () => {
     });
 
     it("Does not remove card from hand when trick is invalid (no adjacency)", () => {
-        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+        const { roomData, socket1, socket2, socket3, io, roomID } = helperMake500Lobby();
 
         // Set up game state
         roomData.gameData.players[socket1].hand = [5, 6, 7]; // Player hand
@@ -292,7 +292,7 @@ describe("game 500 play trick logic", () => {
     });
 
     it("Does not remove card from hand if the card is missing", () => {
-        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+        const { roomData, socket1, socket2, socket3, io, roomID } = helperMake500Lobby();
 
         // Set up game state
         roomData.gameData.players[socket1].hand = [6, 7]; // Player hand (5 is missing)
@@ -316,7 +316,7 @@ describe("game 500 play trick logic", () => {
 describe("game 500 multi trick logic", () => {
 
     it("Does nothing when no cards are selected", () => {
-        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+        const { roomData, socket1, socket2, socket3, io, roomID } = helperMake500Lobby();
 
         // Save initial state
         const initialHand = [...roomData.gameData.players[socket1].hand];
@@ -331,7 +331,7 @@ describe("game 500 multi trick logic", () => {
     });
 
     it("Removes multiple adjacent cards from hand and adds them to tricks", () => {
-        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+        const { roomData, socket1, socket2, socket3, io, roomID } = helperMake500Lobby();
 
         // Set up game state
         roomData.gameData.players[socket1].hand = [5, 6, 7, 8, 9]; // Player's hand
@@ -349,7 +349,7 @@ describe("game 500 multi trick logic", () => {
     });
 
     it("Does not remove cards when multi-trick is invalid (not adjacent)", () => {
-        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+        const { roomData, socket1, socket2, socket3, io, roomID } = helperMake500Lobby();
 
         // Set up game state
         roomData.gameData.players[socket1].hand = [5, 6, 7, 10]; // Player hand
@@ -371,7 +371,7 @@ describe("game 500 multi trick logic", () => {
     });
 
     it("Does not remove cards when at least one is missing", () => {
-        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+        const { roomData, socket1, socket2, socket3, io, roomID } = helperMake500Lobby();
 
         // Set up game state
         roomData.gameData.players[socket1].hand = [6, 8]; // ❌ Missing 7
@@ -393,7 +393,7 @@ describe("game 500 multi trick logic", () => {
     });
 
     it("Sets needsToTrick to false after a valid multi-trick", () => {
-        const { roomData, socket1, io, roomID } = helperMake500Lobby();
+        const { roomData, socket1, socket2, socket3, io, roomID } = helperMake500Lobby();
 
         // Set up game state
         roomData.gameData.players[socket1].hand = [5, 6, 7, 8]; // Player's hand
@@ -412,6 +412,31 @@ describe("game 500 multi trick logic", () => {
 
         // ✅ Expect `needsToTrick` to be set to false
         expect(roomData.gameData.players[socket1].needsToTrick).toBe(false);
+    });
+
+    it("Play again", () => {
+        const { roomData, socket1, socket2, socket3, io, roomID } = helperMake500Lobby();
+
+        roomData.gameData.players[socket1].hand = [5, 6, 7, 8];
+        roomData.gameData.players[socket2].hand = [0, 1, 2];
+        roomData.gameData.players[socket3].hand = [17, 18, 19];
+
+        call500Move(roomData, { moveType: "playTrick", cardsToPlay: [5, 6, 7] }, socket1, io, roomID);
+        expect(roomData.gameData.players[socket1].hand).toEqual([8]);
+        call500Move(roomData, { moveType: "endTurn", cardToPlay: 8 }, socket1, io, roomID);
+        expect(roomData.gameData.players[socket1].hand).toStrictEqual([]);
+        expect(roomData.gameData.players[socket1].totalScore).toBe(15);
+        expect(roomData.gameData.players[socket2].totalScore).toBe(-25);
+        expect(roomData.gameData.players[socket3].totalScore).toBe(-15);
+
+        call500Move(roomData, { moveType: "playAgain" }, socket1, io, roomID);
+        expect(Object.values(roomData.gameData.players).reduce((acc, player) => acc + player.hand.length, 0)).toBe(21);
+        expect(Object.values(roomData.gameData.players).reduce((acc, player) => acc + player.tricks.length, 0)).toBe(0);
+        expect(roomData.gameData.stack.length).toBe(1);
+        expect(roomData.gameData.deck.length).toBe(30);
+        expect(roomData.gameData.players[socket1].totalScore).toBe(15);
+        expect(roomData.gameData.players[socket2].totalScore).toBe(-25);
+        expect(roomData.gameData.players[socket3].totalScore).toBe(-15);
     });
 
 });
@@ -458,5 +483,5 @@ function helperMake500Lobby() {
     start500Game(roomData, socket1.id, io, roomID);
 
     // ✅ Return an object containing all relevant data
-    return { roomData, socket1: socket1.id, io, roomID };
+    return { roomData, socket1: socket1.id, socket2: socket2.id, socket3: socket3.id, io, roomID };
 }
