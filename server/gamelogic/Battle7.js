@@ -168,12 +168,6 @@ function playCard(card, roomData) {
     if (rank > 7) roomData.board[0][suit] = rank;
 }
 
-function getRandomInt(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
 function possibleSkip(roomData, socketID) {
     let playerHand = roomData.players.get(socketID).hand;
     let canSkip = true;
