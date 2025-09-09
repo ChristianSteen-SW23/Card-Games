@@ -34,7 +34,10 @@ export default function SettingsModal({ show, onClose }) {
             <div className="modal-dialog modal-dialog-centered">
                 <div className="modal-content">
                     <div className="modal-header">
-                        <h5 className="modal-title">Settings</h5>
+                        <div className="d-block">
+                            <h5 className="modal-title">Settings</h5>
+                            <div className="text-muted small">v{import.meta.env.VITE_APP_VERSION || " VERSION NOT LOADED"}</div>
+                        </div>
                         <button type="button" className="btn-close" onClick={onClose}></button>
                     </div>
                     <div className="modal-body">
