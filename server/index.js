@@ -18,6 +18,7 @@ import {
   start500Game,
   call500Move,
 } from "./gamelogic/Battle500.js"
+import { startPlanningPoker, callPlanningPokerMove } from "./gamelogic/PlanningPoker.js";
 
 const server = http.createServer();
 
@@ -70,6 +71,9 @@ io.on("connection", (socket) => {
       case "500":
         start500Game(roomData, socket.id, io, roomID)
         break;
+      case "500":
+        startPlanningPoker(roomData, socket.id, io, roomID)
+        break;
     }
   });
 
@@ -95,6 +99,14 @@ io.on("connection", (socket) => {
     const roomData = Rooms.get(roomID)
 
     call500Move(roomData, data, socket.id, io, roomID);
+  });
+
+  socket.on("PlanningPokerMove", (data) => {
+    console.log(data)
+    const roomID = PlayerRooms.get(socket.id)
+    const roomData = Rooms.get(roomID)
+
+    callPlanningPokerMove(roomData, data, socket.id, io, roomID);
   });
 
 });
