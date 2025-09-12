@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { socket } from "./../socket";
 import { showPopup } from "../js/popupController";
 import BottomOfScreen from "./subComponents/planningPoker/BottomOfScreen";
+import PlayersDisplay from "./subComponents/planningPoker/PlayersDisplay";
 
 export default function PlanningPoker({ lobbyStateStart }) {
 
@@ -9,8 +10,11 @@ export default function PlanningPoker({ lobbyStateStart }) {
     const [players, setPlayers] = useState(lobbyStateStart.playersInfo);
     const [mustNewRound, setMustNewRound] = useState(lobbyStateStart.mustNewRound);
 
+    const valueRange = 10;
+
     useEffect(() => {
         function gameInfo(data) {
+            console.log(data);
             setPlayers(data.playersInfo);
             setMustNewRound(data.mustNewRound);
         }
@@ -30,12 +34,12 @@ export default function PlanningPoker({ lobbyStateStart }) {
 
     return (
         <>
-            <div className="container text-center">
+            {/* <div className="container text-center">
                 <p><strong>Lobby:</strong> {JSON.stringify(players)}</p>
-                <p><strong>Hand:</strong> {JSON.stringify(mustNewRound)}</p>
-            </div>
-
-            <BottomOfScreen />
+                <p><strong>Hand:</strong> {mustNewRound}</p>
+            </div> */}
+            <PlayersDisplay mustNewRound={mustNewRound} players={players} valueRange={valueRange} />
+            <BottomOfScreen mustNewRound={mustNewRound} valueRange={valueRange} />
         </>
     );
 }

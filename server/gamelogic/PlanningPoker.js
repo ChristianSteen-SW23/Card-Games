@@ -11,7 +11,6 @@ function startPlanningPoker(roomData, socketID, io, roomID) {
         player.value = -1;
     }
 
-
     sendGameInfo(roomData, roomID, io, "startedGamePlanningPoker");
     console.log("Started game planning poker made by", socketID);
 }
@@ -20,7 +19,7 @@ function callPlanningPokerMove(roomData, socketData, playerID, io, roomID) {
     let moveType = socketData.moveType;
     switch (moveType) {
         case "choice":
-            choice(roomData, io, playerID, roomID, socketData.value);
+            choice(roomData, playerID, io, roomID, socketData.value);
             break;
         case "newRound":
             newRound(roomData, playerID, io, roomID);
@@ -33,7 +32,8 @@ function newRound(roomData, playerID, io, roomID) {
     if (roomData.SM !== playerID) return sendErrorMessage(playerID, io, "Only the Scrum master can start a new game. This is the host.", "Not Scrum master");
     for (let [playerid, player] of roomData.players.entries())
         player.ready = false;
-    emitGameInfo(io, roomID, roomData);
+    roomData.mustNewRound = false;
+    sendGameInfo(roomData, roomID, io);
 }
 
 function choice(roomData, playerID, io, roomID, value) {
@@ -41,7 +41,7 @@ function choice(roomData, playerID, io, roomID, value) {
     roomData.players.get(playerID).value = value;
     roomData.players.get(playerID).ready = true;
     lastChoice(roomData);
-    emitGameInfo(io, roomID, roomData);
+    sendGameInfo(roomData, roomID, io);
 }
 
 function lastChoice(roomData) {
@@ -54,8 +54,7 @@ function lastChoice(roomData) {
 function sendGameInfo(roomData, roomID, io, event = "gameInfo") {
     const gameInfo = {
         playersInfo: mapPlayerInfoPlanningPoker(roomData.players),
-        turn: roomData.turn,
-        board: roomData.board
+        mustNewRound: roomData.mustNewRound,
     };
     io.to(roomID).emit(event, gameInfo);
 }

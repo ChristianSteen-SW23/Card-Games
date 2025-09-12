@@ -1,13 +1,19 @@
 import { socket } from "./../../../socket";
 
 
-export default function BottomOfScreen({ }) {
+export default function BottomOfScreen({ mustNewRound, valueRange }) {
+    if (mustNewRound) {
+        return <NewRound />;
+    } else {
+        return <ScoreRound valueRange={valueRange} />;
+    }
+}
 
+function ScoreRound({ valueRange }) {
     function sendValue(value) {
-        console.log("here")
         socket.emit("PlanningPokerMove", { "moveType": "choice", "value": value });
     }
-    const values = Array.from({ length: 15 }, (_, i) => i + 1);
+    const values = Array.from({ length: valueRange }, (_, i) => i + 1);
     const max = Math.max(...values);
     const min = Math.min(...values);
     return (
@@ -22,18 +28,43 @@ export default function BottomOfScreen({ }) {
                         return (
                             <button
                                 key={index}
-                                className="btn"
+                                className="btn fs-5"
                                 style={{
                                     backgroundColor: color,
                                     color: "white",
                                     border: "none"
                                 }}
-                                onClick={sendValue}
+                                onClick={() => { sendValue(value) }}
                             >
                                 {value}
                             </button>
                         );
                     })}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function NewRound({ }) {
+    function sendValue(value) {
+        socket.emit("PlanningPokerMove", { "moveType": "newRound" });
+    }
+
+    return (
+        <div className="container">
+            <div className="row fixed-bottom bg-light border-top">
+                <div className="col text-center py-3 bg-dark d-flex justify-content-center">
+                    <button
+                        className="btn btn-light fs-5 shadow rounded-pill"
+                        style={{
+                            maxWidth: "300px", // prevent full screen width
+                            width: "80%",      // responsive scaling
+                        }}
+                        onClick={sendValue}
+                    >
+                        Next round
+                    </button>
                 </div>
             </div>
         </div>
