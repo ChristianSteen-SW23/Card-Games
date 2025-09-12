@@ -12,12 +12,8 @@ function startPlanningPoker(roomData, socketID, io, roomID) {
     }
 
 
-    emitGameInfo(io, roomID, roomData);
+    sendGameInfo(roomData, roomID, io, "startedGamePlanningPoker");
     console.log("Started game planning poker made by", socketID);
-}
-
-function emitGameInfo(io, roomID, roomData) {
-    io.to(roomID).emit("startedGamePlanningPoker", sendGameInfo(roomData));
 }
 
 function callPlanningPokerMove(roomData, socketData, playerID, io, roomID) {
@@ -55,13 +51,13 @@ function lastChoice(roomData) {
     return true;
 }
 
-function sendGameInfo(roomData, roomID, io) {
+function sendGameInfo(roomData, roomID, io, event = "gameInfo") {
     const gameInfo = {
         playersInfo: mapPlayerInfoPlanningPoker(roomData.players),
         turn: roomData.turn,
         board: roomData.board
     };
-    io.to(roomID).emit("gameInfo", gameInfo);
+    io.to(roomID).emit(event, gameInfo);
 }
 
 function mapPlayerInfoPlanningPoker(map) {
@@ -71,7 +67,7 @@ function mapPlayerInfoPlanningPoker(map) {
             name: value.name,
             id: key,
             value: value.value,
-            ready: player.ready,
+            ready: value.ready,
         });
     }
     return array;

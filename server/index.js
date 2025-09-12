@@ -71,7 +71,7 @@ io.on("connection", (socket) => {
       case "500":
         start500Game(roomData, socket.id, io, roomID)
         break;
-      case "500":
+      case "Planning Poker":
         startPlanningPoker(roomData, socket.id, io, roomID)
         break;
     }
