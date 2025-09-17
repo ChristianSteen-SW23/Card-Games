@@ -1,19 +1,19 @@
 import { socket } from "./../../../socket";
 
 
-export default function BottomOfScreen({ mustNewRound, valueRange }) {
+export default function BottomOfScreen({ mustNewRound, valueRange, cardValues }) {
     if (mustNewRound) {
         return <NewRound />;
     } else {
-        return <ScoreRound valueRange={valueRange} />;
+        return <ScoreRound valueRange={valueRange} cardValues={cardValues} />;
     }
 }
 
-function ScoreRound({ valueRange }) {
+function ScoreRound({ valueRange, cardValues }) {
     function sendValue(value) {
         socket.emit("PlanningPokerMove", { "moveType": "choice", "value": value });
     }
-    const values = Array.from({ length: valueRange }, (_, i) => i + 1);
+    const values = Array.from({ length: valueRange }, (_, i) => i);
     const max = Math.max(...values);
     const min = Math.min(...values);
     return (
@@ -36,7 +36,7 @@ function ScoreRound({ valueRange }) {
                                 }}
                                 onClick={() => { sendValue(value) }}
                             >
-                                {value}
+                                {cardValues[value]}
                             </button>
                         );
                     })}

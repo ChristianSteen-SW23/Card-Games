@@ -1,7 +1,7 @@
 import { socket } from "../../../socket";
 
 
-export default function PlayerDisplay({ player, mustNewRound, valueRange }) {
+export default function PlayerDisplay({ player, mustNewRound, valueRange, cardValues }) {
     // Clamp value between 0 and valueRange
     const normalized = Math.min(player.value ?? 0, valueRange) / valueRange;
 
@@ -41,7 +41,7 @@ export default function PlayerDisplay({ player, mustNewRound, valueRange }) {
                         lineHeight: 1,
                     }}
                 >
-                    {mustNewRound && player.value}
+                    {mustNewRound && cardValues[player.value]}
                 </span>
             </div>
         </div>
