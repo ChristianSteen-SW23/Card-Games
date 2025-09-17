@@ -10,7 +10,9 @@ export default function PlanningPoker({ lobbyStateStart }) {
     const [players, setPlayers] = useState(lobbyStateStart.playersInfo);
     const [mustNewRound, setMustNewRound] = useState(lobbyStateStart.mustNewRound);
 
-    const valueRange = 10;
+
+    const cardValues = { 0: "½", 1: "1", 2: "2", 3: "3", 4: "5", 5: "8", 6: "13", 7: "20", 8: "40", 9: "100", 10: "∞", 11: "?" };
+    const valueRange = Object.keys(cardValues).length;
 
     useEffect(() => {
         function gameInfo(data) {
@@ -38,8 +40,8 @@ export default function PlanningPoker({ lobbyStateStart }) {
                 <p><strong>Lobby:</strong> {JSON.stringify(players)}</p>
                 <p><strong>Hand:</strong> {mustNewRound}</p>
             </div> */}
-            <PlayersDisplay mustNewRound={mustNewRound} players={players} valueRange={valueRange} />
-            <BottomOfScreen mustNewRound={mustNewRound} valueRange={valueRange} />
+            <PlayersDisplay mustNewRound={mustNewRound} players={players} valueRange={valueRange} cardValues={cardValues} />
+            <BottomOfScreen mustNewRound={mustNewRound} valueRange={valueRange} cardValues={cardValues} />
         </>
     );
 }
