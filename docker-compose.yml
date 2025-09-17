@@ -14,7 +14,7 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_FRONT_SOCKET_IP: "91.99.223.75:443"
-        VITE_APP_VERSION: "1.1.0"
+        VITE_APP_VERSION: "1.1.1"
     container_name: card-front
     ports:
       - "80:8081"
