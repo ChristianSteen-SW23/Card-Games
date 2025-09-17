@@ -1,0 +1,96 @@
+@startuml socketClassDiagram
+
+class Lobby {
+    - id: int
+    - host: playerID // Er denen rigtig
+    - gameStarted: bool
+    // TODO
+}
+
+class Player {
+    - id: string
+    - name: string
+    // TODO
+}
+
+
+abstract class GameLogic {
+    + startGame(): void // IDK
+    + handleMove(data): void // IDK
+    // TODO
+}
+
+class Game7Logic {
+    - deck: int[]
+    - board: int[][]
+    // TODO
+}
+
+class Game31Logic {
+    // TODO
+}
+
+class Game500Logic {
+    - deck: int[]
+    - stack: int[]
+    // TODO
+}
+
+class PlanningPokerLogic {
+    // TODO
+}
+
+
+class TurnManager {
+    - current: playerID
+    - next: playerID
+    + advanceTurn(): void
+    + setCurrent(id): void
+    + getCurrent(): playerID
+    // TODO
+}
+
+
+abstract class GamePlayerData
+
+class Player7Data {
+    - hand: [int]
+    // TODO
+}
+
+class Player31Data {
+    - hand: [int]
+    // TODO
+}
+
+class Player500Data {
+    - hand: [int]
+    // TODO
+}
+
+class PlayerPlanningPokerData {
+    - value: int
+    - ready: bool
+    // TODO
+}
+
+
+Lobby --> GameLogic
+GameLogic <|-- Game7Logic
+GameLogic <|-- Game31Logic
+GameLogic <|-- Game500Logic
+GameLogic <|-- PlanningPokerLogic
+
+Game7Logic --> TurnManager
+Game31Logic --> TurnManager
+Game500Logic --> TurnManager
+
+Player --> GamePlayerData
+GamePlayerData <|-- Player7Data
+GamePlayerData <|-- Player31Data
+GamePlayerData <|-- Player500Data
+GamePlayerData <|-- PlayerPlanningPokerData
+
+Lobby "1" o-- "1..*" Player
+
+@enduml
