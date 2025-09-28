@@ -6,7 +6,31 @@ use crate::models::{Lobby, Player};
 #[derive(Debug, Default, Clone)]
 pub struct ServerState {
     // all lobbies by lobby id
-    pub lobbies: HashMap<u32, Arc<Lobby>>,
+    pub lobbies: HashMap<u32, Arc<Mutex<Lobby>>>,
     // player_id -> lobby_id
     pub player_lobby: HashMap<String, u32>,
 }
+
+impl ServerState {
+    pub fn new() -> Self {
+        Self {
+            lobbies: HashMap::new(),
+            player_lobby: HashMap::new(),
+        }
+    }
+
+    pub fn add_lobby(&mut self, lobby: Lobby) {
+        self.lobbies.insert(lobby.id, Arc::new(Mutex::new(lobby)));
+    }
+
+    pub fn add_player_to_lobby(&mut self, lobby_id: u32, player: Player) {
+        if let Some(lobby_arc) = self.lobbies.get(&lobby_id) {
+            self.player_lobby.insert(player.id.clone(), lobby_id);
+            if let Ok(mut lobby) = lobby_arc.lock() {
+                lobby.add_player(player);
+            }
+        }
+    }
+}
+
+pub type SharedState = Arc<Mutex<ServerState>>;

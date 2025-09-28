@@ -22,6 +22,7 @@ function ScreenController() {
             setCurrentPage('StartPage')
         }
         function conToLobbyFunc(data) {
+            console.log(data)
             setTempData(data);
             setCurrentPage('Lobby')
         }

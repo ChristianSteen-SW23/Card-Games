@@ -52,7 +52,7 @@ function HostGameModalButton() {
     const [displayName, setDisplayName] = useState("");
 
     function hostGame() {
-        socket.emit("lobbyControl", { eventType: "createLobby", username: displayName });
+        socket.emit("lobbyControl", { "eventType": "createLobby", username: displayName });
     }
 
     return (

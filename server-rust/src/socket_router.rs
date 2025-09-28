@@ -1,30 +1,24 @@
-use colored::*;
-use socketioxide::{extract::SocketRef, socket::Socket};
-use tracing::info;
+use crate::{
+    socket::lobby_socket::{LobbyPayload, lobby_controller},
+    state::SharedState,
+};
+use colored::Colorize;
+use serde_json::Value;
+use socketioxide::extract::{Data, SocketRef};
+use tracing::warn;
 
-/// Handles all incoming socket routes
-pub fn register_socket_routes(io: &socketioxide::SocketIo) {
-    io.ns("/", |s: SocketRef| {
+pub fn register_socket_routes(io: &socketioxide::SocketIo, state: &SharedState) {
+    let state = state.clone();
+    io.ns("/", move |s: SocketRef| {
+        let state = state.clone();
         println!("Client connected with id: {}", s.id.to_string().green());
 
         s.on("message", |s: SocketRef| {
-            s.emit("message-back", "Hello World123!").ok();
+            s.emit("message-back", "Hello World!").ok();
+        });
+
+        s.on("lobbyControl", move |socket: SocketRef, Data::<LobbyPayload>(data)| {
+            lobby_controller(socket, data, state.clone());
         });
     });
-}
-
-/// Example: lobby handler
-fn handle_lobby(socket: Socket, data: String) {
-    // TODO: forward to lobby logic
-    socket
-        .emit("lobby_response", format!("Joined lobby with {data}"))
-        .ok();
-}
-
-/// Example: game handler
-fn handle_game(socket: Socket, data: String) {
-    // TODO: forward to game instance logic
-    socket
-        .emit("game_response", format!("Joined game with {data}"))
-        .ok();
 }
