@@ -1,16 +1,24 @@
+use axum::Router;
 use axum::routing::get;
 use socketioxide::{SocketIo, extract::SocketRef};
+use tracing_subscriber;
+
+use server_rust::{
+    models::{Lobby, Player},
+    socket_router,
+};
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    tracing_subscriber::fmt()
+        .with_env_filter("info")
+        .with_ansi(true)
+        .init();
+
     let (layer, io) = SocketIo::new_layer();
 
-    // Register a handler for the default namespace
-    io.ns("/", |s: SocketRef| {
-        // For each "message" event received, send a "message-back" event with the "Hello World!" event
-        s.on("message", |s: SocketRef| {
-            s.emit("message-back", "Hello World!").ok();
-        });
-    });
+    // Register all socket routes in another file
+    socket_router::register_socket_routes(&io);
 
     let app = axum::Router::new()
         .route("/", get(|| async { "Hello, World!" }))

@@ -9,3 +9,4 @@ axum = "0.7"
 socketioxide = "0.10"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
+colored = "2"
