@@ -1,5 +1,5 @@
 use colored::Colorize;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use socketioxide::extract::SocketRef;
 use tracing::info;
 use rand::Rng;
@@ -22,6 +22,19 @@ pub enum LobbyEvents {
     CreateLobby,
 }
 
+#[derive(Debug, Serialize)]
+pub struct LobbyResponse {
+    pub id: u32,
+    pub players: Vec<PlayerResponse>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct PlayerResponse {
+    pub playerid: String,
+    pub name: String,
+    pub host: bool,
+}
+
 pub fn lobby_controller(s: SocketRef, data: LobbyPayload, state: SharedState) {
     println!(
         "Lobby Event:{} {}",
@@ -38,19 +51,25 @@ pub fn lobby_controller(s: SocketRef, data: LobbyPayload, state: SharedState) {
 
 fn create_lobby(s: SocketRef, data: LobbyPayload, state: SharedState){
     let mut state = state.lock().unwrap(); // lock global state
-
     let new_id = create_lobby_id();
-
     let mut lobby = Lobby::new(new_id, s.id.to_string());
-
-    if let Some(name) = data.username {
+    let username_opt = data.username.clone();
+    if let Some(name) = username_opt {
         let player = Player::new(s.id.to_string(), name);
         lobby.add_player(player);
     }
 
     state.add_lobby(lobby);
 
-    let _ = s.emit("conToLobby", new_id);
+    let response = LobbyResponse {
+        id: new_id,
+        players: vec![PlayerResponse {
+            playerid: s.id.to_string(),
+            name: data.username.unwrap_or_default(),
+            host: true,
+        }],
+    };
+    let _ = s.emit("conToLobby", response);
 }
 
 
