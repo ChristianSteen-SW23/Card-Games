@@ -11,6 +11,12 @@ pub struct ServerState {
     pub player_lobby: HashMap<String, u32>,
 }
 
+impl ServerState{
+    pub fn add_player_lobby(&mut self, lobby_id: u32, socket_id: String){
+        self.player_lobby.insert(socket_id, lobby_id);
+    }
+}
+
 impl ServerState {
     pub fn new() -> Self {
         Self {

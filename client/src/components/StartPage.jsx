@@ -130,7 +130,7 @@ function JoinGameModalButton() {
     const [gameCode, setGameCode] = useState("");
 
     function joinGame() {
-        socket.emit("lobbyControl", { eventType: "joinLobby", name: displayName, id: gameCode });
+        socket.emit("lobbyControl", { eventType: "joinLobby", username: displayName, lobbyId: parseInt(gameCode) });
     }
 
     return (
