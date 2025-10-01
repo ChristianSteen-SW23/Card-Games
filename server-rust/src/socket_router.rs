@@ -17,8 +17,11 @@ pub fn register_socket_routes(io: &socketioxide::SocketIo, state: &SharedState) 
             s.emit("message-back", "Hello World!").ok();
         });
 
-        s.on("lobbyControl", move |socket: SocketRef, Data::<LobbyPayload>(data)| {
-            lobby_controller(socket, data, state.clone());
-        });
+        s.on(
+            "lobbyControl",
+            move |socket: SocketRef, Data::<LobbyPayload>(data)| {
+                lobby_controller(socket, data, state.clone());
+            },
+        );
     });
 }
