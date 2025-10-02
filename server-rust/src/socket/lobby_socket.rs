@@ -11,7 +11,7 @@ use crate::{
     state::SharedState,
 };
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LobbyPayload {
     pub lobby_id: Option<u32>,
@@ -19,25 +19,25 @@ pub struct LobbyPayload {
     pub event_type: LobbyEvents,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum LobbyEvents {
     JoinLobby,
     CreateLobby,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct LobbyResponse {
     pub id: u32,
     pub players: Vec<PlayerResponse>,
 }
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, Deserialize)]
 pub struct PlayersResponse {
     pub players: Vec<PlayerResponse>,
 }
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, Deserialize)]
 pub struct PlayerResponse {
     pub playerid: String,
     pub name: String,
@@ -65,7 +65,7 @@ fn join_lobby(s: SocketRef, data: LobbyPayload, state: SharedState) {
             &s,
             ErrorResponse {
                 message: "Missing lobby_id".to_string(),
-                type_message: "Lobby".to_string(),
+                r#type: "Lobby".to_string(),
             },
         );
     };
@@ -78,7 +78,7 @@ fn join_lobby(s: SocketRef, data: LobbyPayload, state: SharedState) {
                 &s,
                 ErrorResponse {
                     message: "Lobby code does not exist".to_string(),
-                    type_message: "Lobby".to_string(),
+                    r#type: "Lobby".to_string(),
                 },
             );
         }
@@ -91,7 +91,7 @@ fn join_lobby(s: SocketRef, data: LobbyPayload, state: SharedState) {
             &s,
             ErrorResponse {
                 message: "The lobby has already started their game".to_string(),
-                type_message: "Lobby".to_string(),
+                r#type: "Lobby".to_string(),
             },
         );
     }
@@ -101,7 +101,7 @@ fn join_lobby(s: SocketRef, data: LobbyPayload, state: SharedState) {
             &s,
             ErrorResponse {
                 message: "Missing username".to_string(),
-                type_message: "Lobby".to_string(),
+                r#type: "Lobby".to_string(),
             },
         );
     };
@@ -111,7 +111,7 @@ fn join_lobby(s: SocketRef, data: LobbyPayload, state: SharedState) {
             &s,
             ErrorResponse {
                 message: "Invalid username".to_string(),
-                type_message: "Lobby".to_string(),
+                r#type: "Lobby".to_string(),
             },
         );
     }
@@ -149,7 +149,7 @@ fn create_lobby(s: SocketRef, data: LobbyPayload, state: SharedState) {
                 &s,
                 ErrorResponse {
                     message: "Could not generate a free lobby code".to_string(),
-                    type_message: "Lobby".to_string(),
+                    r#type: "Lobby".to_string(),
                 },
             );
         }
@@ -187,7 +187,7 @@ fn create_lobby(s: SocketRef, data: LobbyPayload, state: SharedState) {
             &s,
             ErrorResponse {
                 message: "No username given".to_string(),
-                type_message: "???".to_string(),
+                r#type: "???".to_string(),
             },
         ),
     }
@@ -199,7 +199,7 @@ pub fn check_username(s: &SocketRef, username: &str) -> bool {
             s,
             ErrorResponse {
                 message: "Invalid username".to_string(),
-                type_message: "Lobby".to_string(),
+                r#type: "Lobby".to_string(),
             },
         );
         false

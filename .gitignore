@@ -30,3 +30,4 @@ dist-ssr
 # Rust things
 /server-rust/target
 **/*.rs.bk
+tarpaulin-report.html
