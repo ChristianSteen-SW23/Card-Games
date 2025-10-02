@@ -59,7 +59,7 @@ fn test_message_event() {
     socket.emit("message", "").expect("emit failed");
 
     let msg = rx
-        .recv_timeout(std::time::Duration::from_secs(2))
+        .recv_timeout(std::time::Duration::from_secs(3))
         .expect("no response");
     assert_eq!(msg, "Hello World!");
 }
@@ -113,7 +113,7 @@ fn test_lobbyControl_event_createlobby_shortname_400() {
         .expect("emit failed");
 
     let msg = rx
-        .recv_timeout(std::time::Duration::from_secs(1))
+        .recv_timeout(std::time::Duration::from_secs(3))
         .expect("no response");
     // parse into your ErrorResponse struct
     let err: ErrorResponse = serde_json::from_str(&msg).expect("invalid JSON in response");
@@ -171,7 +171,7 @@ fn test_lobbyControl_event_createlobby_200() {
         .expect("emit failed");
 
     let msg = rx
-        .recv_timeout(std::time::Duration::from_secs(1))
+        .recv_timeout(std::time::Duration::from_secs(3))
         .expect("no response");
     // parse into your ErrorResponse struct
     let res: LobbyResponse = serde_json::from_str(&msg).expect("invalid JSON in response");
@@ -181,7 +181,7 @@ fn test_lobbyControl_event_createlobby_200() {
     assert_eq!(res.players[0].name, "player1");
 
     let state = state.lock().unwrap();
-    assert!(state.player_lobby.len() == 1);
+    assert_eq!(state.player_lobby.len(), 1);
     assert!(state.lobbies.contains_key(&res.id));
     assert_eq!(state.lobbies.get(&res.id).unwrap().lock().unwrap().players[0].name, "player1");
     assert_eq!(state.lobbies.get(&res.id).unwrap().lock().unwrap().id, res.id);

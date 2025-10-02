@@ -2,11 +2,9 @@ use colored::Colorize;
 use rand::{rng, Rng};
 use serde::{Deserialize, Serialize};
 use socketioxide::{extract::SocketRef};
-use tokio::io::join;
-use tracing::info;
 
 use crate::{
-    models::{Lobby, Player, lobby},
+    models::{Lobby, Player},
     socket::send_error_socket::{ErrorResponse, send_error_message},
     state::SharedState,
 };

@@ -1,40 +1,47 @@
-use std::sync::Arc;
-
 use colored::Colorize;
 use socketioxide::{SocketIo, extract::SocketRef, socket::DisconnectReason};
+use crate::state::SharedState;
 
-use crate::{models::Player, state::SharedState};
-
-pub fn disconnect_controller(s: SocketRef, reason: DisconnectReason, state: SharedState) {
+pub fn disconnect_controller(
+    s: SocketRef,
+    reason: DisconnectReason,
+    state: SharedState,
+    io: SocketIo,
+) {
     println!(
         "Socket {} on ns {} disconnected, reason: {:?}",
         s.id.to_string().green(),
-        s.ns().blue(),
+        s.ns().to_string().blue(),
         reason.to_string().blue()
     );
+    
+    let Some(&room_id) = state.lock().unwrap().player_lobby.get(&s.id.to_string()) else {
+        return;
+    };
 
-    let mut state = state.lock().unwrap();
+    if !state
+        .lock()
+        .unwrap()
+        .lobbies
+        .get(&room_id)
+        .unwrap()
+        .lock()
+        .unwrap()
+        .game_started
+    {
+        let _ = s.emit("leaveLobby", "data");
+        state
+            .lock()
+            .unwrap()
+            .delete_player(&room_id, s.id.to_string())
+    } else {
 
-    if let Some(&roomID) = state.player_lobby.get(&s.id.to_string()) {
-        {
-            let lobby_data = state.lobbies.get(&roomID).unwrap().lock().unwrap(); // Unwrap is safe to do so here
-            if !lobby_data.game_started {
-                drop(lobby_data);
-                // TODO! Fix so the player is deleted
-                s.emit("leaveLobby", "data");
-                state.delete_player(&roomID, s.id.to_string());
-                println!("{:?}",state);
-                return;
-            }
+        s.within(room_id.to_string())
+            .broadcast()
+            .emit("leaveLobby", "")
+            .ok();
 
-            s.within(roomID.to_string())
-                .broadcast()
-                .emit("leaveLobby", "")
-                .ok();
-        }
-        // SHUTDOWN ROOM HERE
-        // TODO! Få smit folk ud af deres socket IO room
-        // Jeg skal have fundet ud af hvordan får IO her ind ellers kan jeg ikke smide dem ud
-        state.delete_room(&roomID);
+        let _ = io.leave(room_id.to_string());
+        state.lock().unwrap().delete_room(&room_id)
     }
 }
