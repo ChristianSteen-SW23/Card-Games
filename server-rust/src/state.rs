@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
-use crate::models::{Lobby, Player};
+use crate::models::{Lobby, Player, player};
 
 #[derive(Debug, Default, Clone)]
 pub struct ServerState {
@@ -11,8 +11,8 @@ pub struct ServerState {
     pub player_lobby: HashMap<String, u32>,
 }
 
-impl ServerState{
-    pub fn add_player_lobby(&mut self, lobby_id: u32, socket_id: String){
+impl ServerState {
+    pub fn add_player_lobby(&mut self, lobby_id: u32, socket_id: String) {
         self.player_lobby.insert(socket_id, lobby_id);
     }
 }
@@ -35,6 +35,29 @@ impl ServerState {
             if let Ok(mut lobby) = lobby_arc.lock() {
                 lobby.add_player(player);
             }
+        }
+    }
+
+    pub fn delete_room(&mut self, lobby_id: &u32) {
+        self.lobbies
+            .get(lobby_id)
+            .unwrap()
+            .lock()
+            .unwrap()
+            .players
+            .iter()
+            .for_each(|player| {
+                self.player_lobby.remove(&player.id);
+            });
+        self.lobbies.remove(lobby_id);
+    }
+
+    pub fn delete_player(&mut self, lobby_id: &u32, socket_id: String) {
+        self.player_lobby.remove(&socket_id);
+
+        if let Some(lobby_arc) = self.lobbies.get(lobby_id) {
+            let mut lobby = lobby_arc.lock().unwrap();
+            lobby.players.retain(|p| p.id != socket_id);
         }
     }
 }

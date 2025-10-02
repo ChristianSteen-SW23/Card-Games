@@ -1,7 +1,7 @@
 use colored::Colorize;
 use rand::{rng, Rng};
 use serde::{Deserialize, Serialize};
-use socketioxide::extract::SocketRef;
+use socketioxide::{extract::SocketRef};
 use tokio::io::join;
 use tracing::info;
 
