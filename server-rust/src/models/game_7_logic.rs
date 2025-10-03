@@ -2,9 +2,9 @@ use crate::models::{GameLogic, Player, TurnManager};
 
 #[derive(Debug, Clone)]
 pub struct Game7Logic {
-    board: Vec<Vec<u32>>,
-    r#box: String,
-    turn_manager: TurnManager,
+    pub board: Vec<Vec<u32>>,
+    pub r#box: Option<String>,
+    pub turn_manager: TurnManager,
 }
 
 impl GameLogic for Game7Logic {

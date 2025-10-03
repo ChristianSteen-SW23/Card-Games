@@ -23,13 +23,18 @@ pub fn register_socket_routes(io: &SocketIo, state: &SharedState) {
             s.emit("message-back", "Hello World!").ok();
         });
 
+        let state_for_debug = state.clone();
+        s.on("debug", move |s: SocketRef| {
+            s.emit("message-back", format!("{:?}", state_for_debug.clone())).ok();
+        });
+
         let state_for_lobby = state.clone();
         s.on("lobbyControl", |socket: SocketRef, Data::<LobbyPayload>(data)| {
             lobby_controller(socket, data, state_for_lobby);
         });
 
         let state_for_start_game = state.clone();
-        s.on("lobbyControl", |socket: SocketRef, Data::<StartGamePayload>(data)| {
+        s.on("startGame", |socket: SocketRef, Data::<StartGamePayload>(data)| {
             start_game_controller(socket, data, state_for_start_game);
         });
 

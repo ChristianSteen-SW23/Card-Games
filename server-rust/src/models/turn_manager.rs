@@ -1,3 +1,5 @@
+use std::ptr::null;
+
 use crate::models::Player;
 
 #[derive(Debug, Clone)]
@@ -18,5 +20,9 @@ impl TurnManager {
     fn advance_turn (&mut self, players: &[Player]){
         todo![]
     }
-
+    
+    pub(crate) fn new() -> Self {
+        Self { current: "".to_string(), next: "".to_string() }
+    }
+    
 }

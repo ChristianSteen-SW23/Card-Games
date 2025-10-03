@@ -4,8 +4,8 @@ use serde::{Deserialize, Serialize};
 use socketioxide::{extract::SocketRef};
 
 use crate::{
-    models::{Lobby, Player},
-    socket::send_error_socket::{ErrorResponse, send_error_message},
+    models::{lobby, Game7Logic, Lobby, Player, TurnManager},
+    socket::send_error_socket::{send_error_message, ErrorResponse},
     state::SharedState,
 };
 
@@ -53,11 +53,40 @@ pub fn start_game_controller(s: SocketRef, data: StartGamePayload, state: Shared
         s.id.to_string().green()
     );
 
-    match data.game_mode {
-        StartGameEvents::Seven => todo!(),
-        StartGameEvents::ThirtyOne => todo!(),
-        StartGameEvents::FiveHundred => todo!(),
-        StartGameEvents::PlanningPoker => todo!(),
+    let state = state.lock().unwrap();
+
+    if let Some(lobby_arc) = state.lobbies.get(&state.player_lobby.get(&s.id.to_string()).unwrap()) {
+        let mut lobby = lobby_arc.lock().unwrap();
+
+        if lobby.game_started {
+            return send_error_message(
+                &s,
+                ErrorResponse {
+                    message: "Game have all ready started".to_string(),
+                    r#type: "???".to_string(),
+                },
+            );
+        }
+
+        lobby.game_started = true;
+        
+        match data.game_mode {
+            StartGameEvents::Seven => {
+                    lobby.game = Some(Box::new(Game7Logic {
+                        board: vec![],
+                        turn_manager: TurnManager::new(),
+                        r#box: None,
+                    }));
+                },
+            StartGameEvents::ThirtyOne => todo!(),
+            StartGameEvents::FiveHundred => todo!(),
+            StartGameEvents::PlanningPoker => todo!(),
+        }
+
+
+        if let Some(game) = &mut lobby.clone().game {
+            game.start_game(&lobby.players);
+        }
     }
 }
 
