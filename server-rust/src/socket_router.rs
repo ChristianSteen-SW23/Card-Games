@@ -2,7 +2,7 @@
 use crate::{
     socket::{
         disconnect_controller,
-        lobby_socket::{LobbyPayload, lobby_controller},
+        lobby_socket::{lobby_controller, LobbyPayload}, start_game_controller, start_game_socket::StartGamePayload,
     },
     state::SharedState,
 };
@@ -26,6 +26,11 @@ pub fn register_socket_routes(io: &SocketIo, state: &SharedState) {
         let state_for_lobby = state.clone();
         s.on("lobbyControl", |socket: SocketRef, Data::<LobbyPayload>(data)| {
             lobby_controller(socket, data, state_for_lobby);
+        });
+
+        let state_for_start_game = state.clone();
+        s.on("lobbyControl", |socket: SocketRef, Data::<StartGamePayload>(data)| {
+            start_game_controller(socket, data, state_for_start_game);
         });
 
         let state_for_disconnect = state.clone();

@@ -21,9 +21,8 @@ abstract class GameLogic {
 }
 
 class Game7Logic {
-    - deck: int[]
-    - board: int[][]
-    // TODO
+    + board: int[][]
+    + box: player_id
 }
 
 class Game31Logic {
@@ -51,11 +50,11 @@ class TurnManager {
 }
 
 
-abstract class GamePlayerData
+abstract class PlayerGameData
 
 class Player7Data {
     - hand: [int]
-    // TODO
+    - totalScore: int
 }
 
 class Player31Data {
@@ -85,11 +84,11 @@ Game7Logic --> TurnManager
 Game31Logic --> TurnManager
 Game500Logic --> TurnManager
 
-Player --> GamePlayerData
-GamePlayerData <|-- Player7Data
-GamePlayerData <|-- Player31Data
-GamePlayerData <|-- Player500Data
-GamePlayerData <|-- PlayerPlanningPokerData
+Player --> PlayerGameData
+PlayerGameData <|-- Player7Data
+PlayerGameData <|-- Player31Data
+PlayerGameData <|-- Player500Data
+PlayerGameData <|-- PlayerPlanningPokerData
 
 Lobby "1" o-- "1..*" Player
 

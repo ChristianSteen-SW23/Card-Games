@@ -119,6 +119,7 @@ fn join_lobby(s: SocketRef, data: LobbyPayload, state: SharedState) {
     lobby.add_player(Player {
         id: s.id.to_string(),
         name: username.to_string(),
+        game: None,
     });
     state.add_player_lobby(lobby_id, s.id.to_string());
     drop(state);
@@ -156,7 +157,6 @@ fn create_lobby(s: SocketRef, data: LobbyPayload, state: SharedState) {
     let mut state = state.lock().unwrap(); // lock global state
 
     let mut lobby = Lobby::new(new_id, s.id.to_string());
-    let username_opt = data.username.clone();
 
     match data.username {
         Some(username) => {
@@ -211,7 +211,11 @@ pub fn create_lobby_id(state: &SharedState) -> Result<u32, ()> {
     let state = state.lock().unwrap();
 
     let max = 10;
-    let id: u32 = rng.gen_range(0..max); // 4-digit code
+    let id: u32 = {
+        let this = &mut rng;
+        let range = 0..max;
+        this.random_range(range)
+    }; // 4-digit code
 
     for i in 1..max+1 {
         let candidate = (id+i)%max;

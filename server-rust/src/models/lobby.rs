@@ -1,4 +1,4 @@
-use crate::socket::lobby_socket::{LobbyResponse, PlayerResponse};
+use crate::{models::GameLogic, socket::lobby_socket::{LobbyResponse, PlayerResponse}};
 
 use super::player::Player;
 
@@ -8,6 +8,7 @@ pub struct Lobby {
     pub host: String, // player id
     pub game_started: bool,
     pub players: Vec<Player>,
+    pub game: Option<Box<dyn GameLogic + Send + Sync>>,
 }
 
 impl Lobby {
@@ -17,6 +18,7 @@ impl Lobby {
             host,
             game_started: false,
             players: Vec::new(),
+            game: None,
         }
     }
 
