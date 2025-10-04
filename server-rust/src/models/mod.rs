@@ -10,6 +10,8 @@ pub use lobby::Lobby;
 pub use player::Player;
 pub use game_logic::GameLogic;
 pub use game_7_logic::Game7Logic;
-pub use turn_manager::TurnManager;
+pub use turn_manager::{
+    TurnManager, TurnResponse
+};
 pub use player_7_data::Player7Data;
 pub use player_game_data::PlayerGameData;

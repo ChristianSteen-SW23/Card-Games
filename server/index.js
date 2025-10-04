@@ -61,7 +61,7 @@ io.on("connection", (socket) => {
   socket.on("startGame", (gameMode) => {
     const roomID = PlayerRooms.get(socket.id);
     const roomData = Rooms.get(roomID);
-    switch (gameMode) {
+    switch (gameMode.gameMode) {
       case "7":
         start7Game(roomData, socket.id, io, roomID);
         break;

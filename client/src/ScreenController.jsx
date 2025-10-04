@@ -14,51 +14,34 @@ function ScreenController() {
 
     useEffect(() => {
         function onDisconnect() {
-            console.log("here123123")
             setCurrentPage('StartPage')
         }
 
         function leaveLobbyFunc() {
             setCurrentPage('StartPage')
         }
-        function conToLobbyFunc(data) {
-            console.log(data)
+        function conToLobbyFunc(data, string) {
+            data.lobbyState
+            data.gameMode
             setTempData(data);
             setCurrentPage('Lobby')
         }
-        function startedGameFunc7(data) {
-            setTempData(data)
-            setCurrentPage('GameMode: 7')
-        }
-        function startedGameFunc31(data) {
-            setTempData(data)
-            setCurrentPage('GameMode: 31')
-        }
-        function startedGameFunc500(data) {
+
+        function startedGameFunc(data) {
+            console.log(data);
             setTempData(data);
-            setCurrentPage('GameMode: 500')
-        }
-        function startedGameFuncPlanningPoker(data) {
-            console.log("HEre123")
-            setTempData(data);
-            setCurrentPage('GameMode: Planning Poker')
+            setCurrentPage(`GameMode: ${data.gameMode}`)
         }
 
         socket.on('disconnect', onDisconnect);
         socket.on('leaveLobby', leaveLobbyFunc);
         socket.on('conToLobby', conToLobbyFunc);
-        socket.on('startedGame7', startedGameFunc7);
-        socket.on('startedGame31', startedGameFunc31);
-        socket.on('startedGame500', startedGameFunc500);
-        socket.on('startedGamePlanningPoker', startedGameFuncPlanningPoker);
+        socket.on('startedGame', startedGameFunc);
         return () => {
             socket.off("disconnect", onDisconnect);
             socket.off("leaveLobby");
             socket.off("conToLobby");
-            socket.off("startedGame7");
-            socket.off("startedGame31");
-            socket.off("startedGame500");
-            socket.off("startedGamePlanningPoker");
+            socket.off('startedGame', startedGameFunc);
         };
     }, []);
 
@@ -72,7 +55,13 @@ function ScreenController() {
         case 'GameMode: 7':
             return <GamePage7 lobbyStateStart={tempData} />
         case 'GameMode: 500':
-            return <GamePage500 startingTurn={tempData.turn} startHand={tempData.hand} startPlayerInfo={tempData.playersInfo} startStackTop={tempData.stack} startStackSize={tempData.stackSize} deckSizeStart={tempData.deckSize} />
+            return <GamePage500 
+            startingTurn={tempData.turn} 
+            startHand={tempData.hand} 
+            startPlayerInfo={tempData.playersInfo} 
+            startStackTop={tempData.stack} 
+            startStackSize={tempData.stackSize} 
+            deckSizeStart={tempData.deckSize} />
         case 'GameMode: Planning Poker':
             console.log("here");
             return <PlanningPoker lobbyStateStart={tempData} />

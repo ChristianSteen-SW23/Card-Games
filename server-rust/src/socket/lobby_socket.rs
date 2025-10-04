@@ -211,12 +211,8 @@ pub fn create_lobby_id(state: &SharedState) -> Result<u32, ()> {
     let state = state.lock().unwrap();
 
     let max = 10;
-    let id: u32 = {
-        let this = &mut rng;
-        let range = 0..max;
-        this.random_range(range)
-    }; // 4-digit code
-
+    let id: u32 = rng.random_range(0..max);
+    
     for i in 1..max+1 {
         let candidate = (id+i)%max;
         if !state.lobbies.contains_key(&candidate) {

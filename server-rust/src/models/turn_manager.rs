@@ -1,4 +1,14 @@
+use serde::Serialize;
+
 use crate::models::Player;
+
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TurnResponse {
+    next: String,
+    current: String
+}
 
 #[derive(Debug, Clone)]
 pub struct TurnManager {
@@ -7,6 +17,10 @@ pub struct TurnManager {
 }
 
 impl TurnManager {
+   pub fn make_respone(&self)-> TurnResponse{
+        TurnResponse { next: self.get_next_owned(), current: self.get_current_owned() }
+    }
+
     pub fn new() -> Self {
         Self { current: None, next: None }
     }
@@ -22,6 +36,10 @@ impl TurnManager {
     pub fn get_current(&self) -> Option<&str> {
         self.current.as_deref()
     }
+    
+    pub fn get_current_owned(&self) -> String {
+        self.current.as_ref().unwrap().clone()
+    }  
 
     pub fn get_next(&self, players: &[Player]) -> Option<String> {
         let current_id = self.current.as_ref()?;
@@ -30,10 +48,16 @@ impl TurnManager {
         Some(players[next_index].id.clone())
     }
 
+    pub fn get_next_owned(&self) -> String {
+        self.next.as_ref().unwrap().clone()
+    }
+
     pub fn advance_turn(&mut self, players: &[Player]) {
         if let Some(next_id) = self.next.take() {
             self.current = Some(next_id);
             self.set_next(players);
         }
     }
+
+ 
 }

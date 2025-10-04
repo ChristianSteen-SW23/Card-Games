@@ -34,13 +34,15 @@ pub fn register_socket_routes(io: &SocketIo, state: &SharedState) {
         });
 
         let state_for_start_game = state.clone();
+        let io_for_start_game = io_inside.clone();
         s.on("startGame", |socket: SocketRef, Data::<StartGamePayload>(data)| {
-            start_game_controller(socket, data, state_for_start_game);
+            start_game_controller(socket, data, state_for_start_game, io_for_start_game);
         });
 
         let state_for_disconnect = state.clone();
+        let io_for_disconnect = io_inside.clone();
         s.on_disconnect(|socket: SocketRef, reason: DisconnectReason| {
-            disconnect_controller(socket, reason, state_for_disconnect, io_inside);
+            disconnect_controller(socket, reason, state_for_disconnect, io_for_disconnect);
         });
     });
 }

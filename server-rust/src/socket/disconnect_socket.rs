@@ -40,7 +40,6 @@ pub fn disconnect_controller(
             .broadcast()
             .emit("leaveLobby", "")
             .ok();
-
         let _ = io.leave(room_id.to_string());
         state.lock().unwrap().delete_room(&room_id)
     }

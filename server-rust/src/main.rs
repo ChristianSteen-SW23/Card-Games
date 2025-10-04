@@ -1,13 +1,12 @@
 use std::sync::{Arc, Mutex};
 
-use axum::{http, Router};
+use axum::{http};
 use axum::routing::get;
-use socketioxide::{SocketIo, extract::SocketRef};
+use socketioxide::SocketIo;
 use tower_http::cors::{Any, CorsLayer};
 use tracing_subscriber;
 
 use server_rust::{
-    models::{Lobby, Player},
     socket_router,
     state::ServerState,
     state::SharedState,

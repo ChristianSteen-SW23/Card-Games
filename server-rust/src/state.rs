@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
-use crate::models::{Lobby, Player, player};
+use crate::models::{Lobby, Player};
 
 #[derive(Debug, Default, Clone)]
 pub struct ServerState {
