@@ -8,7 +8,8 @@ pub struct Lobby {
     pub host: String, // player id
     pub game_started: bool,
     pub players: Vec<Player>,
-    pub game: Option<Box<dyn GameLogic + Send + Sync>>,
+    //pub game: Option<Box<dyn GameLogic + Send + Sync>>,
+    pub game: Option<GameLogic>,
 }
 
 impl Lobby {

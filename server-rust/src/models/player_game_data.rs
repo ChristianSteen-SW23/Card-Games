@@ -1,11 +1,9 @@
-use crate::models::Player;
+use crate::models::Player7Data;
 
-pub trait PlayerGameData: std::fmt::Debug + Send + Sync {
-    fn clone_box(&self) -> Box<dyn PlayerGameData + Send + Sync>;
-}
-
-impl Clone for Box<dyn PlayerGameData + Send + Sync> {
-    fn clone(&self) -> Self {
-        self.clone_box()
-    }
+#[derive(Debug, Clone)]
+pub enum PlayerGameData {
+    Player7(Player7Data),
+    // Player31(Player31Data),
+    // Player500(Player500Data),
+    // PlanningPoker(PlayerPlanningPokerData),
 }

@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use socketioxide::{extract::SocketRef};
 
 use crate::{
-    models::{lobby, Game7Logic, Lobby, Player, TurnManager},
+    models::{lobby, Game7Logic, GameLogic, Lobby, Player, TurnManager},
     socket::send_error_socket::{send_error_message, ErrorResponse},
     state::SharedState,
 };
@@ -72,20 +72,11 @@ pub fn start_game_controller(s: SocketRef, data: StartGamePayload, state: Shared
         
         match data.game_mode {
             StartGameEvents::Seven => {
-                    lobby.game = Some(Box::new(Game7Logic {
-                        board: vec![],
-                        turn_manager: TurnManager::new(),
-                        r#box: None,
-                    }));
+                    lobby.game = Some(GameLogic::Game7Logic(Game7Logic::new(&mut lobby, s)));
                 },
             StartGameEvents::ThirtyOne => todo!(),
             StartGameEvents::FiveHundred => todo!(),
             StartGameEvents::PlanningPoker => todo!(),
-        }
-
-
-        if let Some(game) = &mut lobby.clone().game {
-            game.start_game(&lobby.players);
         }
     }
 }

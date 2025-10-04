@@ -1,13 +1,10 @@
-use crate::models::Player;
+use crate::models::{Game7Logic};
 
-pub trait GameLogic: std::fmt::Debug + Send + Sync {
-    fn start_game(&mut self, players: &[Player]);
-    fn handle_move(&mut self, player_id: &str, data: serde_json::Value);
-    fn clone_box(&self) -> Box<dyn GameLogic + Send + Sync>;
-}
 
-impl Clone for Box<dyn GameLogic + Send + Sync> {
-    fn clone(&self) -> Self {
-        self.clone_box()
-    }
+#[derive(Debug, Clone)]
+pub enum GameLogic {
+    Game7Logic(Game7Logic),
+    // Player31(Player31Data),
+    // Player500(Player500Data),
+    // PlanningPoker(PlayerPlanningPokerData),
 }

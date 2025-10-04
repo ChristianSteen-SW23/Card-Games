@@ -1,28 +1,39 @@
-use std::ptr::null;
-
 use crate::models::Player;
 
 #[derive(Debug, Clone)]
-pub struct TurnManager{
-    current: String,
-    next: String,
+pub struct TurnManager {
+    current: Option<String>,
+    next: Option<String>,
 }
 
 impl TurnManager {
-    fn set_current (&mut self, player_id: String){
-        todo![]
+    pub fn new() -> Self {
+        Self { current: None, next: None }
     }
 
-    fn get_current (&self){
-        todo![]
+    pub fn set_current(&mut self, player_id: String) {
+        self.current = Some(player_id);
     }
 
-    fn advance_turn (&mut self, players: &[Player]){
-        todo![]
+    pub fn set_next(&mut self, players: &[Player]) {
+        self.next = self.get_next(players);
     }
-    
-    pub(crate) fn new() -> Self {
-        Self { current: "".to_string(), next: "".to_string() }
+
+    pub fn get_current(&self) -> Option<&str> {
+        self.current.as_deref()
     }
-    
+
+    pub fn get_next(&self, players: &[Player]) -> Option<String> {
+        let current_id = self.current.as_ref()?;
+        let current_index = players.iter().position(|p| &p.id == current_id)?;
+        let next_index = (current_index + 1) % players.len();
+        Some(players[next_index].id.clone())
+    }
+
+    pub fn advance_turn(&mut self, players: &[Player]) {
+        if let Some(next_id) = self.next.take() {
+            self.current = Some(next_id);
+            self.set_next(players);
+        }
+    }
 }

@@ -4,7 +4,7 @@ use crate::models::PlayerGameData;
 pub struct Player {
     pub id: String,
     pub name: String,
-    pub game: Option<Box<dyn PlayerGameData + Send + Sync>>,
+    pub game: Option<PlayerGameData>,
 }
 
 impl Player {

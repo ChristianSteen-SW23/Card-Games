@@ -1,13 +1,22 @@
-use crate::models::{PlayerGameData};
 
 #[derive(Debug, Clone)]
 pub struct Player7Data {
-    hand: Vec<u32>,
-    total_score: u32,
+    pub hand: Vec<u32>,
+    pub total_score: u32,
+    pub cards_left: usize,
 }
 
-impl PlayerGameData for Player7Data {
-    fn clone_box(&self) -> Box<dyn PlayerGameData + Send + Sync> {
-        Box::new(self.clone())
+impl Player7Data {
+    pub fn new() -> Self {
+        Self {
+            hand: vec![],
+            total_score: 0,
+            cards_left: 0,
+        }
+    }
+
+    pub fn set_cards_left(&mut self){
+        self.cards_left = self.hand.len();
     }
 }
+
