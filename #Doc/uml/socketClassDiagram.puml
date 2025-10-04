@@ -1,28 +1,40 @@
 @startuml socketClassDiagram
 
 class Lobby {
-    - id: int
-    - host: playerID // Er denen rigtig
-    - gameStarted: bool
-    // TODO
+    + id: u32
+    + host: String
+    + game_started: bool
+    + players: Vec<Player>
+    + game: Option<GameLogic>
+    + new(id: u32, host: String): Lobby
+    + add_player(player: Player): void
+    + start_game(): void
+    + to_response(): LobbyResponse
 }
 
 class Player {
-    - id: string
-    - name: string
-    // TODO
+    + id: String
+    + name: String
+    + game: Option<PlayerGameData>
+    + new(id: String, name: String): Player
 }
 
 
-abstract class GameLogic {
-    + startGame(): void // IDK
-    + handleMove(data): void // IDK
-    // TODO
+enum GameLogic {
+    Game7Logic
+    Game31Logic
+    Game500Logic
+    PlanningPokerLogic
 }
 
 class Game7Logic {
-    + board: int[][]
-    + box: player_id
+    + board: Vec<Vec<Option<u32>>>
+    + box: Option<playerID>
+    + turn_manager: TurnManager
+    + starting_player_id: String
+    + new(lobby: Lobby, s: SocketRef): Game7Logic
+    - start_game(lobby: Lobby, s: SocketRef): void
+    - handle_move(player_id: string, data: JSON): void
 }
 
 class Game31Logic {
@@ -41,20 +53,30 @@ class PlanningPokerLogic {
 
 
 class TurnManager {
-    - current: playerID
-    - next: playerID
-    + advanceTurn(): void
-    + setCurrent(id): void
-    + getCurrent(): playerID
-    // TODO
+    - current: Option<playerID>
+    - next: Option<playerID>
+    + new(): TurnManager
+    + setCurrent(id: playerID): void
+    + getCurrent(): Option<playerID>
+    + setNext(players: [Player]): void
+    + getNext(players: [Player]): Option<playerID>
+    + advanceTurn(players: [Player]): void
 }
 
 
-abstract class PlayerGameData
+enum PlayerGameData {
+    Player7
+    Player31
+    Player500
+    PlayerPlanningPoker
+}
 
 class Player7Data {
-    - hand: [int]
-    - totalScore: int
+    + hand: Vec<u32>
+    + total_score: u32
+    + cards_left: usize
+    + new(): Player7Data
+    + set_cards_left(): void
 }
 
 class Player31Data {
@@ -75,20 +97,20 @@ class PlayerPlanningPokerData {
 
 
 Lobby --> GameLogic
-GameLogic <|-- Game7Logic
-GameLogic <|-- Game31Logic
-GameLogic <|-- Game500Logic
-GameLogic <|-- PlanningPokerLogic
+GameLogic o-- Game7Logic
+GameLogic o-- Game31Logic
+GameLogic o-- Game500Logic
+GameLogic o-- PlanningPokerLogic
 
 Game7Logic --> TurnManager
 Game31Logic --> TurnManager
 Game500Logic --> TurnManager
 
 Player --> PlayerGameData
-PlayerGameData <|-- Player7Data
-PlayerGameData <|-- Player31Data
-PlayerGameData <|-- Player500Data
-PlayerGameData <|-- PlayerPlanningPokerData
+PlayerGameData o-- Player7Data
+PlayerGameData o-- Player31Data
+PlayerGameData o-- Player500Data
+PlayerGameData o-- PlayerPlanningPokerData
 
 Lobby "1" o-- "1..*" Player
 
