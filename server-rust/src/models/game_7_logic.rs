@@ -18,6 +18,12 @@ pub struct Start7GameResponse<'a> {
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
+pub struct Hand7GameResponse<'a> {
+    hand_info: &'a Vec<u32>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct SevenPlayerResponse<'a> {
     name: &'a String,
     id: &'a String,
@@ -74,12 +80,12 @@ impl Game7Logic {
             starting_player_id: "".to_string(),
         };
 
-        game.start_game(lobby, s, io);
-
+        game.start_game(lobby, s, &io);
+        game.response_start(lobby, &io);
         game
     }
 
-    fn start_game(&mut self, lobby: &mut Lobby, s: SocketRef, io: SocketIo) {
+    fn start_game(&mut self, lobby: &mut Lobby, s: SocketRef, io: &SocketIo) {
         println!("Starting Game 7 with {} players", lobby.players.len());
 
         lobby
@@ -93,8 +99,24 @@ impl Game7Logic {
         self.turn_manager
             .set_current(self.starting_player_id.clone());
         self.turn_manager.set_next(&lobby.players);
+    }
 
-        // Returns data to players
+    pub fn response_move(&self, lobby: &Lobby, io: &SocketIo) {
+        let turn_res = self.turn_manager.make_respone();
+
+        let players_res: Vec<_> = lobby
+            .players
+            .values()
+            .map(|player| SevenPlayerResponse::new(player))
+            .collect();
+
+        let _ = io.within(lobby.id.to_string()).broadcast().emit(
+            "gameInfo",
+            Start7GameResponse::new(&vec![], self.get_board(), &players_res, &turn_res),
+        );
+    }
+
+    pub fn response_start(&self, lobby: &Lobby, io: &SocketIo) {
         let turn_res = self.turn_manager.make_respone();
 
         let players_res: Vec<_> = lobby
@@ -122,12 +144,18 @@ impl Game7Logic {
         });
     }
 
-    fn get_board(&self) -> &Vec<Vec<u32>> {
-        self.board.as_ref()
+    pub fn response_hand(&self, lobby: &Lobby, s: &SocketRef) {
+        let player = lobby.players.get(&s.id.to_string()).unwrap();
+
+        let PlayerGameData::Player7(player_7_data) = player.game.as_ref().unwrap() else {
+                    unreachable!()
+                };
+
+        let _ = s.emit("handInfo", &player_7_data.hand);
     }
 
-    fn handle_move(&mut self, player_id: &str, data: serde_json::Value) {
-        println!("Player {} made a move: {:?}", player_id, data);
+    fn get_board(&self) -> &Vec<Vec<u32>> {
+        self.board.as_ref()
     }
 }
 
