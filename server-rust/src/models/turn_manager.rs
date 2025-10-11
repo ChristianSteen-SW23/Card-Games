@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::Serialize;
 
 use crate::models::Player;
@@ -12,7 +14,7 @@ pub struct TurnResponse {
 
 #[derive(Debug, Clone)]
 pub struct TurnManager {
-    current: Option<String>,
+    pub(crate) current: Option<String>,
     next: Option<String>,
 }
 
@@ -29,7 +31,7 @@ impl TurnManager {
         self.current = Some(player_id);
     }
 
-    pub fn set_next(&mut self, players: &[Player]) {
+    pub fn set_next(&mut self, players: &HashMap<String, Player>) {
         self.next = self.get_next(players);
     }
 
@@ -41,23 +43,24 @@ impl TurnManager {
         self.current.as_ref().unwrap().clone()
     }  
 
-    pub fn get_next(&self, players: &[Player]) -> Option<String> {
+    pub fn get_next(&self, players: &HashMap<String, Player>) -> Option<String> {
         let current_id = self.current.as_ref()?;
-        let current_index = players.iter().position(|p| &p.id == current_id)?;
-        let next_index = (current_index + 1) % players.len();
-        Some(players[next_index].id.clone())
+        let mut ids: Vec<_> = players.keys().cloned().collect();
+        ids.sort(); 
+
+        let current_index = ids.iter().position(|id| id == current_id)?;
+        let next_index = (current_index + 1) % ids.len();
+        Some(ids[next_index].clone())
     }
 
     pub fn get_next_owned(&self) -> String {
         self.next.as_ref().unwrap().clone()
     }
 
-    pub fn advance_turn(&mut self, players: &[Player]) {
+    pub fn advance_turn(&mut self, players: &HashMap<String, Player>) {
         if let Some(next_id) = self.next.take() {
             self.current = Some(next_id);
             self.set_next(players);
         }
     }
-
- 
 }

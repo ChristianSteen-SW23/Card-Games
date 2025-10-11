@@ -1,12 +1,10 @@
 use std::str::FromStr;
 
 use rand::{Rng, rng};
-use serde::{Serialize};
+use serde::Serialize;
 use socketioxide::{SocketIo, extract::SocketRef, socket::Sid};
 
-use crate::models::{
-    Lobby, Player, Player7Data, PlayerGameData, TurnManager, TurnResponse,
-};
+use crate::models::{Lobby, Player, Player7Data, PlayerGameData, TurnManager, TurnResponse};
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -86,9 +84,9 @@ impl Game7Logic {
 
         lobby
             .players
-            .iter_mut()
+            .values_mut()
+            .into_iter()
             .for_each(|player| player.game = Some(PlayerGameData::Player7(Player7Data::new())));
-
         self.turn_manager.set_current(s.id.to_string());
         start_game_helper(self, lobby);
 
@@ -96,15 +94,16 @@ impl Game7Logic {
             .set_current(self.starting_player_id.clone());
         self.turn_manager.set_next(&lobby.players);
 
-        // Return data to player
+        // Returns data to players
         let turn_res = self.turn_manager.make_respone();
-        let players_res = lobby
-            .players
-            .iter()
-            .map(SevenPlayerResponse::new)
-            .collect::<Vec<_>>();
 
-        lobby.players.iter().for_each(|player| {
+        let players_res: Vec<_> = lobby
+            .players
+            .values()
+            .map(|player| SevenPlayerResponse::new(player))
+            .collect();
+
+        lobby.players.values().into_iter().for_each(|player| {
             if let Some(s_cur) = io.get_socket(Sid::from_str(player.id.as_str()).unwrap()) {
                 let PlayerGameData::Player7(player_7_data) = player.game.as_ref().unwrap() else {
                     unreachable!()
@@ -112,13 +111,18 @@ impl Game7Logic {
 
                 let _ = s_cur.emit(
                     "startedGame",
-                    Start7GameResponse::new(player_7_data.hand.as_ref(), self.get_board(), &players_res, &turn_res),
+                    Start7GameResponse::new(
+                        player_7_data.hand.as_ref(),
+                        self.get_board(),
+                        &players_res,
+                        &turn_res,
+                    ),
                 );
             }
         });
     }
 
-    fn get_board (&self) -> &Vec<Vec<u32>>{
+    fn get_board(&self) -> &Vec<Vec<u32>> {
         self.board.as_ref()
     }
 
@@ -141,7 +145,7 @@ fn start_game_helper(data: &mut Game7Logic, lobby: &mut Lobby) {
 
     lobby
         .players
-        .iter_mut()
+        .values_mut()
         .for_each(|player| match player.game.as_mut().unwrap() {
             PlayerGameData::Player7(player) => player.set_cards_left(),
             _ => unreachable!(),
@@ -150,24 +154,33 @@ fn start_game_helper(data: &mut Game7Logic, lobby: &mut Lobby) {
 
 fn deal_cards(data: &mut Game7Logic, lobby: &mut Lobby) {
     let mut card_deck: Vec<u32> = (1..=52).collect();
-
     let mut rng = rng();
-    let mut i = 0;
-    while card_deck.len() != 0 {
-        let random_num = rng.random_range(0..(card_deck.len() as u32));
 
-        if card_deck[random_num as usize] == 19 {
-            data.starting_player_id = data.turn_manager.get_current().unwrap().to_string();
-        }
-        if let Some(game) = &mut lobby.players[i].game {
-            match game {
-                PlayerGameData::Player7(player) => {
-                    player.hand.push(card_deck[random_num as usize]);
-                }
-                _ => unreachable!(),
+    let mut player_ids: Vec<String> = lobby.players.keys().cloned().collect();
+    player_ids.sort();
+
+    let mut i = 0;
+
+    while !card_deck.is_empty() {
+        let random_num = rng.random_range(0..card_deck.len() as u32) as usize;
+
+        if card_deck[random_num] == 19 {
+            if let Some(current) = data.turn_manager.get_current() {
+                data.starting_player_id = current.to_string();
             }
         }
-        card_deck.remove(random_num as usize);
-        i = (i + 1) % lobby.players.len();
+        let current_player_id = &player_ids[i];
+        if let Some(player) = lobby.players.get_mut(current_player_id) {
+            if let Some(game) = &mut player.game {
+                match game {
+                    PlayerGameData::Player7(player_data) => {
+                        player_data.hand.push(card_deck[random_num]);
+                    }
+                    _ => unreachable!(),
+                }
+            }
+        }
+        card_deck.remove(random_num);
+        i = (i + 1) % player_ids.len();
     }
 }

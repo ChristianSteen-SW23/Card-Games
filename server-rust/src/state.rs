@@ -45,7 +45,7 @@ impl ServerState {
             .lock()
             .unwrap()
             .players
-            .iter()
+            .values()
             .for_each(|player| {
                 self.player_lobby.remove(&player.id);
             });
@@ -57,7 +57,7 @@ impl ServerState {
 
         if let Some(lobby_arc) = self.lobbies.get(lobby_id) {
             let mut lobby = lobby_arc.lock().unwrap();
-            lobby.players.retain(|p| p.id != socket_id);
+            lobby.players.remove(&socket_id);
         }
     }
 }
