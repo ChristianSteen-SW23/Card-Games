@@ -44,8 +44,7 @@ impl ServerState {
             .unwrap()
             .lock()
             .unwrap()
-            .players
-            .values()
+            .players.get_all().iter()
             .for_each(|player| {
                 self.player_lobby.remove(&player.id);
             });

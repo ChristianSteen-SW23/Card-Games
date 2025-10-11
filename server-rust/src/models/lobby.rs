@@ -3,7 +3,7 @@ use std::{collections::HashMap, hash::Hash};
 use rand::distr::Map;
 
 use crate::{
-    models::GameLogic,
+    models::{GameLogic, Players},
     socket::lobby_socket::{LobbyResponse, PlayerResponse},
 };
 
@@ -14,8 +14,7 @@ pub struct Lobby {
     pub id: u32,
     pub host: String, // player id
     pub game_started: bool,
-    pub players: HashMap<String, Player>,
-    // pub players: Vec<Player>,
+    pub players: Players,
     pub game: Option<GameLogic>,
 }
 
@@ -25,13 +24,13 @@ impl Lobby {
             id,
             host,
             game_started: false,
-            players: HashMap::new(),
+            players: Players::new(),
             game: None,
         }
     }
 
     pub fn add_player(&mut self, player: Player) {
-        self.players.insert(player.id.clone(), player);
+        self.players.add(player);
     }
 
     pub fn start_game(&mut self) {
@@ -41,7 +40,8 @@ impl Lobby {
     pub fn to_response(&self) -> LobbyResponse {
         let players = self
             .players
-            .values()
+            .get_all()
+            .iter()
             .map(|p| PlayerResponse {
                 playerid: p.id.clone(),
                 name: p.name.clone(),

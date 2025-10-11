@@ -1,10 +1,12 @@
 pub mod lobby;
 pub mod player;
+pub mod players;
 pub mod game_logic;
 pub mod game_7_logic;
 pub mod turn_manager;
 pub mod player_7_data;
 pub mod player_game_data;
+
 
 pub use lobby::Lobby;
 pub use player::Player;
@@ -15,3 +17,4 @@ pub use turn_manager::{
 };
 pub use player_7_data::Player7Data;
 pub use player_game_data::PlayerGameData;
+pub use players::Players;
