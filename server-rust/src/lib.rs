@@ -2,6 +2,7 @@ pub mod models;
 pub mod socket;
 pub mod socket_router;
 pub mod state;
+pub mod helpers;
 
 pub async fn run_test_server(addr: &str, state: crate::state::SharedState) {
     use axum::Router;

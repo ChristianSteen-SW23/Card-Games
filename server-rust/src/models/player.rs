@@ -14,6 +14,5 @@ impl Player {
 
     pub fn get_mut_game(&mut self) ->  Option<&mut PlayerGameData> {
         self.game.as_mut()
-    } 
-
+    }
 }

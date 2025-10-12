@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use socketioxide::{SocketIo, extract::SocketRef};
 
 use crate::{
+    helpers::count_point_score,
     models::{GameLogic, Lobby, PlayerGameData},
     socket::{ErrorResponse, send_error_socket::send_error_message},
     state::SharedState,
@@ -43,13 +44,39 @@ pub fn game_7_controller_with_error_handler(
 
             let lobby_arc = state.lobbies.get(lobby_id).unwrap();
 
-            let mut lobby = lobby_arc.lock().unwrap();
+            let lobby = lobby_arc.lock().unwrap();
             if let Some(GameLogic::Game7Logic(game)) = &lobby.game {
                 game.response_move(&lobby, &io);
                 game.response_hand(&lobby, &s);
             }
         }
-        Ok(ResponseAmount::All) => todo!(),
+        Ok(ResponseAmount::All) => {
+            let state = state.lock().unwrap();
+
+            let lobby_id = state.player_lobby.get(&s.id.to_string()).unwrap();
+
+            let lobby_arc = state.lobbies.get(lobby_id).unwrap();
+
+            let mut lobby = lobby_arc.lock().unwrap();
+            let mut game = match &lobby.game {
+                Some(GameLogic::Game7Logic(game)) => game.clone(),
+                _ => return,
+            };
+
+            game.play_again(&mut lobby, s.id.to_string(), io);
+        }
+        Ok(ResponseAmount::GameOver) => {
+            let state = state.lock().unwrap();
+
+            let lobby_id = state.player_lobby.get(&s.id.to_string()).unwrap();
+
+            let lobby_arc = state.lobbies.get(lobby_id).unwrap();
+
+            let lobby = lobby_arc.lock().unwrap();
+            if let Some(GameLogic::Game7Logic(game)) = &lobby.game {
+                game.response_game_over(&lobby, &io);
+            }
+        }
         Err(err) => send_error_message(
             &s,
             ErrorResponse {
@@ -63,6 +90,7 @@ pub fn game_7_controller_with_error_handler(
 pub enum ResponseAmount {
     Single,
     All,
+    GameOver,
 }
 
 pub fn game_7_controller(
@@ -95,13 +123,19 @@ pub fn game_7_controller(
     }
 
     // Handle the move type
+    let mut return_type = ResponseAmount::Single;
     match data.move_type {
         Game7Events::PlayAgain => {
-            // TODO: Implement replay logic
+            return_type = ResponseAmount::All;
         }
         Game7Events::SkipTurn => {
-            let PlayerGameData::Player7(player_7_data) =
-                lobby.players.get(&s_id).ok_or("Could not find player")?.game.as_ref().ok_or("Player has no active game")?
+            let PlayerGameData::Player7(player_7_data) = lobby
+                .players
+                .get(&s_id)
+                .ok_or("Could not find player")?
+                .game
+                .as_ref()
+                .ok_or("Player has no active game")?
             else {
                 return Err("Player is not in a Game7 match".to_string());
             };
@@ -127,7 +161,7 @@ pub fn game_7_controller(
                         Err("Card is out of range")
                     }
                 })?;
-            play_card_helper(&card, &mut lobby, &s_id)?;
+            return_type = play_card_helper(&card, &mut lobby, &s_id)?;
         }
     }
 
@@ -138,10 +172,14 @@ pub fn game_7_controller(
             .map_err(|_| "Could not adavnce turn")?;
     }
 
-    Ok(ResponseAmount::Single)
+    Ok(return_type)
 }
 
-fn play_card_helper(card: &i32, lobby: &mut Lobby, s_id: &String) -> Result<(), String> {
+fn play_card_helper(
+    card: &i32,
+    lobby: &mut Lobby,
+    s_id: &String,
+) -> Result<ResponseAmount, String> {
     let Some(GameLogic::Game7Logic(game)) = &lobby.game else {
         return Err("Lobby does not contain a Game7Logic instance".to_string());
     };
@@ -154,7 +192,7 @@ fn play_card_helper(card: &i32, lobby: &mut Lobby, s_id: &String) -> Result<(), 
         .players
         .get_mut(&s_id)
         .ok_or("Player not found in lobby")?;
-
+    let mut last_card = false;
     if let Some(PlayerGameData::Player7(player_7_data)) = &mut player.game {
         if player_7_data.cards_left > 0 {
             let card2 = card.clone() as u32;
@@ -165,37 +203,49 @@ fn play_card_helper(card: &i32, lobby: &mut Lobby, s_id: &String) -> Result<(), 
                 .cloned()
                 .collect::<Vec<u32>>();
             player_7_data.cards_left = player_7_data.hand.len();
+            if player_7_data.cards_left == 0 {
+                last_card = true;
+            }
         } else {
-            return Err("Player has no cards left".to_string());
+            return Err("Player do not have any cards in hand".to_string());
         }
     } else {
         return Err("Player is not part of a Game7 session".to_string());
     }
 
-    play_card(card, lobby)?;
-    Ok(())
+    let Some(GameLogic::Game7Logic(game)) = &mut lobby.game else {
+        return Err("Lobby does not contain a Game7Logic instance".to_string());
+    };
+    game.play_card(card)?;
+    match last_card {
+        true => {
+            game.update_score(&mut lobby.players);
+            Ok(ResponseAmount::GameOver)
+        }
+        false => Ok(ResponseAmount::Single),
+    }
 }
 
-fn play_card(card: &i32, lobby: &mut Lobby) -> Result<(), String> {
-    let game = match &mut lobby.game {
-        Some(GameLogic::Game7Logic(game)) => game,
-        _ => return Err("Lobby does not contain a Game7Logic instance".to_string()),
-    };
+// fn play_card(card: &i32, board: &mut Vec<Vec<i32>>) -> Result<(), String> {
+//     // let game = match &mut lobby.game {
+//     //     Some(GameLogic::Game7Logic(game)) => game,
+//     //     _ => return Err("Lobby does not contain a Game7Logic instance".to_string()),
+//     // };
 
-    let suit = ((card - (card % 13)) / 13) as usize;
-    let rank = card % 13 + 1;
+//     let suit = ((card - (card % 13)) / 13) as usize;
+//     let rank = card % 13 + 1;
 
-    let row = if rank == 7 {
-        1
-    } else if rank < 7 {
-        2
-    } else {
-        0
-    };
-    game.board[row][suit] = rank;
+//     let row = if rank == 7 {
+//         1
+//     } else if rank < 7 {
+//         2
+//     } else {
+//         0
+//     };
+//     board[row][suit] = rank;
 
-    Ok(())
-}
+//     Ok(())
+// }
 
 pub fn card_playable(card: &i32, board: &Vec<Vec<i32>>) -> bool {
     let suit = ((card - (card % 13)) / 13) as usize;

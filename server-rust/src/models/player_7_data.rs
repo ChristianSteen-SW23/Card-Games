@@ -18,5 +18,10 @@ impl Player7Data {
     pub fn set_cards_left(&mut self){
         self.cards_left = self.hand.len();
     }
+
+    pub fn play_again(&mut self){
+        self.cards_left = 0;
+        self.hand.clear();
+    }
 }
 

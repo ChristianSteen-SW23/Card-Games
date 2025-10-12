@@ -30,8 +30,6 @@ export default function GamePage7({ lobbyStateStart }) {
         }
 
         function gameEnded(data) {
-            console.log("Win event")
-            console.log(data)
             setWinPop(true);
             setWinData(data.winData);
         }
