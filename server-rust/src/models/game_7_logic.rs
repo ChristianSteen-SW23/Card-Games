@@ -5,13 +5,15 @@ use serde::Serialize;
 use serde_json::json;
 use socketioxide::{
     SocketIo,
-    extract::{Data, SocketRef},
+    extract::{SocketRef},
     socket::Sid,
 };
 
 use crate::{
     helpers::count_point_score,
-    models::{Lobby, Player, Player7Data, PlayerGameData, Players, TurnManager, TurnResponse},
+    models::{
+        GameLogic, Lobby, Player, Player7Data, PlayerGameData, Players, TurnManager, TurnResponse,
+    },
 };
 
 #[derive(Debug, Serialize)]
@@ -109,8 +111,11 @@ impl<'a> SevenPlayerResponse<'a> {
 
 // Responses
 impl Game7Logic {
-    pub fn response_move(&self, lobby: &Lobby, io: &SocketIo) {
-        let turn_res = self.turn_manager.make_respone();
+    pub fn response_move(lobby: &Lobby, io: &SocketIo) {
+        let Some(GameLogic::Game7Logic(ref game)) = lobby.game else {
+            return;
+        };
+        let turn_res = game.turn_manager.make_respone();
 
         let players_res: Vec<_> = lobby
             .players
@@ -121,7 +126,7 @@ impl Game7Logic {
 
         let _ = io.within(lobby.id.to_string()).broadcast().emit(
             "gameInfo",
-            Start7GameResponse::new(&vec![], self.get_board(), &players_res, &turn_res),
+            Start7GameResponse::new(&vec![], game.get_board(), &players_res, &turn_res),
         );
     }
     pub fn response_start(&self, lobby: &Lobby, io: &SocketIo) {
@@ -152,7 +157,7 @@ impl Game7Logic {
             }
         });
     }
-    pub fn response_hand(&self, lobby: &Lobby, s: &SocketRef) {
+    pub fn response_hand(lobby: &Lobby, s: &SocketRef) {
         let player = lobby.players.get(&s.id.to_string()).unwrap();
 
         let PlayerGameData::Player7(player_7_data) = player.game.as_ref().unwrap() else {
@@ -195,7 +200,7 @@ impl Game7Logic {
 
 impl Game7Logic {
     pub fn new(lobby: &mut Lobby, s: SocketRef, io: SocketIo) -> Self {
-        let mut game = Self {
+        let game = Self {
             board: vec![],
             turn_manager: TurnManager::new(),
             r#box: None,
@@ -208,20 +213,26 @@ impl Game7Logic {
             .iter_mut()
             .for_each(|player| player.game = Some(PlayerGameData::Player7(Player7Data::new())));
 
-        game.start_game(lobby, s.id.to_string());
+        Game7Logic::start_game(lobby, s.id.to_string());
         game.response_start(lobby, &io);
         game
     }
 
-    pub fn play_again(&mut self, lobby: &mut Lobby, s_id: String, io: SocketIo) {
+    pub fn play_again(lobby: &mut Lobby, s_id: String, io: SocketIo) {
         lobby.players.get_mut_all().iter_mut().for_each(|player| {
             if let Some(PlayerGameData::Player7(player_7_data)) = &mut player.game {
                 player_7_data.play_again();
             }
         });
-        self.start_game(lobby, s_id);
-        self.response_move(lobby, &io);
-        lobby.players.get_all().iter().for_each(|player| self.response_hand(lobby, &io.get_socket(Sid::from_str(player.id.as_str()).unwrap()).unwrap()));
+        Game7Logic::start_game(lobby, s_id);
+        Game7Logic::response_move(lobby, &io);
+        lobby.players.get_all().iter().for_each(|player| {
+            Game7Logic::response_hand(
+                lobby,
+                &io.get_socket(Sid::from_str(player.id.as_str()).unwrap())
+                    .unwrap(),
+            )
+        });
     }
 
     pub fn play_card(&mut self, card: &i32) -> Result<(), String> {
@@ -240,20 +251,27 @@ impl Game7Logic {
         Ok(())
     }
 
-
-    fn start_game(&mut self, lobby: &mut Lobby, s_id: String) {
+    pub fn start_game(lobby: &mut Lobby, s_id: String) {
         println!(
             "Starting Game 7 with {} players",
             lobby.players.get_all().len()
         );
+        {
+            let Some(GameLogic::Game7Logic(game)) = lobby.game.as_mut() else {
+                return;
+            };
 
-        self.turn_manager.update(s_id, &lobby.players);
-        start_game_helper(self, lobby);
+            let _ = game.turn_manager.update(s_id, &lobby.players);
+        }
+        start_game_helper(lobby);
+        let Some(GameLogic::Game7Logic(game)) = lobby.game.as_mut() else {
+            return;
+        };
 
-        println!("String player: {:?}", self.starting_player_id);
+        println!("String player: {:?}", game.starting_player_id);
 
-        self.turn_manager
-            .update(self.starting_player_id.to_string(), &lobby.players);
+        let _ = game.turn_manager
+            .update(game.starting_player_id.to_string(), &lobby.players);
     }
 
     fn get_board(&self) -> &Vec<Vec<i32>> {
@@ -275,16 +293,24 @@ impl Game7Logic {
     }
 }
 
-fn start_game_helper(data: &mut Game7Logic, lobby: &mut Lobby) {
-    data.r#box = None;
-    let rows = 3;
-    let cols = 4;
-    data.board = vec![vec![0; cols]; rows];
+fn start_game_helper(lobby: &mut Lobby) {
+    {
+        let Some(GameLogic::Game7Logic(game)) = lobby.game.as_mut() else {
+            return;
+        };
+        game.r#box = None;
+        let rows = 3;
+        let cols = 4;
+        game.board = vec![vec![0; cols]; rows];
 
-    data.turn_manager.advance_turn(&(lobby.players));
-    deal_cards(data, lobby);
-    data.turn_manager
-        .update(data.starting_player_id.to_string(), &lobby.players);
+        let _ = game.turn_manager.advance_turn(&(lobby.players));
+    }
+    deal_cards(lobby);
+    let Some(GameLogic::Game7Logic(game)) = lobby.game.as_mut() else {
+        return;
+    };
+    let _ = game.turn_manager
+        .update(game.starting_player_id.to_string(), &lobby.players);
 
     lobby
         .players
@@ -296,7 +322,11 @@ fn start_game_helper(data: &mut Game7Logic, lobby: &mut Lobby) {
         });
 }
 
-fn deal_cards(data: &mut Game7Logic, lobby: &mut Lobby) {
+fn deal_cards(lobby: &mut Lobby) {
+    let Some(GameLogic::Game7Logic(game)) = lobby.game.as_mut() else {
+        return;
+    };
+
     let mut card_deck: Vec<u32> = (14..=20).collect();
     let mut rng = rng();
 
@@ -304,10 +334,10 @@ fn deal_cards(data: &mut Game7Logic, lobby: &mut Lobby) {
         let random_num = rng.random_range(0..card_deck.len() as u32) as usize;
 
         if card_deck[random_num] == 19 {
-            data.starting_player_id = data.turn_manager.get_current().to_string();
+            game.starting_player_id = game.turn_manager.get_current().to_string();
         }
 
-        let cur_id = data.turn_manager.get_current().to_string();
+        let cur_id = game.turn_manager.get_current().to_string();
         if let Some(game) = lobby
             .players
             .get_mut(&cur_id)
@@ -321,6 +351,6 @@ fn deal_cards(data: &mut Game7Logic, lobby: &mut Lobby) {
             }
         }
         card_deck.remove(random_num);
-        let _ = data.turn_manager.advance_turn(&lobby.players);
+        let _ = game.turn_manager.advance_turn(&lobby.players);
     }
 }

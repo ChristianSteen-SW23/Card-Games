@@ -42,6 +42,16 @@ pub struct PlayerResponse {
     pub host: bool,
 }
 
+/*impl From<&Player> for PlayerResponse{
+    fn from(value: &Player) -> Self {
+        PlayerResponse {
+                playerid: value.id.clone(),
+                name: value.name.clone(),
+                host: value.id == self.host,
+        }
+    }
+}*/
+
 pub fn lobby_controller(s: SocketRef, data: LobbyPayload, state: SharedState) {
     println!(
         "Lobby Event:{} {}",

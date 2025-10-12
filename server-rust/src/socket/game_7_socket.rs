@@ -3,9 +3,8 @@ use serde::{Deserialize, Serialize};
 use socketioxide::{SocketIo, extract::SocketRef};
 
 use crate::{
-    helpers::count_point_score,
-    models::{GameLogic, Lobby, PlayerGameData},
-    socket::{ErrorResponse, send_error_socket::send_error_message},
+    models::{Game7Logic, GameLogic, Lobby, PlayerGameData},
+    socket::{send_error_socket::send_error_message, ErrorResponse},
     state::SharedState,
 };
 
@@ -45,10 +44,9 @@ pub fn game_7_controller_with_error_handler(
             let lobby_arc = state.lobbies.get(lobby_id).unwrap();
 
             let lobby = lobby_arc.lock().unwrap();
-            if let Some(GameLogic::Game7Logic(game)) = &lobby.game {
-                game.response_move(&lobby, &io);
-                game.response_hand(&lobby, &s);
-            }
+
+                Game7Logic::response_move(&lobby, &io);
+                Game7Logic::response_hand(&lobby, &s);
         }
         Ok(ResponseAmount::All) => {
             let state = state.lock().unwrap();
@@ -58,12 +56,7 @@ pub fn game_7_controller_with_error_handler(
             let lobby_arc = state.lobbies.get(lobby_id).unwrap();
 
             let mut lobby = lobby_arc.lock().unwrap();
-            let mut game = match &lobby.game {
-                Some(GameLogic::Game7Logic(game)) => game.clone(),
-                _ => return,
-            };
-
-            game.play_again(&mut lobby, s.id.to_string(), io);
+            Game7Logic::play_again(&mut lobby, s.id.to_string(), io);
         }
         Ok(ResponseAmount::GameOver) => {
             let state = state.lock().unwrap();
@@ -142,7 +135,7 @@ pub fn game_7_controller(
             let Some(GameLogic::Game7Logic(game)) = &lobby.game else {
                 return Err("Lobby does not contain a Game7Logic instance".to_string());
             };
-            if possibleSkip(&player_7_data.hand, &game.board) {
+            if possible_skip(&player_7_data.hand, &game.board) {
                 return Err("You can not skip!!!".to_string());
             }
             let Some(GameLogic::Game7Logic(game)) = &mut lobby.game else {
@@ -273,7 +266,7 @@ pub fn card_playable(card: &i32, board: &Vec<Vec<i32>>) -> bool {
     false
 }
 
-pub fn possibleSkip(hand: &Vec<u32>, board: &Vec<Vec<i32>>) -> bool {
+pub fn possible_skip(hand: &Vec<u32>, board: &Vec<Vec<i32>>) -> bool {
     hand.iter()
         .any(|card| card_playable(&(*card as i32), board))
 }

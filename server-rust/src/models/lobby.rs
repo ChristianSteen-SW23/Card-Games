@@ -1,9 +1,9 @@
-use std::{collections::HashMap, hash::Hash};
 
-use rand::distr::Map;
+
+use socketioxide::{ SocketIo};
 
 use crate::{
-    models::{GameLogic, Players},
+    models::{Game7Logic, GameLogic, Players},
     socket::lobby_socket::{LobbyResponse, PlayerResponse},
 };
 
@@ -52,6 +52,13 @@ impl Lobby {
         LobbyResponse {
             id: self.id,
             players,
+        }
+    }
+
+    pub fn play_again(&mut self, s_id: String, io: SocketIo) {
+        match self.game {
+            Some(GameLogic::Game7Logic(_)) => Game7Logic::play_again(self, s_id, io),
+            None => todo!(),
         }
     }
 }
