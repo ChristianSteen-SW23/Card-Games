@@ -160,11 +160,11 @@ fn create_lobby(s: SocketRef, data: LobbyPayload, state: SharedState) {
 
     match data.username {
         Some(username) => {
-            if !check_username(&s, &username.clone()) {
+            if !check_username(&s, &username.to_string()) {
                 return;
             }
 
-            let player = Player::new(s.id.to_string(), username.clone());
+            let player = Player::new(s.id.to_string(), username.to_string());
             lobby.add_player(player);
 
             state.add_lobby(lobby);

@@ -1,7 +1,7 @@
 
 use crate::{
     socket::{
-        disconnect_controller, game_7_controller, lobby_socket::{lobby_controller, LobbyPayload}, start_game_controller, start_game_socket::StartGamePayload, Game7Payload
+        disconnect_controller, game_7_controller, game_7_socket::game_7_controller_with_error_handler, lobby_socket::{lobby_controller, LobbyPayload}, start_game_controller, start_game_socket::StartGamePayload, Game7Payload
     },
     state::SharedState,
 };
@@ -41,7 +41,7 @@ pub fn register_socket_routes(io: &SocketIo, state: &SharedState) {
         let state_for_game_7 = state.clone();
         let io_for_game_7 = io_inside.clone();
         s.on("7Move", |socket: SocketRef, Data::<Game7Payload>(data)| {
-            println!("{:?}",game_7_controller(socket, data, state_for_game_7, io_for_game_7));
+            println!("{:?}",game_7_controller_with_error_handler(socket, data, state_for_game_7, io_for_game_7));
         });
 
         let state_for_disconnect = state.clone();

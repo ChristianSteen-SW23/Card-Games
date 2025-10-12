@@ -162,6 +162,10 @@ impl Game7Logic {
     fn get_board(&self) -> &Vec<Vec<i32>> {
         self.board.as_ref()
     }
+
+    pub fn set_box(&mut self, id: String) {
+        self.r#box = Some(id)
+    }
 }
 
 fn start_game_helper(data: &mut Game7Logic, lobby: &mut Lobby) {
@@ -184,7 +188,7 @@ fn start_game_helper(data: &mut Game7Logic, lobby: &mut Lobby) {
 }
 
 fn deal_cards(data: &mut Game7Logic, lobby: &mut Lobby) {
-    let mut card_deck: Vec<u32> = (1..=52).collect();
+    let mut card_deck: Vec<u32> = (0..=51).collect();
     let mut rng = rng();
 
 

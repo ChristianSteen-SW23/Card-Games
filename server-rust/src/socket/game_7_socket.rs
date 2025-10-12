@@ -4,6 +4,7 @@ use socketioxide::{SocketIo, extract::SocketRef};
 
 use crate::{
     models::{GameLogic, Lobby, PlayerGameData},
+    socket::{ErrorResponse, send_error_socket::send_error_message},
     state::SharedState,
 };
 
@@ -22,23 +23,58 @@ pub enum Game7Events {
     PlayCard,
 }
 
-pub fn game_7_controller(
+pub fn game_7_controller_with_error_handler(
     s: SocketRef,
     data: Game7Payload,
     state: SharedState,
     io: SocketIo,
-) -> Result<String, String> {
+) {
     println!(
         "Game 7 Event:{} {}",
         format!("{:?}", data).blue(),
         s.id.to_string().green()
     );
 
+    match game_7_controller(s.id.to_string(), data, &state) {
+        Ok(ResponseAmount::Single) => {
+            let state = state.lock().unwrap();
+
+            let lobby_id = state.player_lobby.get(&s.id.to_string()).unwrap();
+
+            let lobby_arc = state.lobbies.get(lobby_id).unwrap();
+
+            let mut lobby = lobby_arc.lock().unwrap();
+            if let Some(GameLogic::Game7Logic(game)) = &lobby.game {
+                game.response_move(&lobby, &io);
+                game.response_hand(&lobby, &s);
+            }
+        }
+        Ok(ResponseAmount::All) => todo!(),
+        Err(err) => send_error_message(
+            &s,
+            ErrorResponse {
+                message: err,
+                r#type: "7 Game".to_string(),
+            },
+        ),
+    }
+}
+
+pub enum ResponseAmount {
+    Single,
+    All,
+}
+
+pub fn game_7_controller(
+    s_id: String,
+    data: Game7Payload,
+    state: &SharedState,
+) -> Result<ResponseAmount, String> {
     let state = state.lock().map_err(|_| "Failed to lock global state")?;
 
     let lobby_id = state
         .player_lobby
-        .get(&s.id.to_string())
+        .get(&s_id)
         .ok_or("Player not found in player_lobby")?;
 
     let lobby_arc = state
@@ -50,7 +86,7 @@ pub fn game_7_controller(
 
     // Verify it’s the player’s turn
     if let Some(GameLogic::Game7Logic(game)) = &lobby.game {
-        let not_players_turn = s.id.to_string().as_str() != game.turn_manager.get_current()
+        let not_players_turn = s_id.as_str() != game.turn_manager.get_current()
             && data.move_type != Game7Events::PlayAgain;
 
         if not_players_turn {
@@ -64,25 +100,48 @@ pub fn game_7_controller(
             // TODO: Implement replay logic
         }
         Game7Events::SkipTurn => {
-            // TODO: Skip turn logic
+            let PlayerGameData::Player7(player_7_data) =
+                lobby.players.get(&s_id).ok_or("Could not find player")?.game.as_ref().ok_or("Player has no active game")?
+            else {
+                return Err("Player is not in a Game7 match".to_string());
+            };
+            let Some(GameLogic::Game7Logic(game)) = &lobby.game else {
+                return Err("Lobby does not contain a Game7Logic instance".to_string());
+            };
+            if possibleSkip(&player_7_data.hand, &game.board) {
+                return Err("You can not skip!!!".to_string());
+            }
+            let Some(GameLogic::Game7Logic(game)) = &mut lobby.game else {
+                return Err("Lobby does not contain a Game7Logic instance".to_string());
+            };
+            game.set_box(s_id.to_string());
         }
         Game7Events::PlayCard => {
-            let card = data.card.ok_or("Missing card in payload")?;
-            play_card_helper(&card, &mut lobby, &s)?;
+            let card = data
+                .card
+                .ok_or("Missing card in payload")
+                .and_then(|card| {
+                    if (0..=51).contains(&card) {
+                        Ok(card)
+                    } else {
+                        Err("Card is out of range")
+                    }
+                })?;
+            play_card_helper(&card, &mut lobby, &s_id)?;
         }
     }
 
-    // TODO: LAV SÅ MAN SKIFTER TUR
-
-    if let Some(GameLogic::Game7Logic(game)) = &lobby.game {
-        game.response_move(&lobby, &io);
-        game.response_hand(&lobby, &s);
+    let players_ref = &lobby.players.clone();
+    if let Some(GameLogic::Game7Logic(game)) = &mut lobby.game {
+        game.turn_manager
+            .advance_turn(players_ref)
+            .map_err(|_| "Could not adavnce turn")?;
     }
 
-    Ok("hej".to_string())
+    Ok(ResponseAmount::Single)
 }
 
-fn play_card_helper(card: &i32, lobby: &mut Lobby, s: &SocketRef) -> Result<(), String> {
+fn play_card_helper(card: &i32, lobby: &mut Lobby, s_id: &String) -> Result<(), String> {
     let Some(GameLogic::Game7Logic(game)) = &lobby.game else {
         return Err("Lobby does not contain a Game7Logic instance".to_string());
     };
@@ -93,7 +152,7 @@ fn play_card_helper(card: &i32, lobby: &mut Lobby, s: &SocketRef) -> Result<(), 
 
     let player = lobby
         .players
-        .get_mut(&s.id.to_string())
+        .get_mut(&s_id)
         .ok_or("Player not found in lobby")?;
 
     if let Some(PlayerGameData::Player7(player_7_data)) = &mut player.game {
@@ -162,4 +221,9 @@ pub fn card_playable(card: &i32, board: &Vec<Vec<i32>>) -> bool {
         return true;
     }
     false
+}
+
+pub fn possibleSkip(hand: &Vec<u32>, board: &Vec<Vec<i32>>) -> bool {
+    hand.iter()
+        .any(|card| card_playable(&(*card as i32), board))
 }
