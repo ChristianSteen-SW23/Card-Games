@@ -1,16 +1,16 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
-use crate::objects::{GameData, Player};
+use crate::objects::{GameData, GameLogic, LobbyLogic, Player};
 
 pub type SharedState = Arc<Mutex<ServerState>>;
 
 #[derive(Debug, Default, Clone)]
 pub struct ServerState {
     // all lobbies by lobby id
-    pub games: HashMap<u32, Arc<Mutex<GameData>>>,
+    pub game_map: HashMap<u32, Arc<Mutex<GameLogic>>>,
     // player_id -> lobby_id
-    pub player_lobby: HashMap<String, u32>,
+    pub player_lobby_map: HashMap<String, u32>,
 }
 
 // impl ServerState {
@@ -22,15 +22,19 @@ pub struct ServerState {
 impl ServerState {
     pub fn new() -> Self {
         Self {
-            games: HashMap::new(),
-            player_lobby: HashMap::new(),
+            game_map: HashMap::new(),
+            player_lobby_map: HashMap::new(),
         }
     }
 
-    // pub fn add_lobby(&mut self, lobby: GameData) {
-    //     self.games.insert(lobby.id, Arc::new(Mutex::new(lobby)));
-    // }
+    pub fn insert_game(&mut self, lobby: LobbyLogic, lobby_id: u32) {
+        self.game_map.insert(lobby_id, Arc::new(Mutex::new(GameLogic::LobbyLogic(lobby))));
+    }
 
+    pub fn insert_player_lobby(&mut self, sid: String, lobby_id: u32) {
+        self.player_lobby_map.insert(sid, lobby_id);
+    }
+    
     // pub fn add_player_to_lobby(&mut self, lobby_id: u32, player: Player) {
     //     if let Some(lobby_arc) = self.games.get(&lobby_id) {
     //         self.player_lobby.insert(player.id.clone(), lobby_id);

@@ -1,6 +1,7 @@
 use colored::Colorize;
 use socketioxide::{SocketIo, extract::SocketRef, socket::DisconnectReason};
-use crate::state::SharedState;
+
+use crate::objects::states::SharedState;
 
 pub fn disconnect_controller(
     s: SocketRef,
@@ -15,7 +16,7 @@ pub fn disconnect_controller(
         reason.to_string().blue()
     );
     
-    let Some(&room_id) = state.lock().unwrap().player_lobby.get(&s.id.to_string()) else {
+    let Some(&room_id) = state.lock().unwrap().player_lobby_map.get(&s.id.to_string()) else {
         return;
     };
 

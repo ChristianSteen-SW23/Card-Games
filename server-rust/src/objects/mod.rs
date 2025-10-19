@@ -6,9 +6,9 @@ pub mod player_game_data;
 pub mod game7;
 pub mod player;
 pub mod states;
-pub mod lobby;
+pub mod lobby_logic;
 
-pub use lobby::LobbyLogic;
+pub use lobby_logic::LobbyLogic;
 pub use player::Player;
 pub use game_data::GameData;
 pub use game_logic::GameLogic;

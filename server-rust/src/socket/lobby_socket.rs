@@ -1,12 +1,11 @@
 use colored::Colorize;
-use rand::{rng, Rng};
+use rand::{Rng, rng};
 use serde::{Deserialize, Serialize};
-use socketioxide::{extract::SocketRef};
+use socketioxide::extract::SocketRef;
 
 use crate::{
-    objects::{GameData, Player},
-    socket::send_error_socket::{ErrorResponse, send_error_message},
-    state::SharedState,
+    objects::{GameData, LobbyLogic, Player, states::SharedState},
+    socket::send_error_socket::Error,
 };
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -52,27 +51,135 @@ pub struct PlayerResponse {
     }
 }*/
 
-pub fn lobby_controller(s: SocketRef, payload_data: LobbyPayload, state: SharedState) {
+pub fn lobby_controller(s: SocketRef, payload_data: LobbyPayload, mut state: SharedState) {
     println!(
         "Lobby Event:{} {}",
         format!("{:?}", payload_data).blue(),
         s.id.to_string().green()
     );
 
-    let result = match payload_data.event_type {
+    let result: Result<TypeOfRes, Error> = match payload_data.event_type {
         LobbyEvents::JoinLobby => {
             let mut state = state.lock().unwrap();
-
-        },
-        LobbyEvents::CreateLobby => create_lobby(),
-    }
+            Ok(())
+        }
+        LobbyEvents::CreateLobby => make_lobby(s.id.to_string(), payload_data, &mut state)
+            .and_then(|new_id| {
+                s.join(new_id.to_string());
+                Ok(())
+            }),
+    };
 
     match result {
-        Err(e) => e.send_error_message(&s),
-        Ok(lobby) => {
+        Err(e) => e.emit_error_response(&s),
+        Ok(_) => { emit_ok_response
+            s.within(lobby_id.to_string())
+                .broadcast()
+                .emit(
+                    "playerHandler",
+                    PlayersResponse {
+                        players: response.players.clone(),
+                    },
+                )
+                .ok();
+
+            let _ = s.emit("conToLobby", &response);
         }
     }
 }
+
+
+
+/**
+    Lobby is created and attached to sharedstate
+    * @return The lobby id
+*/
+fn make_lobby(
+    sid: String,
+    data_payload: LobbyPayload,
+    state: &mut SharedState,
+) -> Result<u32, Error> {
+    let new_id = create_lobby_id(&state)
+        .ok_or_else(|| Error::LobbyError("Could not generate a free lobby code".to_string()))?;
+
+    let new_lobby_logic: LobbyLogic = (data_payload, new_id, sid.to_string()).try_into()?;
+    let mut locked_state = state
+        .lock()
+        .map_err(|err| Error::LobbyError(err.to_string()))?; // lock global state
+
+    locked_state.insert_game(new_lobby_logic, new_id);
+    locked_state.insert_player_lobby(sid, new_id);
+
+    Ok(new_id)
+}
+
+pub fn create_lobby_id(state: &SharedState) -> Option<u32> {
+    let mut rng = rng();
+    let state = state.lock().unwrap();
+
+    let max = 10;
+    let id: u32 = rng.random_range(0..max);
+
+    for i in 1..max + 1 {
+        let candidate = (id + i) % max;
+        if !state.game_map.contains_key(&candidate) {
+            return Some(candidate);
+        }
+    }
+
+    None
+}
+
+// fn create_lobby_old(s: SocketRef, data: LobbyPayload, state: SharedState) {
+//     let new_id = match find_lobby_id(&state) {
+//         Ok(id) => id,
+//         Err(_) => {
+//             return send_error_message(
+//                 &s,
+//                 ErrorResponse {
+//                     message: "Could not generate a free lobby code".to_string(),
+//                     r#type: "Lobby".to_string(),
+//                 },
+//             );
+//         }
+//     };
+
+//     let mut state = state.lock().unwrap(); // lock global state
+
+//     let mut lobby = GameData::new(new_id, s.id.to_string());
+
+//     match data.username {
+//         Some(username) => {
+//             if !check_username(&s, &username.to_string()) {
+//                 return;
+//             }
+
+//             let player = Player::new(s.id.to_string(), username.to_string());
+//             lobby.add_player(player);
+
+//             state.insert_lobby(lobby);
+//             state.add_player_lobby(new_id, s.id.to_string());
+
+//             let response = LobbyResponse {
+//                 id: new_id,
+//                 players: vec![PlayerResponse {
+//                     playerid: s.id.to_string(),
+//                     name: username,
+//                     host: true,
+//                 }],
+//             };
+//             s.join(new_id.to_string()).ok();
+//             let _ = s.emit("conToLobby", response);
+//         }
+//         None => send_error_message(
+//             &s,
+//             ErrorResponse {
+//                 message: "No username given".to_string(),
+//                 r#type: "???".to_string(),
+//             },
+//         ),
+//     }
+// }
 
 // fn join_lobby(s: SocketRef, data: LobbyPayload, state: SharedState) {
 //     let Some(lobby_id) = data.lobby_id else {
@@ -143,7 +250,6 @@ pub fn lobby_controller(s: SocketRef, payload_data: LobbyPayload, state: SharedS
 
 //     let response = lobby.to_response();
 
-//     // broadcast to everyone else in the room
 //     s.within(lobby_id.to_string())
 //         .broadcast()
 //         .emit(
@@ -156,86 +262,3 @@ pub fn lobby_controller(s: SocketRef, payload_data: LobbyPayload, state: SharedS
 
 //     let _ = s.emit("conToLobby", &response);
 // }
-
-fn create_lobby(s: SocketRef, data: LobbyPayload, state: SharedState) {
-    let new_id = match create_lobby_id(&state) {
-        Ok(id) => id,
-        Err(_) => {
-            return send_error_message(
-                &s,
-                ErrorResponse {
-                    message: "Could not generate a free lobby code".to_string(),
-                    r#type: "Lobby".to_string(),
-                },
-            );
-        }
-    };
-
-    let mut state = state.lock().unwrap(); // lock global state
-
-    let mut lobby = GameData::new(new_id, s.id.to_string());
-
-    match data.username {
-        Some(username) => {
-            if !check_username(&s, &username.to_string()) {
-                return;
-            }
-
-            let player = Player::new(s.id.to_string(), username.to_string());
-            lobby.add_player(player);
-
-            state.add_lobby(lobby);
-            state.add_player_lobby(new_id, s.id.to_string());
-
-            let response = LobbyResponse {
-                id: new_id,
-                players: vec![PlayerResponse {
-                    playerid: s.id.to_string(),
-                    name: username,
-                    host: true,
-                }],
-            };
-            s.join(new_id.to_string()).ok();
-            let _ = s.emit("conToLobby", response);
-        }
-        None => send_error_message(
-            &s,
-            ErrorResponse {
-                message: "No username given".to_string(),
-                r#type: "???".to_string(),
-            },
-        ),
-    }
-}
-
-pub fn check_username(s: &SocketRef, username: &str) -> bool {
-    if username.len() < 2 {
-        send_error_message(
-            s,
-            ErrorResponse {
-                message: "Invalid username".to_string(),
-                r#type: "Lobby".to_string(),
-            },
-        );
-        false
-    } else {
-        true
-    }
-}
-
-pub fn create_lobby_id(state: &SharedState) -> Result<u32, ()> {
-    let mut rng = rng();
-    let state = state.lock().unwrap();
-
-    let max = 10;
-    let id: u32 = rng.random_range(0..max);
-    
-    for i in 1..max+1 {
-        let candidate = (id+i)%max;
-        if !state.lobbies.contains_key(&candidate) {
-            return Ok(candidate);
-        }
-    }
-
-    Err(())
-}

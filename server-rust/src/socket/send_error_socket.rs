@@ -23,14 +23,16 @@ impl ErrorResponse {
 }
 
 pub enum Error {
-    NotYourTurn(String)
+    NotYourTurn(String),
+    LobbyError(String)
 }
 
 impl Error {
-    fn send_error_message(self, s: &SocketRef) {
+    pub fn emit_error_response(self, s: &SocketRef) {
         use Error::*;
         match self {
-            NotYourTurn(err) => ErrorResponse::new(err, "Not your turn").emit(s)
+            NotYourTurn(err) => ErrorResponse::new(err, "Not your turn").emit(s),
+            LobbyError(err) => ErrorResponse::new(err, "Lobby Error").emit(s),
         }
     }
 }

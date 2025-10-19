@@ -55,7 +55,7 @@ pub fn start_game_controller(s: SocketRef, data: StartGamePayload, state: Shared
 
     let Some(lobby_arc) = state
         .lobbies
-        .get(&state.player_lobby.get(&s.id.to_string()).unwrap())
+        .get(&state.player_lobby_map.get(&s.id.to_string()).unwrap())
     else {
         return;
     };

@@ -36,3 +36,9 @@ impl Players {
         self.0.remove(idx);
     }
 }
+
+impl From<Player> for Players {
+    fn from(value: Player) -> Self {
+        Self(vec![value])
+    }
+}
