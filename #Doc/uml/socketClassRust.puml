@@ -1,0 +1,142 @@
+@startuml socketClassRust
+
+
+class SharedState{
+    + // Todo hvordan skal denn map til lobbystate? Måske bruge en enum
+}
+
+class PlayerState{
+    + players: Hash<String, id> // PlayerID → LobbyId
+}
+
+class GameData {
+    + id: u32
+    + host: String
+    + game_started: bool
+    + players: Vec<Player>
+    + game: Option<GameLogic>
+    + new(id: u32, host: String): Lobby
+    + add_player(player: Player): void
+    + start_game(): void
+    + to_response(): LobbyResponse
+}
+
+class Player {
+    // Hvordan skal denne maps sammen med Lobby og gameData
+    + id: String
+    + name: String
+    + game: Option<PlayerGameData>
+    + new(id: String, name: String): Player
+}
+
+
+enum GameLogic {
+    Game7Logic
+    Game31Logic
+    Game500Logic
+    PlanningPokerLogic
+    Lobby
+}
+
+class Game7Logic {
+    + board: Vec<Vec<Option<u32>>>
+    + box: Option<playerID>
+    + turn_manager: TurnManager
+    + starting_player_id: String
+    + new(lobby: Lobby, s: SocketRef): Game7Logic
+    - start_game(lobby: Lobby, s: SocketRef): void
+    - handle_move(player_id: string, data: JSON): void
+}
+
+class Game31Logic {
+    // TODO
+}
+
+class Lobby {
+    // TODO
+}
+
+class Game500Logic {
+    - deck: int[]
+    - stack: int[]
+    // TODO
+}
+
+class PlanningPokerLogic {
+    // TODO
+}
+
+
+class TurnManager {
+    - current: Option<playerID>
+    - next: Option<playerID>
+    + new(): TurnManager
+    + setCurrent(id: playerID): void
+    + getCurrent(): Option<playerID>
+    + setNext(players: [Player]): void
+    + getNext(players: [Player]): Option<playerID>
+    + advanceTurn(players: [Player]): void
+}
+
+
+enum PlayerGameData {
+    Player7
+    Player31
+    Player500
+    PlayerPlanningPoker
+}
+
+class Player7Data {
+    + hand: Vec<u32>
+    + total_score: u32
+    + cards_left: usize
+    + new(): Player7Data
+    + set_cards_left(): void
+}
+
+class Player31Data {
+    - hand: [int]
+    // TODO
+}
+
+class Player500Data {
+    - hand: [int]
+    // TODO
+}
+
+class PlayerPlanningPokerData {
+    - value: int
+    - ready: bool
+    // TODO
+}
+
+
+SharedState --> PlayerState
+
+Game7Logic --> GameData
+Game500Logic --> GameData
+Game31Logic --> GameData
+PlanningPokerLogic --> GameData
+Lobby --> GameData
+
+GameLogic --> Game7Logic
+GameLogic --> Game31Logic
+GameLogic --> Game500Logic
+GameLogic --> PlanningPokerLogic
+GameLogic --> Lobby
+
+SharedState --> GameLogic
+
+Game7Logic --> TurnManager
+Game31Logic --> TurnManager
+Game500Logic --> TurnManager
+
+Player --> PlayerGameData
+PlayerGameData o-- Player7Data
+PlayerGameData o-- Player31Data
+PlayerGameData o-- Player500Data
+PlayerGameData o-- PlayerPlanningPokerData
+
+GameData "1" o-- "1..*" Player
+
+@enduml
