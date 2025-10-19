@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use socketioxide::{extract::SocketRef};
 
 use crate::{
-    models::{Lobby, Player},
+    objects::{GameData, Player},
     socket::send_error_socket::{ErrorResponse, send_error_message},
     state::SharedState,
 };
@@ -52,103 +52,110 @@ pub struct PlayerResponse {
     }
 }*/
 
-pub fn lobby_controller(s: SocketRef, data: LobbyPayload, state: SharedState) {
+pub fn lobby_controller(s: SocketRef, payload_data: LobbyPayload, state: SharedState) {
     println!(
         "Lobby Event:{} {}",
-        format!("{:?}", data).blue(),
+        format!("{:?}", payload_data).blue(),
         s.id.to_string().green()
     );
 
-    match data.event_type {
-        LobbyEvents::JoinLobby => join_lobby(s, data, state),
-        LobbyEvents::CreateLobby => create_lobby(s, data, state),
+    let result = match payload_data.event_type {
+        LobbyEvents::JoinLobby => {
+            let mut state = state.lock().unwrap();
+
+        },
+        LobbyEvents::CreateLobby => create_lobby(),
     }
 
-    //let _ = s.emit("lobby_response", "ok");
-}
-
-fn join_lobby(s: SocketRef, data: LobbyPayload, state: SharedState) {
-    let Some(lobby_id) = data.lobby_id else {
-        return send_error_message(
-            &s,
-            ErrorResponse {
-                message: "Missing lobby_id".to_string(),
-                r#type: "Lobby".to_string(),
-            },
-        );
-    };
-
-    let mut state = state.lock().unwrap();
-    let lobby_arc = match state.lobbies.get(&lobby_id) {
-        Some(lobby_arc) => lobby_arc.clone(),
-        None => {
-            return send_error_message(
-                &s,
-                ErrorResponse {
-                    message: "Lobby code does not exist".to_string(),
-                    r#type: "Lobby".to_string(),
-                },
-            );
+    match result {
+        Err(e) => e.send_error_message(&s),
+        Ok(lobby) => {
         }
-    };
-
-    let mut lobby = lobby_arc.lock().unwrap();
-
-    if lobby.game_started {
-        return send_error_message(
-            &s,
-            ErrorResponse {
-                message: "The lobby has already started their game".to_string(),
-                r#type: "Lobby".to_string(),
-            },
-        );
     }
-
-    let Some(username) = &data.username else {
-        return send_error_message(
-            &s,
-            ErrorResponse {
-                message: "Missing username".to_string(),
-                r#type: "Lobby".to_string(),
-            },
-        );
-    };
-
-    if !check_username(&s, username) {
-        return send_error_message(
-            &s,
-            ErrorResponse {
-                message: "Invalid username".to_string(),
-                r#type: "Lobby".to_string(),
-            },
-        );
-    }
-
-    s.join(lobby_id.to_string()).ok();
-
-    lobby.add_player(Player {
-        id: s.id.to_string(),
-        name: username.to_string(),
-        game: None,
-    });
-    state.add_player_lobby(lobby_id, s.id.to_string());
-    drop(state);
-
-    let response = lobby.to_response();
-
-    // broadcast to everyone else in the room
-    s.within(lobby_id.to_string())
-        .broadcast()
-        .emit(
-            "playerHandler",
-            PlayersResponse {
-                players: response.players.clone(),
-            },
-        )
-        .ok();
-
-    let _ = s.emit("conToLobby", &response);
 }
+
+// fn join_lobby(s: SocketRef, data: LobbyPayload, state: SharedState) {
+//     let Some(lobby_id) = data.lobby_id else {
+//         return send_error_message(
+//             &s,
+//             ErrorResponse {
+//                 message: "Missing lobby_id".to_string(),
+//                 r#type: "Lobby".to_string(),
+//             },
+//         );
+//     };
+
+//     let mut state = state.lock().unwrap();
+//     let lobby_arc = match state.lobbies.get(&lobby_id) {
+//         Some(lobby_arc) => lobby_arc.clone(),
+//         None => {
+//             return send_error_message(
+//                 &s,
+//                 ErrorResponse {
+//                     message: "Lobby code does not exist".to_string(),
+//                     r#type: "Lobby".to_string(),
+//                 },
+//             );
+//         }
+//     };
+
+//     let mut lobby = lobby_arc.lock().unwrap();
+
+//     if lobby.game_started {
+//         return send_error_message(
+//             &s,
+//             ErrorResponse {
+//                 message: "The lobby has already started their game".to_string(),
+//                 r#type: "Lobby".to_string(),
+//             },
+//         );
+//     }
+
+//     let Some(username) = &data.username else {
+//         return send_error_message(
+//             &s,
+//             ErrorResponse {
+//                 message: "Missing username".to_string(),
+//                 r#type: "Lobby".to_string(),
+//             },
+//         );
+//     };
+
+//     if !check_username(&s, username) {
+//         return send_error_message(
+//             &s,
+//             ErrorResponse {
+//                 message: "Invalid username".to_string(),
+//                 r#type: "Lobby".to_string(),
+//             },
+//         );
+//     }
+
+//     s.join(lobby_id.to_string()).ok();
+
+//     lobby.add_player(Player {
+//         id: s.id.to_string(),
+//         name: username.to_string(),
+//         game: None,
+//     });
+//     state.add_player_lobby(lobby_id, s.id.to_string());
+//     drop(state);
+
+//     let response = lobby.to_response();
+
+//     // broadcast to everyone else in the room
+//     s.within(lobby_id.to_string())
+//         .broadcast()
+//         .emit(
+//             "playerHandler",
+//             PlayersResponse {
+//                 players: response.players.clone(),
+//             },
+//         )
+//         .ok();
+
+//     let _ = s.emit("conToLobby", &response);
+// }
 
 fn create_lobby(s: SocketRef, data: LobbyPayload, state: SharedState) {
     let new_id = match create_lobby_id(&state) {
@@ -166,7 +173,7 @@ fn create_lobby(s: SocketRef, data: LobbyPayload, state: SharedState) {
 
     let mut state = state.lock().unwrap(); // lock global state
 
-    let mut lobby = Lobby::new(new_id, s.id.to_string());
+    let mut lobby = GameData::new(new_id, s.id.to_string());
 
     match data.username {
         Some(username) => {

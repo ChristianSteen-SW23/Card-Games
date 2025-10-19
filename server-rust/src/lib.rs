@@ -1,10 +1,10 @@
-pub mod models;
+use crate::objects::states::SharedState;
+pub mod objects;
 pub mod socket;
 pub mod socket_router;
-pub mod state;
 pub mod helpers;
 
-pub async fn run_test_server(addr: &str, state: crate::state::SharedState) {
+pub async fn run_test_server(addr: &str, state: SharedState) {
     use axum::Router;
     use socketioxide::SocketIo;
     use axum::routing::get;

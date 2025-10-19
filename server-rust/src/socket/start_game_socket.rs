@@ -3,9 +3,8 @@ use serde::{Deserialize, Serialize};
 use socketioxide::{extract::SocketRef, SocketIo};
 
 use crate::{
-    models::{Game7Logic, GameLogic},
-    socket::send_error_socket::{ErrorResponse, send_error_message},
-    state::SharedState,
+    objects::{states::SharedState, Game7Logic, GameLogic},
+    socket::send_error_socket::{send_error_message, ErrorResponse},
 };
 
 #[derive(Debug, Deserialize, Serialize)]

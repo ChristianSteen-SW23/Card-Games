@@ -19,7 +19,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_ansi(true)
         .init();
 
-    let state: SharedState = Arc::new(Mutex::new(ServerState::new()));
+    let state: SharedState = SharedState::new();
 
     let (layer, io) = SocketIo::new_layer();
 

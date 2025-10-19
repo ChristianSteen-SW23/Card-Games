@@ -2,7 +2,7 @@
 
 use serde::Serialize;
 
-use crate::models::{Players};
+use crate::objects::{Players};
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]

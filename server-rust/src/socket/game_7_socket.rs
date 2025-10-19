@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use socketioxide::{SocketIo, extract::SocketRef};
 
 use crate::{
-    models::{Game7Logic, GameLogic, Lobby, PlayerGameData},
+    objects::{Game7Logic, GameLogic, GameData, PlayerGameData},
     socket::{send_error_socket::send_error_message, ErrorResponse},
     state::SharedState,
 };
@@ -170,7 +170,7 @@ pub fn game_7_controller(
 
 fn play_card_helper(
     card: &i32,
-    lobby: &mut Lobby,
+    lobby: &mut GameData,
     s_id: &String,
 ) -> Result<ResponseAmount, String> {
     let Some(GameLogic::Game7Logic(game)) = &lobby.game else {

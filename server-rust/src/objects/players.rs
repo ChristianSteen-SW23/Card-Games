@@ -1,4 +1,4 @@
-use crate::models::Player;
+use crate::objects::Player;
 #[derive(Debug, Clone)]
 pub struct Players(Vec<Player>);
 

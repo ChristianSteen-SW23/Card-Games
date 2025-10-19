@@ -14,7 +14,6 @@ class GameData {
     + host: String
     + game_started: bool
     + players: Vec<Player>
-    + game: Option<GameLogic>
     + new(id: u32, host: String): Lobby
     + add_player(player: Player): void
     + start_game(): void
@@ -35,7 +34,7 @@ enum GameLogic {
     Game31Logic
     Game500Logic
     PlanningPokerLogic
-    Lobby
+    LobbyLogic
 }
 
 class Game7Logic {
@@ -52,7 +51,7 @@ class Game31Logic {
     // TODO
 }
 
-class Lobby {
+class LobbyLogic {
     // TODO
 }
 
@@ -117,13 +116,13 @@ Game7Logic --> GameData
 Game500Logic --> GameData
 Game31Logic --> GameData
 PlanningPokerLogic --> GameData
-Lobby --> GameData
+LobbyLogic --> GameData
 
 GameLogic --> Game7Logic
 GameLogic --> Game31Logic
 GameLogic --> Game500Logic
 GameLogic --> PlanningPokerLogic
-GameLogic --> Lobby
+GameLogic --> LobbyLogic
 
 SharedState --> GameLogic
 

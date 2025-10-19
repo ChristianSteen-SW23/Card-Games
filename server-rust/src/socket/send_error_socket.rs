@@ -7,12 +7,31 @@ pub struct ErrorResponse {
     pub r#type: String,
 }
 
-pub fn send_error_message(s: &SocketRef, err: ErrorResponse) {
+impl ErrorResponse {
+    fn new(message: String, r#type: &str) -> Self {
+        Self{ message, r#type: r#type.to_string() }    }
+
+    pub fn emit(self, s: &SocketRef) {
     // Use JSON formatting with serde_json for safety
     let json = serde_json::json!({
-        "message": err.message,
-        "type": err.r#type,
+        "message": self.message,
+        "type": self.r#type,
     });
 
     let _ = s.emit("errorMessage", json);
 }
+}
+
+pub enum Error {
+    NotYourTurn(String)
+}
+
+impl Error {
+    fn send_error_message(self, s: &SocketRef) {
+        use Error::*;
+        match self {
+            NotYourTurn(err) => ErrorResponse::new(err, "Not your turn").emit(s)
+        }
+    }
+}
+
