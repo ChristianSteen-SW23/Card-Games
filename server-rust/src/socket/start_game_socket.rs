@@ -3,8 +3,7 @@ use serde::{Deserialize, Serialize};
 use socketioxide::{extract::SocketRef, SocketIo};
 
 use crate::{
-    objects::{states::SharedState, Game7Logic, GameLogic},
-    socket::send_error_socket::{send_error_message, ErrorResponse},
+    objects::{states::SharedState},
 };
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -51,34 +50,35 @@ pub fn start_game_controller(s: SocketRef, data: StartGamePayload, state: Shared
         s.id.to_string().green()
     );
 
-    let state = state.lock().unwrap();
+    todo!()
+    // let state = state.lock().unwrap();
 
-    let Some(lobby_arc) = state
-        .lobbies
-        .get(&state.player_lobby_map.get(&s.id.to_string()).unwrap())
-    else {
-        return;
-    };
-    let mut lobby = lobby_arc.lock().unwrap();
+    // let Some(lobby_arc) = state
+    //     .lobbies
+    //     .get(&state.player_lobby_map.get(&s.id.to_string()).unwrap())
+    // else {
+    //     return;
+    // };
+    // let mut lobby = lobby_arc.lock().unwrap();
 
-    if lobby.game_started {
-        return send_error_message(
-            &s,
-            ErrorResponse {
-                message: "Game have all ready started".to_string(),
-                r#type: "???".to_string(),
-            },
-        );
-    }
+    // if lobby.game_started {
+    //     return send_error_message(
+    //         &s,
+    //         ErrorResponse {
+    //             message: "Game have all ready started".to_string(),
+    //             r#type: "???".to_string(),
+    //         },
+    //     );
+    // }
 
-    lobby.game_started = true;
+    // lobby.game_started = true;
 
-    match data.game_mode {
-        StartGameEvents::Seven => {
-            lobby.game = Some(GameLogic::Game7Logic(Game7Logic::new(&mut lobby, s, io)));
-        }
-        StartGameEvents::ThirtyOne => todo!(),
-        StartGameEvents::FiveHundred => todo!(),
-        StartGameEvents::PlanningPoker => todo!(),
-    }
+    // match data.game_mode {
+    //     StartGameEvents::Seven => {
+    //         lobby.game = Some(GameLogic::Game7Logic(Game7Logic::new(&mut lobby, s, io)));
+    //     }
+    //     StartGameEvents::ThirtyOne => todo!(),
+    //     StartGameEvents::FiveHundred => todo!(),
+    //     StartGameEvents::PlanningPoker => todo!(),
+    // }
 }

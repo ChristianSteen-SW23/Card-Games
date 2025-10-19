@@ -1,4 +1,4 @@
-use crate::{objects::{GameData, Player}, socket::{send_error_socket::Error, LobbyPayload}};
+use crate::{objects::{GameData, Player, Players}, socket::{send_error_socket::Error, LobbyPayload}};
 
 
 #[derive(Debug, Clone)]
@@ -8,8 +8,16 @@ pub struct LobbyLogic {
 
 
 impl LobbyLogic {
-    pub fn new () {
-        
+    pub fn get_game_id(&self) -> u32 {
+        self.game_data.id
+    }
+
+    pub fn get_host(&self) -> &str {
+        &self.game_data.host
+    }
+
+    pub fn get_players(&self) -> &Players {
+        &self.game_data.players
     }
 }
 
@@ -27,6 +35,7 @@ impl TryFrom<(LobbyPayload, u32, String)> for LobbyLogic {
         })
     }
 }
+
 
 // fn create_lobby(s: SocketRef, data: LobbyPayload, state: SharedState) {
 //     let mut lobby = GameData::new(new_id, s.id.to_string());

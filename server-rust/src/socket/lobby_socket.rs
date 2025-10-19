@@ -1,10 +1,11 @@
 use colored::Colorize;
 use rand::{Rng, rng};
 use serde::{Deserialize, Serialize};
-use socketioxide::extract::SocketRef;
+use socketioxide::{extract::SocketRef, SocketIo};
 
 use crate::{
-    objects::{GameData, LobbyLogic, Player, states::SharedState},
+    objects::{GameLogic, LobbyLogic, lobby_logic, states::SharedState},
+    responses::{LobbyResponse, Response, lobby_response::LobbyAction},
     socket::send_error_socket::Error,
 };
 
@@ -23,72 +24,82 @@ pub enum LobbyEvents {
     CreateLobby,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct LobbyResponse {
-    pub id: u32,
-    pub players: Vec<PlayerResponse>,
-}
+// #[derive(Debug, Serialize, Deserialize)]
+// pub struct LobbyResponse {
+//     pub id: u32,
+//     pub players: Vec<PlayerResponse>,
+// }
 
-#[derive(Debug, Serialize, Clone, Deserialize)]
-pub struct PlayersResponse {
-    pub players: Vec<PlayerResponse>,
-}
+// #[derive(Debug, Serialize, Clone, Deserialize)]
+// pub struct PlayersResponse {
+//     pub players: Vec<PlayerResponse>,
+// }
 
-#[derive(Debug, Serialize, Clone, Deserialize)]
-pub struct PlayerResponse {
-    pub playerid: String,
-    pub name: String,
-    pub host: bool,
-}
+// #[derive(Debug, Serialize, Clone, Deserialize)]
+// pub struct PlayerResponse {
+//     pub playerid: String,
+//     pub name: String,
+//     pub host: bool,
+// }
 
-/*impl From<&Player> for PlayerResponse{
-    fn from(value: &Player) -> Self {
-        PlayerResponse {
-                playerid: value.id.clone(),
-                name: value.name.clone(),
-                host: value.id == self.host,
-        }
-    }
-}*/
-
-pub fn lobby_controller(s: SocketRef, payload_data: LobbyPayload, mut state: SharedState) {
+pub fn lobby_controller(s: SocketRef, io: SocketIo, payload_data: LobbyPayload, mut state: SharedState) {
     println!(
         "Lobby Event:{} {}",
         format!("{:?}", payload_data).blue(),
         s.id.to_string().green()
     );
+    let mut lobby_id: u32 = 0;
 
-    let result: Result<TypeOfRes, Error> = match payload_data.event_type {
+    let result: Result<Response, Error> = match payload_data.event_type {
         LobbyEvents::JoinLobby => {
-            let mut state = state.lock().unwrap();
-            Ok(())
+            // Make new player and join it to the room
+
+            todo!();
+
+            // let mut state = state.lock().unwrap();
+            // let mut lobby_logic = state.game_map.get(state.player_lobby_map.get(s.id.to_string().as_str()).unwrap());
+            // Ok(Response::Lobby((LobbyResponse::from(lobby_logic), LobbyAction::Join)))
         }
         LobbyEvents::CreateLobby => make_lobby(s.id.to_string(), payload_data, &mut state)
-            .and_then(|new_id| {
-                s.join(new_id.to_string());
-                Ok(())
+            .and_then(|id| -> Result<Response, Error> {
+                s.join(id.to_string());
+                lobby_id = id;
+
+                let state = state.lock().unwrap();
+
+                let lobby_arc = state.game_map.get(&id).unwrap();
+
+                let lobby = lobby_arc.lock().unwrap();
+
+                let GameLogic::LobbyLogic(ref lobby) = *lobby;
+
+                Ok(Response::Lobby((
+                    LobbyResponse::from(lobby),
+                    LobbyAction::Create,
+                )))
+
+                // if let Some(lobby) = state
+                //     .lock()
+                //     .ok()
+                //     .map(|state| state.game_map.get(&id))
+                //     .flatten()
+                //     .map(|lobby_arc| lobby_arc.lock().ok().map(|lobby| lobby))
+                //     .flatten()
+                // {
+                //     let GameLogic::LobbyLogic(ref lobby_2) = *lobby;
+                //     // let lobby_2 =
+
+                // } else {
+                //     Err(Error::LobbyError("No".to_string()))
+                // }
             }),
     };
 
     match result {
         Err(e) => e.emit_error_response(&s),
-        Ok(_) => { emit_ok_response
-            s.within(lobby_id.to_string())
-                .broadcast()
-                .emit(
-                    "playerHandler",
-                    PlayersResponse {
-                        players: response.players.clone(),
-                    },
-                )
-                .ok();
-
-            let _ = s.emit("conToLobby", &response);
-        }
+        Ok(value) => value.emit_ok_response(s, io, lobby_id),
     }
 }
-
-
 
 /**
     Lobby is created and attached to sharedstate

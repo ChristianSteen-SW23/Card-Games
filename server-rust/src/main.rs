@@ -2,14 +2,13 @@ use std::sync::{Arc, Mutex};
 
 use axum::{http};
 use axum::routing::get;
+use server_rust::objects::states::{ServerState, SharedState};
 use socketioxide::SocketIo;
 use tower_http::cors::{Any, CorsLayer};
 use tracing_subscriber;
 
 use server_rust::{
     socket_router,
-    state::ServerState,
-    state::SharedState,
 };
 
 #[tokio::main]
@@ -19,7 +18,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_ansi(true)
         .init();
 
-    let state: SharedState = SharedState::new();
+    let state: SharedState = Arc::new(Mutex::new(ServerState::new()));
 
     let (layer, io) = SocketIo::new_layer();
 

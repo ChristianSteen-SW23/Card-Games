@@ -12,6 +12,10 @@ impl Player {
         Self { id, name, game: PlayerGameData::Lobby }
     }
 
+    pub fn get_id(&self) -> &str {
+        &self.id
+    }
+
     // pub fn get_mut_game(&mut self) ->  Option<&mut PlayerGameData> {
     //     self.game.as_mut()
     // }

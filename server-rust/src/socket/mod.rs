@@ -9,6 +9,6 @@ pub use send_error_socket::ErrorResponse;
 pub use lobby_socket::lobby_controller;
 pub use disconnect_socket::disconnect_controller;
 pub use start_game_socket::start_game_controller;
-pub use game_7_socket::game_7_controller;
+// pub use game_7_socket::game_7_controller;
 pub use game_7_socket::Game7Payload;
 

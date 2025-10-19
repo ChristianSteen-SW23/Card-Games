@@ -27,8 +27,9 @@ pub fn register_socket_routes(io: &SocketIo, state: &SharedState) {
         });
 
         let state_for_lobby = state.clone();
+        let io_for_lobby_controller = io_inside.clone();
         s.on("lobbyControl", |socket: SocketRef, Data::<LobbyPayload>(data)| {
-            lobby_controller(socket, data, state_for_lobby);
+            lobby_controller(socket, io_for_lobby_controller, data, state_for_lobby);
         });
 
         // let state_for_start_game = state.clone();
