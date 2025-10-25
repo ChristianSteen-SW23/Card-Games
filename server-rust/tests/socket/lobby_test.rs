@@ -229,6 +229,233 @@ fn test_lobby_control_event_createlobby_200() {
 }
 
 #[test]
+fn test_lobby_control_event_createlobby_and_join_200() {
+    let state = Arc::new(Mutex::new(ServerState::new()));
+
+    // Start tokio runtime manually
+    let rt = tokio::runtime::Runtime::new().unwrap();
+    rt.spawn({
+        let state = state.clone();
+        async move {
+            run_test_server("127.0.0.1:4001", state).await;
+        }
+    });
+
+    // Wait a bit for server
+    std::thread::sleep(std::time::Duration::from_millis(300));
+
+    // Use sync rust_socketio client
+    let (tx1, rx1) = std::sync::mpsc::channel::<String>();
+
+    let socket1 = rust_socketio::ClientBuilder::new("http://127.0.0.1:4001")
+    .on("conToLobby", move |payload, _| {
+        println!("Got payload: {:?}", payload);
+        match payload {
+            rust_socketio::Payload::Text(values) => {
+                if let Some(v) = values.get(0) {
+                    let _ = tx1.send(v.to_string());
+                }
+            }
+            rust_socketio::Payload::Binary(bin) => {
+                let _ = tx1.send(format!("(binary) {:?}", bin.len()));
+            }
+            rust_socketio::Payload::String(s) => {
+                let _ = tx1.send(s);
+            }
+        }
+    })
+    .connect()
+    .expect("could not connect");
+
+    let data = LobbyPayload {
+        username: Some("player1".to_string()),
+        event_type: LobbyEvents::CreateLobby,
+        lobby_id: None,
+    };
+    socket1
+        .emit("lobbyControl", serde_json::to_value(&data).unwrap())
+        .expect("emit failed");
+
+    let msg = rx1
+        .recv_timeout(std::time::Duration::from_secs(3))
+        .expect("no response");
+    // parse into your ErrorResponse struct
+    let res_lobby_create: LobbyResponse = serde_json::from_str(&msg).expect("invalid JSON in response");
+
+    let (tx2, rx2) = std::sync::mpsc::channel::<String>();
+    let socket2 = rust_socketio::ClientBuilder::new("http://127.0.0.1:4001")
+    .on("conToLobby", move |payload, _| {
+        println!("Got payload: {:?}", payload);
+        match payload {
+            rust_socketio::Payload::Text(values) => {
+                if let Some(v) = values.get(0) {
+                    let _ = tx2.send(v.to_string());
+                }
+            }
+            rust_socketio::Payload::Binary(bin) => {
+                let _ = tx2.send(format!("(binary) {:?}", bin.len()));
+            }
+            rust_socketio::Payload::String(s) => {
+                let _ = tx2.send(s);
+            }
+        }
+    })
+    .connect()
+    .expect("could not connect");
+
+    
+
+    let data = LobbyPayload {
+        username: Some("player2".to_string()),
+        event_type: LobbyEvents::JoinLobby,
+        lobby_id: Some(res_lobby_create.id),
+    };
+    socket2
+        .emit("lobbyControl", serde_json::to_value(&data).unwrap())
+        .expect("emit failed");
+
+    let msg = rx2
+        .recv_timeout(std::time::Duration::from_secs(3))
+        .expect("no response");
+    // parse into your ErrorResponse struct
+    let res_join_lobby: LobbyResponse = serde_json::from_str(&msg).expect("invalid JSON in response");
+
+    assert!((0..10).contains(&res_lobby_create.id));
+    assert_eq!(res_lobby_create.players.len(), 1);
+    assert_eq!(res_lobby_create.players[0].name, "player1");
+
+    assert!(&res_lobby_create.id == &res_join_lobby.id);
+    assert_eq!(res_join_lobby.players.len(), 2);
+    assert_eq!(res_join_lobby.players[0].name, "player1");
+    assert_eq!(res_join_lobby.players[1].name, "player2");
+
+    let state = state.lock().unwrap();
+    assert_eq!(state.player_lobby_map.len(), 2);
+    assert!(state.game_map.contains_key(&res_lobby_create.id));
+    // let Ok(GameLogic::LobbyLogic(idk)): Option<_> = state.game_map.get(&res.id).unwrap().lock();
+
+    let lobby_arc = state.game_map.get(&res_lobby_create.id).unwrap();
+    let lobby = lobby_arc.lock().unwrap();
+    let GameLogic::LobbyLogic(ref lobby) = *lobby;
+
+    assert_eq!(lobby.get_players().get_all()[0].name, "player1");
+    assert_eq!(lobby.get_players().get_all()[1].name, "player2");
+    assert_eq!(lobby.get_game_id(), res_lobby_create.id);
+}
+
+#[test]
+fn test_lobby_control_event_createlobby_and_join_400() {
+    let state = Arc::new(Mutex::new(ServerState::new()));
+
+    // Start tokio runtime manually
+    let rt = tokio::runtime::Runtime::new().unwrap();
+    rt.spawn({
+        let state = state.clone();
+        async move {
+            run_test_server("127.0.0.1:4001", state).await;
+        }
+    });
+
+    // Wait a bit for server
+    std::thread::sleep(std::time::Duration::from_millis(300));
+
+    // Use sync rust_socketio client
+    let (tx1, rx1) = std::sync::mpsc::channel::<String>();
+
+    let socket1 = rust_socketio::ClientBuilder::new("http://127.0.0.1:4001")
+    .on("conToLobby", move |payload, _| {
+        println!("Got payload: {:?}", payload);
+        match payload {
+            rust_socketio::Payload::Text(values) => {
+                if let Some(v) = values.get(0) {
+                    let _ = tx1.send(v.to_string());
+                }
+            }
+            rust_socketio::Payload::Binary(bin) => {
+                let _ = tx1.send(format!("(binary) {:?}", bin.len()));
+            }
+            rust_socketio::Payload::String(s) => {
+                let _ = tx1.send(s);
+            }
+        }
+    })
+    .connect()
+    .expect("could not connect");
+
+    let data = LobbyPayload {
+        username: Some("player1".to_string()),
+        event_type: LobbyEvents::CreateLobby,
+        lobby_id: None,
+    };
+    socket1
+        .emit("lobbyControl", serde_json::to_value(&data).unwrap())
+        .expect("emit failed");
+
+    let msg = rx1
+        .recv_timeout(std::time::Duration::from_secs(3))
+        .expect("no response");
+    // parse into your ErrorResponse struct
+    let res_lobby_create: LobbyResponse = serde_json::from_str(&msg).expect("invalid JSON in response");
+
+    let (tx2, rx2) = std::sync::mpsc::channel::<String>();
+    let socket2 = rust_socketio::ClientBuilder::new("http://127.0.0.1:4001")
+    .on("errorMessage", move |payload, _| {
+        println!("Got payload: {:?}", payload);
+        match payload {
+            rust_socketio::Payload::Text(values) => {
+                if let Some(v) = values.get(0) {
+                    let _ = tx2.send(v.to_string());
+                }
+            }
+            rust_socketio::Payload::Binary(bin) => {
+                let _ = tx2.send(format!("(binary) {:?}", bin.len()));
+            }
+            rust_socketio::Payload::String(s) => {
+                let _ = tx2.send(s);
+            }
+        }
+    })
+    .connect()
+    .expect("could not connect");
+
+    
+
+    let data = LobbyPayload {
+        username: None,
+        event_type: LobbyEvents::JoinLobby,
+        lobby_id: Some(res_lobby_create.id),
+    };
+    socket2
+        .emit("lobbyControl", serde_json::to_value(&data).unwrap())
+        .expect("emit failed");
+
+    let msg = rx2
+        .recv_timeout(std::time::Duration::from_secs(3))
+        .expect("no response");
+    // parse into your ErrorResponse struct
+    let err: ErrorResponse = serde_json::from_str(&msg).expect("invalid JSON in response");
+
+    assert!((0..10).contains(&res_lobby_create.id));
+    assert_eq!(res_lobby_create.players.len(), 1);
+    assert_eq!(res_lobby_create.players[0].name, "player1");
+
+    assert_eq!(err.message, "You need to send a username");
+    assert_eq!(err.r#type, "Lobby Error");
+
+    let state = state.lock().unwrap();
+    assert_eq!(state.player_lobby_map.len(), 1);
+    assert!(state.game_map.contains_key(&res_lobby_create.id));
+    // let Ok(GameLogic::LobbyLogic(idk)): Option<_> = state.game_map.get(&res.id).unwrap().lock();
+
+    let lobby_arc = state.game_map.get(&res_lobby_create.id).unwrap();
+    let lobby = lobby_arc.lock().unwrap();
+    let GameLogic::LobbyLogic(ref lobby) = *lobby;
+
+    assert_eq!(lobby.get_players().get_all()[0].name, "player1");
+    assert_eq!(lobby.get_game_id(), res_lobby_create.id);
+}
+
+#[test]
 fn sanity_check() {
     assert!(true.eq(&true));
 }

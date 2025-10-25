@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::objects::Player;
 
-#[derive(Serialize, Debug, Deserialize)]
+#[derive(Serialize, Debug, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct PlayerResponse {
     pub playerid: String,

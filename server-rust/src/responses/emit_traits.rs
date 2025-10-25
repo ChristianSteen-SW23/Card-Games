@@ -4,7 +4,7 @@ use serde::Serialize;
 use socketioxide::{SocketIo, extract::SocketRef};
 
 pub trait EmitSingle {
-    fn emit_single(&self, s: SocketRef, event_name: String)
+    fn emit_single(&self, s: &SocketRef, event_name: String)
     where
         Self: Serialize,
         Self: Debug,
@@ -17,7 +17,7 @@ pub trait EmitSingle {
 }
 
 pub trait EmitAll {
-    fn emit_all(&self, room_id: u32, io: SocketIo, event_name: String)
+    fn emit_all(&self, room_id: u32, io: &SocketIo, event_name: String)
     where
         Self: Serialize,
         Self: Debug,

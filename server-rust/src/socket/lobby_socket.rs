@@ -1,11 +1,13 @@
 use colored::Colorize;
 use rand::{Rng, rng};
 use serde::{Deserialize, Serialize};
-use socketioxide::{extract::SocketRef, SocketIo};
+use socketioxide::{SocketIo, extract::SocketRef};
 
 use crate::{
     objects::{GameLogic, LobbyLogic, lobby_logic, states::SharedState},
-    responses::{LobbyResponse, Response, lobby_response::LobbyAction},
+    responses::{
+        self, LobbyResponse, Response, lobby_response::LobbyAction, responses_enum::Responses,
+    },
     socket::send_error_socket::Error,
 };
 
@@ -24,25 +26,12 @@ pub enum LobbyEvents {
     CreateLobby,
 }
 
-// #[derive(Debug, Serialize, Deserialize)]
-// pub struct LobbyResponse {
-//     pub id: u32,
-//     pub players: Vec<PlayerResponse>,
-// }
-
-// #[derive(Debug, Serialize, Clone, Deserialize)]
-// pub struct PlayersResponse {
-//     pub players: Vec<PlayerResponse>,
-// }
-
-// #[derive(Debug, Serialize, Clone, Deserialize)]
-// pub struct PlayerResponse {
-//     pub playerid: String,
-//     pub name: String,
-//     pub host: bool,
-// }
-
-pub fn lobby_controller(s: SocketRef, io: SocketIo, payload_data: LobbyPayload, mut state: SharedState) {
+pub fn lobby_controller(
+    s: SocketRef,
+    io: SocketIo,
+    payload_data: LobbyPayload,
+    mut state: SharedState,
+) {
     println!(
         "Lobby Event:{} {}",
         format!("{:?}", payload_data).blue(),
@@ -50,18 +39,16 @@ pub fn lobby_controller(s: SocketRef, io: SocketIo, payload_data: LobbyPayload, 
     );
     let mut lobby_id: u32 = 0;
 
-    let result: Result<Response, Error> = match payload_data.event_type {
+    let result: Result<Responses, Error> = match payload_data.event_type {
         LobbyEvents::JoinLobby => {
-            // Make new player and join it to the room
-
-            todo!();
-
-            // let mut state = state.lock().unwrap();
-            // let mut lobby_logic = state.game_map.get(state.player_lobby_map.get(s.id.to_string().as_str()).unwrap());
-            // Ok(Response::Lobby((LobbyResponse::from(lobby_logic), LobbyAction::Join)))
+            join_lobby(s.id.to_string(), payload_data, &mut state).and_then(|(id, res)| {
+                s.join(id.to_string());
+                lobby_id = id;
+                Ok(res)
+            })
         }
         LobbyEvents::CreateLobby => make_lobby(s.id.to_string(), payload_data, &mut state)
-            .and_then(|id| -> Result<Response, Error> {
+            .and_then(|id| -> Result<Responses, Error> {
                 s.join(id.to_string());
                 lobby_id = id;
 
@@ -73,10 +60,10 @@ pub fn lobby_controller(s: SocketRef, io: SocketIo, payload_data: LobbyPayload, 
 
                 let GameLogic::LobbyLogic(ref lobby) = *lobby;
 
-                Ok(Response::Lobby((
+                Ok(Responses::Single(Response::Lobby((
                     LobbyResponse::from(lobby),
-                    LobbyAction::Create,
-                )))
+                    LobbyAction::Join,
+                ))))
 
                 // if let Some(lobby) = state
                 //     .lock()
@@ -97,7 +84,7 @@ pub fn lobby_controller(s: SocketRef, io: SocketIo, payload_data: LobbyPayload, 
 
     match result {
         Err(e) => e.emit_error_response(&s),
-        Ok(value) => value.emit_ok_response(s, io, lobby_id),
+        Ok(value) => value.emit_ok_response(&s, &io, lobby_id),
     }
 }
 
@@ -141,57 +128,42 @@ pub fn create_lobby_id(state: &SharedState) -> Option<u32> {
     None
 }
 
-// fn create_lobby_old(s: SocketRef, data: LobbyPayload, state: SharedState) {
-//     let new_id = match find_lobby_id(&state) {
-//         Ok(id) => id,
-//         Err(_) => {
-//             return send_error_message(
-//                 &s,
-//                 ErrorResponse {
-//                     message: "Could not generate a free lobby code".to_string(),
-//                     r#type: "Lobby".to_string(),
-//                 },
-//             );
-//         }
-//     };
+fn join_lobby(
+    sid: String,
+    payload_data: LobbyPayload,
+    state: &mut SharedState,
+) -> Result<(u32, Responses), Error> {
+    let lobby_id = payload_data
+        .lobby_id
+        .ok_or_else(|| Error::LobbyError("You need to send a ID".to_string()))?;
 
-//     let mut state = state.lock().unwrap(); // lock global state
+    let mut state_guard = state.lock().unwrap();
+    let res: LobbyResponse;
+    {
+        let lobby_arc = state_guard
+            .game_map
+            .get(&lobby_id)
+            .ok_or_else(|| Error::LobbyError(format!("Lobby with ID {} not found", lobby_id)))?;
 
-//     let mut lobby = GameData::new(new_id, s.id.to_string());
+        let mut lobby_guard = lobby_arc.lock().unwrap();
+        let lobby = match &mut *lobby_guard {
+            GameLogic::LobbyLogic(lobby) => lobby,
+            _ => return Err(Error::LobbyError("Game is not a lobby".into())),
+        };
+        lobby.add_player(&sid, payload_data.username)?;
+        res = LobbyResponse::from(&*lobby).to_owned();
+    }
 
-//     match data.username {
-//         Some(username) => {
-//             if !check_username(&s, &username.to_string()) {
-//                 return;
-//             }
+    state_guard.insert_player_lobby(sid, lobby_id);
 
-//             let player = Player::new(s.id.to_string(), username.to_string());
-//             lobby.add_player(player);
-
-//             state.insert_lobby(lobby);
-//             state.add_player_lobby(new_id, s.id.to_string());
-
-//             let response = LobbyResponse {
-//                 id: new_id,
-//                 players: vec![PlayerResponse {
-//                     playerid: s.id.to_string(),
-//                     name: username,
-//                     host: true,
-//                 }],
-//             };
-//             s.join(new_id.to_string()).ok();
-//             let _ = s.emit("conToLobby", response);
-//         }
-//         None => send_error_message(
-//             &s,
-//             ErrorResponse {
-//                 message: "No username given".to_string(),
-//                 r#type: "???".to_string(),
-//             },
-//         ),
-//     }
-// }
-
+    Ok((
+        lobby_id,
+        Responses::Multiple(vec![
+            Response::Lobby((res.clone(), LobbyAction::Join)),
+            Response::Lobby((res, LobbyAction::Update)),
+        ]),
+    ))
+}
 // fn join_lobby(s: SocketRef, data: LobbyPayload, state: SharedState) {
 //     let Some(lobby_id) = data.lobby_id else {
 //         return send_error_message(

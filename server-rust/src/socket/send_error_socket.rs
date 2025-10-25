@@ -24,7 +24,7 @@ impl ErrorResponse {
 
 pub enum Error {
     NotYourTurn(String),
-    LobbyError(String)
+    LobbyError(String),
 }
 
 impl Error {

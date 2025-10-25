@@ -19,6 +19,12 @@ impl LobbyLogic {
     pub fn get_players(&self) -> &Players {
         &self.game_data.players
     }
+
+    pub fn add_player(&mut self, sid: &String, username: Option<String>) -> Result<(),Error>{
+        let player = Player::try_from((sid.to_string(), username.ok_or_else(|| Error::LobbyError("You need to send a username".to_string()))?))?;
+        self.game_data.players.add(player);
+        Ok(())
+    }
 }
 
 impl TryFrom<(LobbyPayload, u32, String)> for LobbyLogic {
