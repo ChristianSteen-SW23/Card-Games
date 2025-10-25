@@ -1,84 +1,25 @@
-use std::sync::{Arc, Mutex};
+use std::sync::{mpsc::{self, Receiver}, Arc, Mutex};
+use crate::socket::mocks::*;
 
+
+
+use rust_socketio::{client::Client, ClientBuilder, Payload};
 use server_rust::{objects::{states::ServerState, Game7Logic, GameLogic}, responses::LobbyResponse, run_test_server, socket::{lobby_socket::LobbyEvents, ErrorResponse, LobbyPayload}};
 
 #[test]
 fn test_message_event() {
-    let state = Arc::new(Mutex::new(ServerState::new()));
-
-    // Start tokio runtime manually
-    let rt = tokio::runtime::Runtime::new().unwrap();
-    rt.spawn({
-        let state = state.clone();
-        async move {
-            run_test_server("127.0.0.1:4001", state).await;
-        }
-    });
-
-    // Wait a bit for server
-    std::thread::sleep(std::time::Duration::from_millis(300));
-
-    // Use sync rust_socketio client
-    let (tx, rx) = std::sync::mpsc::channel::<String>();
-
-    let socket = rust_socketio::ClientBuilder::new("http://127.0.0.1:4001")
-        .on("message-back", move |payload, _| match payload {
-            rust_socketio::Payload::Text(values) => {
-                if let Some(v) = values.get(0).and_then(|v| v.as_str()) {
-                    tx.send(v.to_string()).unwrap();
-                }
-            }
-            _ => {}
-        })
-        .connect()
-        .expect("could not connect");
-
+    let (_state, _rt, socket, rx) = setup_test_with_listener("message-back");
     socket.emit("message", "").expect("emit failed");
 
     let msg = rx
         .recv_timeout(std::time::Duration::from_secs(3))
         .expect("no response");
-    assert_eq!(msg, "Hello World!");
+    assert_eq!(msg, "\"Hello World!\"");
 }
 
 #[test]
 fn test_lobby_control_event_createlobby_no_name_400() {
-    let state = Arc::new(Mutex::new(ServerState::new()));
-
-    // Start tokio runtime manually
-    let rt = tokio::runtime::Runtime::new().unwrap();
-    rt.spawn({
-        let state = state.clone();
-        async move {
-            run_test_server("127.0.0.1:4001", state).await;
-        }
-    });
-
-    // Wait a bit for server
-    std::thread::sleep(std::time::Duration::from_millis(300));
-
-    // Use sync rust_socketio client
-    let (tx, rx) = std::sync::mpsc::channel::<String>();
-
-    let socket = rust_socketio::ClientBuilder::new("http://127.0.0.1:4001")
-    .on("errorMessage", move |payload, _| {
-        println!("Got payload: {:?}", payload);
-        match payload {
-            rust_socketio::Payload::Text(values) => {
-                if let Some(v) = values.get(0) {
-                    let _ = tx.send(v.to_string());
-                }
-            }
-            rust_socketio::Payload::Binary(bin) => {
-                let _ = tx.send(format!("(binary) {:?}", bin.len()));
-            }
-            rust_socketio::Payload::String(s) => {
-                let _ = tx.send(s);
-            }
-        }
-    })
-    .connect()
-    .expect("could not connect");
+    let (_state, _rt, socket, rx) = setup_test_with_listener("errorMessage");
 
     let data = LobbyPayload {
         username: None, /*Some("player1".to_string())*/
@@ -101,42 +42,8 @@ fn test_lobby_control_event_createlobby_no_name_400() {
 
 #[test]
 fn test_lobby_control_event_createlobby_shortname_400() {
-    let state = Arc::new(Mutex::new(ServerState::new()));
+    let (_state, _rt, socket, rx) = setup_test_with_listener("errorMessage");
 
-    // Start tokio runtime manually
-    let rt = tokio::runtime::Runtime::new().unwrap();
-    rt.spawn({
-        let state = state.clone();
-        async move {
-            run_test_server("127.0.0.1:4001", state).await;
-        }
-    });
-
-    // Wait a bit for server
-    std::thread::sleep(std::time::Duration::from_millis(300));
-
-    // Use sync rust_socketio client
-    let (tx, rx) = std::sync::mpsc::channel::<String>();
-
-    let socket = rust_socketio::ClientBuilder::new("http://127.0.0.1:4001")
-    .on("errorMessage", move |payload, _| {
-        println!("Got payload: {:?}", payload);
-        match payload {
-            rust_socketio::Payload::Text(values) => {
-                if let Some(v) = values.get(0) {
-                    let _ = tx.send(v.to_string());
-                }
-            }
-            rust_socketio::Payload::Binary(bin) => {
-                let _ = tx.send(format!("(binary) {:?}", bin.len()));
-            }
-            rust_socketio::Payload::String(s) => {
-                let _ = tx.send(s);
-            }
-        }
-    })
-    .connect()
-    .expect("could not connect");
 
     let data = LobbyPayload {
         username: Some("a".to_string()),
@@ -159,42 +66,7 @@ fn test_lobby_control_event_createlobby_shortname_400() {
 
 #[test]
 fn test_lobby_control_event_createlobby_200() {
-    let state = Arc::new(Mutex::new(ServerState::new()));
-
-    // Start tokio runtime manually
-    let rt = tokio::runtime::Runtime::new().unwrap();
-    rt.spawn({
-        let state = state.clone();
-        async move {
-            run_test_server("127.0.0.1:4001", state).await;
-        }
-    });
-
-    // Wait a bit for server
-    std::thread::sleep(std::time::Duration::from_millis(300));
-
-    // Use sync rust_socketio client
-    let (tx, rx) = std::sync::mpsc::channel::<String>();
-
-    let socket = rust_socketio::ClientBuilder::new("http://127.0.0.1:4001")
-    .on("conToLobby", move |payload, _| {
-        println!("Got payload: {:?}", payload);
-        match payload {
-            rust_socketio::Payload::Text(values) => {
-                if let Some(v) = values.get(0) {
-                    let _ = tx.send(v.to_string());
-                }
-            }
-            rust_socketio::Payload::Binary(bin) => {
-                let _ = tx.send(format!("(binary) {:?}", bin.len()));
-            }
-            rust_socketio::Payload::String(s) => {
-                let _ = tx.send(s);
-            }
-        }
-    })
-    .connect()
-    .expect("could not connect");
+    let (state, _rt, socket, rx) = setup_test_with_listener("conToLobby");
 
     let data = LobbyPayload {
         username: Some("player1".to_string()),
@@ -230,42 +102,8 @@ fn test_lobby_control_event_createlobby_200() {
 
 #[test]
 fn test_lobby_control_event_createlobby_and_join_200() {
-    let state = Arc::new(Mutex::new(ServerState::new()));
-
-    // Start tokio runtime manually
-    let rt = tokio::runtime::Runtime::new().unwrap();
-    rt.spawn({
-        let state = state.clone();
-        async move {
-            run_test_server("127.0.0.1:4001", state).await;
-        }
-    });
-
-    // Wait a bit for server
-    std::thread::sleep(std::time::Duration::from_millis(300));
-
-    // Use sync rust_socketio client
-    let (tx1, rx1) = std::sync::mpsc::channel::<String>();
-
-    let socket1 = rust_socketio::ClientBuilder::new("http://127.0.0.1:4001")
-    .on("conToLobby", move |payload, _| {
-        println!("Got payload: {:?}", payload);
-        match payload {
-            rust_socketio::Payload::Text(values) => {
-                if let Some(v) = values.get(0) {
-                    let _ = tx1.send(v.to_string());
-                }
-            }
-            rust_socketio::Payload::Binary(bin) => {
-                let _ = tx1.send(format!("(binary) {:?}", bin.len()));
-            }
-            rust_socketio::Payload::String(s) => {
-                let _ = tx1.send(s);
-            }
-        }
-    })
-    .connect()
-    .expect("could not connect");
+    let (state, _rt, socket1, rx1) = setup_test_with_listener("conToLobby");
+    let (socket2,rx2) = connect_with_listener("conToLobby");
 
     let data = LobbyPayload {
         username: Some("player1".to_string()),
@@ -281,29 +119,6 @@ fn test_lobby_control_event_createlobby_and_join_200() {
         .expect("no response");
     // parse into your ErrorResponse struct
     let res_lobby_create: LobbyResponse = serde_json::from_str(&msg).expect("invalid JSON in response");
-
-    let (tx2, rx2) = std::sync::mpsc::channel::<String>();
-    let socket2 = rust_socketio::ClientBuilder::new("http://127.0.0.1:4001")
-    .on("conToLobby", move |payload, _| {
-        println!("Got payload: {:?}", payload);
-        match payload {
-            rust_socketio::Payload::Text(values) => {
-                if let Some(v) = values.get(0) {
-                    let _ = tx2.send(v.to_string());
-                }
-            }
-            rust_socketio::Payload::Binary(bin) => {
-                let _ = tx2.send(format!("(binary) {:?}", bin.len()));
-            }
-            rust_socketio::Payload::String(s) => {
-                let _ = tx2.send(s);
-            }
-        }
-    })
-    .connect()
-    .expect("could not connect");
-
-    
 
     let data = LobbyPayload {
         username: Some("player2".to_string()),
@@ -345,42 +160,8 @@ fn test_lobby_control_event_createlobby_and_join_200() {
 
 #[test]
 fn test_lobby_control_event_createlobby_and_join_400() {
-    let state = Arc::new(Mutex::new(ServerState::new()));
-
-    // Start tokio runtime manually
-    let rt = tokio::runtime::Runtime::new().unwrap();
-    rt.spawn({
-        let state = state.clone();
-        async move {
-            run_test_server("127.0.0.1:4001", state).await;
-        }
-    });
-
-    // Wait a bit for server
-    std::thread::sleep(std::time::Duration::from_millis(300));
-
-    // Use sync rust_socketio client
-    let (tx1, rx1) = std::sync::mpsc::channel::<String>();
-
-    let socket1 = rust_socketio::ClientBuilder::new("http://127.0.0.1:4001")
-    .on("conToLobby", move |payload, _| {
-        println!("Got payload: {:?}", payload);
-        match payload {
-            rust_socketio::Payload::Text(values) => {
-                if let Some(v) = values.get(0) {
-                    let _ = tx1.send(v.to_string());
-                }
-            }
-            rust_socketio::Payload::Binary(bin) => {
-                let _ = tx1.send(format!("(binary) {:?}", bin.len()));
-            }
-            rust_socketio::Payload::String(s) => {
-                let _ = tx1.send(s);
-            }
-        }
-    })
-    .connect()
-    .expect("could not connect");
+    let (state, _rt, socket1, rx1) = setup_test_with_listener("conToLobby");
+    let (socket2,rx2) = connect_with_listener("errorMessage");
 
     let data = LobbyPayload {
         username: Some("player1".to_string()),
@@ -396,29 +177,6 @@ fn test_lobby_control_event_createlobby_and_join_400() {
         .expect("no response");
     // parse into your ErrorResponse struct
     let res_lobby_create: LobbyResponse = serde_json::from_str(&msg).expect("invalid JSON in response");
-
-    let (tx2, rx2) = std::sync::mpsc::channel::<String>();
-    let socket2 = rust_socketio::ClientBuilder::new("http://127.0.0.1:4001")
-    .on("errorMessage", move |payload, _| {
-        println!("Got payload: {:?}", payload);
-        match payload {
-            rust_socketio::Payload::Text(values) => {
-                if let Some(v) = values.get(0) {
-                    let _ = tx2.send(v.to_string());
-                }
-            }
-            rust_socketio::Payload::Binary(bin) => {
-                let _ = tx2.send(format!("(binary) {:?}", bin.len()));
-            }
-            rust_socketio::Payload::String(s) => {
-                let _ = tx2.send(s);
-            }
-        }
-    })
-    .connect()
-    .expect("could not connect");
-
-    
 
     let data = LobbyPayload {
         username: None,
@@ -442,12 +200,12 @@ fn test_lobby_control_event_createlobby_and_join_400() {
     assert_eq!(err.message, "You need to send a username");
     assert_eq!(err.r#type, "Lobby Error");
 
-    let state = state.lock().unwrap();
-    assert_eq!(state.player_lobby_map.len(), 1);
-    assert!(state.game_map.contains_key(&res_lobby_create.id));
+    let state_gaurd = state.lock().unwrap();
+    assert_eq!(state_gaurd.player_lobby_map.len(), 1);
+    assert!(state_gaurd.game_map.contains_key(&res_lobby_create.id));
     // let Ok(GameLogic::LobbyLogic(idk)): Option<_> = state.game_map.get(&res.id).unwrap().lock();
 
-    let lobby_arc = state.game_map.get(&res_lobby_create.id).unwrap();
+    let lobby_arc = state_gaurd.game_map.get(&res_lobby_create.id).unwrap();
     let lobby = lobby_arc.lock().unwrap();
     let GameLogic::LobbyLogic(ref lobby) = *lobby;
 
@@ -455,7 +213,3 @@ fn test_lobby_control_event_createlobby_and_join_400() {
     assert_eq!(lobby.get_game_id(), res_lobby_create.id);
 }
 
-#[test]
-fn sanity_check() {
-    assert!(true.eq(&true));
-}
