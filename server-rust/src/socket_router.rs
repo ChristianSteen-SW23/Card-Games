@@ -44,10 +44,10 @@ pub fn register_socket_routes(io: &SocketIo, state: &SharedState) {
         //     println!("{:?}",game_7_controller_with_error_handler(socket, data, state_for_game_7, io_for_game_7));
         // });
 
-        // let state_for_disconnect = state.clone();
-        // let io_for_disconnect = io_inside.clone();
-        // s.on_disconnect(|socket: SocketRef, reason: DisconnectReason| {
-        //     disconnect_controller(socket, reason, state_for_disconnect, io_for_disconnect);
-        // });
+        let state_for_disconnect = state.clone();
+        let io_for_disconnect = io_inside.clone();
+        s.on_disconnect(|socket: SocketRef, reason: DisconnectReason| {
+            disconnect_controller(socket, reason, state_for_disconnect, io_for_disconnect);
+        });
     });
 }

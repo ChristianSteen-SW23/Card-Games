@@ -44,18 +44,17 @@ impl ServerState {
     //     }
     // }
 
-    // pub fn delete_room(&mut self, lobby_id: &u32) {
-    //     self.games
-    //         .get(lobby_id)
-    //         .unwrap()
-    //         .lock()
-    //         .unwrap()
-    //         .players.get_all().iter()
-    //         .for_each(|player| {
-    //             self.player_lobby.remove(&player.id);
-    //         });
-    //     self.games.remove(lobby_id);
-    // }
+    pub fn delete_room(&mut self, lobby_id: &u32) {
+        self.game_map
+            .get(lobby_id)
+            .unwrap()
+            .lock()
+            .unwrap().get_players().get_all().iter()
+            .for_each(|player| {
+                self.player_lobby_map.remove(&player.id);
+            });
+        self.game_map.remove(lobby_id);
+    }
 
     // pub fn delete_player(&mut self, lobby_id: &u32, socket_id: String) {
     //     self.player_lobby.remove(&socket_id);
