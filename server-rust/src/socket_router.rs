@@ -1,8 +1,7 @@
 use crate::{
     objects::states::SharedState,
     socket::{
-        disconnect_controller,
-        lobby_socket::{LobbyPayload, lobby_controller},
+        disconnect_controller, lobby_socket::{LobbyPayload, lobby_controller}, start_game_controller, start_game_socket::StartGamePayload
     },
 };
 use colored::Colorize;
@@ -37,11 +36,11 @@ pub fn register_socket_routes(io: &SocketIo, state: &SharedState) {
             },
         );
 
-        // let state_for_start_game = state.clone();
-        // let io_for_start_game = io_inside.clone();
-        // s.on("startGame", |socket: SocketRef, Data::<StartGamePayload>(data)| {
-        //     start_game_controller(socket, data, state_for_start_game, io_for_start_game);
-        // });
+        let state_for_start_game = state.clone();
+        let io_for_start_game = io_inside.clone();
+        s.on("startGame", |socket: SocketRef, Data::<StartGamePayload>(data)| {
+            start_game_controller(socket, data, state_for_start_game, io_for_start_game);
+        });
 
         // let state_for_game_7 = state.clone();
         // let io_for_game_7 = io_inside.clone();

@@ -1,7 +1,7 @@
 use serde::Serialize;
 use socketioxide::{SocketIo, extract::SocketRef};
 
-use crate::responses::{EmitAll, EmitSingle, LobbyResponse, lobby_response::LobbyAction};
+use crate::responses::{EmitAll, EmitSingle, LobbyResponse, SevenGameAction, lobby_response::LobbyAction};
 
 #[derive(Serialize, Debug)]
 pub enum Responses {
@@ -25,6 +25,7 @@ impl Responses {
 #[derive(Serialize, Debug)]
 pub enum Response {
     Lobby((LobbyResponse, LobbyAction)),
+    SevenGame(SevenGameAction)
 }
 
 impl Response {
@@ -37,6 +38,14 @@ impl Response {
                     Update => res.emit_all(room_id, io, "playerHandler".to_string()),
                 }
             }
+            Response::SevenGame(action) => {
+                use SevenGameAction::*;
+                match action{
+                    GameStart(res) => res.emit_single(s, "startedGame".to_string()),
+                    Update(res) => res.emit_all(room_id, io, "gameInfo".to_string()),
+                    Hand(res) => res.emit_single(s, "handInfo".to_string()),
+                }
+            },
         }
     }
 }

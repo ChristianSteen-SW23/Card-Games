@@ -1,62 +1,8 @@
-use serde::Serialize;
 
-use crate::{
-    objects::{
-        TurnManager, TurnResponse,
-    },
-};
+use crate::objects::{
+        GameData, TurnManager
+    };
 
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Start7GameResponse<'a> {
-    hand_info: &'a Vec<u32>,
-    board: &'a Vec<Vec<i32>>,
-    players_info: &'a Vec<SevenPlayerResponse<'a>>,
-    turn: &'a TurnResponse,
-    game_mode: String,
-}
-
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct GameOver7GameResponse {
-    win_data: Vec<GameOverPlayer7GameResponse>,
-}
-impl GameOver7GameResponse {
-    fn new(win_data: Vec<GameOverPlayer7GameResponse>) -> Self {
-        Self { win_data }
-    }
-}
-
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct GameOverPlayer7GameResponse {
-    name: String,
-    round_score: u32,
-    total_score: u32,
-}
-impl GameOverPlayer7GameResponse {
-    fn new(name: String, round_score: u32, total_score: u32) -> Self {
-        Self {
-            name,
-            round_score,
-            total_score,
-        }
-    }
-}
-
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Hand7GameResponse<'a> {
-    hand_info: &'a Vec<u32>,
-}
-
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SevenPlayerResponse<'a> {
-    name: &'a String,
-    id: &'a String,
-    cards_left: usize,
-}
 
 #[derive(Debug, Clone)]
 pub struct Game7Logic {
@@ -64,40 +10,43 @@ pub struct Game7Logic {
     pub r#box: Option<String>,
     pub turn_manager: TurnManager,
     pub starting_player_id: String,
+    pub game_data: GameData,
 }
 
-impl<'a> Start7GameResponse<'a> {
-    pub fn new(
-        hand_info: &'a Vec<u32>,
-        board: &'a Vec<Vec<i32>>,
-        players: &'a Vec<SevenPlayerResponse>,
-        turn: &'a TurnResponse,
-    ) -> Self {
-        Self {
-            hand_info,
-            board,
-            players_info: players,
-            turn,
-            game_mode: "7".to_string(),
-        }
-    }
-}
+// #[derive(Debug, Serialize)]
+// #[serde(rename_all = "camelCase")]
+// pub struct GameOver7GameResponse {
+//     win_data: Vec<GameOverPlayer7GameResponse>,
+// }
+// impl GameOver7GameResponse {
+//     fn new(win_data: Vec<GameOverPlayer7GameResponse>) -> Self {
+//         Self { win_data }
+//     }
+// }
 
-// impl<'a> SevenPlayerResponse<'a> {
-//     pub fn new(player: &'a Player) -> Self {
-//         let cards_left = {
-//             let PlayerGameData::Player7(player) = player.game.clone().unwrap() else {
-//                 unreachable!()
-//             };
-//             player.cards_left
-//         };
+// #[derive(Debug, Serialize)]
+// #[serde(rename_all = "camelCase")]
+// pub struct GameOverPlayer7GameResponse {
+//     name: String,
+//     round_score: u32,
+//     total_score: u32,
+// }
+// impl GameOverPlayer7GameResponse {
+//     fn new(name: String, round_score: u32, total_score: u32) -> Self {
 //         Self {
-//             name: &player.name,
-//             id: &player.id,
-//             cards_left,
+//             name,
+//             round_score,
+//             total_score,
 //         }
 //     }
 // }
+
+
+
+
+
+
+
 
 // // Responses
 // impl Game7Logic {

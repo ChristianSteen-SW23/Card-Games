@@ -25,24 +25,6 @@ pub enum StartGameEvents {
     PlanningPoker,
 }
 
-// #[derive(Debug, Serialize, Deserialize)]
-// pub struct Response {
-//     pub id: u32,
-//     pub players: Vec<PlayerResponse>,
-// }
-
-// #[derive(Debug, Serialize, Clone, Deserialize)]
-// pub struct PlayersResponse {
-//     pub players: Vec<PlayerResponse>,
-// }
-
-// #[derive(Debug, Serialize, Clone, Deserialize)]
-// pub struct PlayerResponse {
-//     pub playerid: String,
-//     pub name: String,
-//     pub host: bool,
-// }
-
 pub fn start_game_controller(s: SocketRef, data: StartGamePayload, state: SharedState, io: SocketIo) {
     println!(
         "Lobby Event:{} {}",

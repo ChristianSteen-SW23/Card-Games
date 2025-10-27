@@ -1,15 +1,4 @@
-
-
-use serde::Serialize;
-
-use crate::objects::{Players};
-
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct TurnResponse {
-    next: String,
-    current: String,
-}
+use crate::{objects::Players, responses::TurnResponse};
 
 #[derive(Debug, Clone)]
 pub struct TurnManager {
