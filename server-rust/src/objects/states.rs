@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
-use crate::objects::{GameData, GameLogic, LobbyLogic, Player};
+use crate::objects::{GameLogic, LobbyLogic};
 
 pub type SharedState = Arc<Mutex<ServerState>>;
 

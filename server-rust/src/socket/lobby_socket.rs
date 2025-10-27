@@ -42,14 +42,14 @@ pub fn lobby_controller(
     let result: Result<Responses, Error> = match payload_data.event_type {
         LobbyEvents::JoinLobby => {
             join_lobby(s.id.to_string(), payload_data, &mut state).and_then(|(id, res)| {
-                s.join(id.to_string());
+                let _ = s.join(id.to_string());
                 lobby_id = id;
                 Ok(res)
             })
         }
         LobbyEvents::CreateLobby => make_lobby(s.id.to_string(), payload_data, &mut state)
             .and_then(|id| -> Result<Responses, Error> {
-                s.join(id.to_string());
+                let _ = s.join(id.to_string());
                 lobby_id = id;
 
                 let state = state.lock().unwrap();

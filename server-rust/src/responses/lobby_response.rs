@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{objects::{LobbyLogic, Players}, responses::{EmitAll, EmitSingle, PlayerResponse}};
+use crate::{objects::{LobbyLogic}, responses::{EmitAll, EmitSingle, PlayerResponse}};
 
 #[derive(Serialize, Debug, Deserialize)]
 pub enum LobbyAction {

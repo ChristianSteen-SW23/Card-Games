@@ -1,15 +1,16 @@
-
 use crate::{
-    objects::states::SharedState, socket::{
-        disconnect_controller, game_7_socket::game_7_controller_with_error_handler, lobby_socket::{lobby_controller, LobbyPayload}, start_game_controller, start_game_socket::StartGamePayload, Game7Payload
-    }
+    objects::states::SharedState,
+    socket::{
+        disconnect_controller,
+        lobby_socket::{LobbyPayload, lobby_controller},
+    },
 };
 use colored::Colorize;
 use socketioxide::{
+    SocketIo,
     extract::{Data, SocketRef},
-    socket::DisconnectReason, SocketIo,
+    socket::DisconnectReason,
 };
-
 
 pub fn register_socket_routes(io: &SocketIo, state: &SharedState) {
     let state = state.clone();
@@ -23,14 +24,18 @@ pub fn register_socket_routes(io: &SocketIo, state: &SharedState) {
 
         let state_for_debug = state.clone();
         s.on("debug", move |s: SocketRef| {
-            s.emit("message-back", format!("{:?}", state_for_debug.clone())).ok();
+            s.emit("message-back", format!("{:?}", state_for_debug.clone()))
+                .ok();
         });
 
         let state_for_lobby = state.clone();
         let io_for_lobby_controller = io_inside.clone();
-        s.on("lobbyControl", |socket: SocketRef, Data::<LobbyPayload>(data)| {
-            lobby_controller(socket, io_for_lobby_controller, data, state_for_lobby);
-        });
+        s.on(
+            "lobbyControl",
+            |socket: SocketRef, Data::<LobbyPayload>(data)| {
+                lobby_controller(socket, io_for_lobby_controller, data, state_for_lobby);
+            },
+        );
 
         // let state_for_start_game = state.clone();
         // let io_for_start_game = io_inside.clone();
