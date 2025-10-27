@@ -58,12 +58,15 @@ pub fn lobby_controller(
 
                 let lobby = lobby_arc.lock().unwrap();
 
-                let GameLogic::LobbyLogic(ref lobby) = *lobby;
-
-                Ok(Responses::Single(Response::Lobby((
-                    LobbyResponse::from(lobby),
-                    LobbyAction::Join,
-                ))))
+                match &*lobby {
+                    GameLogic::LobbyLogic(lobby) => Ok(Responses::Single(Response::Lobby((
+                        LobbyResponse::from(lobby),
+                        LobbyAction::Join,
+                    )))),
+                    _ => Err(Error::LobbyError(
+                        "Lobby is not of type LobbyLogic".to_string(),
+                    )),
+                }
 
                 // if let Some(lobby) = state
                 //     .lock()

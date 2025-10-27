@@ -30,10 +30,14 @@ fn test_create_7_lobby_200() {
         .expect("emit failed");
 
     // --- Join lobby ---
+    let lobby_id = {
+        let state = state.lock().unwrap();
+        state.player_lobby_map.values().next().cloned().unwrap()
+    };
     let data = LobbyPayload {
         username: Some("player2".to_string()),
         event_type: LobbyEvents::JoinLobby,
-        lobby_id: Some(res_lobby_create.id),
+        lobby_id: Some(lobby_id),
     };
     socket2
         .emit("lobbyControl", serde_json::to_value(&data).unwrap())
@@ -68,23 +72,20 @@ fn test_create_7_lobby_200() {
     assert_eq!(res2.players_info[0].cards_left, 26);
     assert_eq!(res2.players_info[1].cards_left, 26);
     assert_eq!(res1.board, vec![vec![0; 4]; 3]);
-    assert_eq!(
-        [res1.hand_info, res2.hand_info]
-            .concat()
-            .into_iter()
-            .sorted()
-            .collect::<Vec<_>>(),
-        (0..52).collect::<Vec<_>>()
-    );
+    let mut all_cards: Vec<_> = res1
+        .hand_info
+        .iter()
+        .chain(&res2.hand_info)
+        .cloned()
+        .collect();
+    all_cards.sort();
+
+    assert_eq!(all_cards, (0..52).collect::<Vec<_>>());
 
     let state = state.lock().unwrap();
     assert_eq!(state.player_lobby_map.len(), 2);
-    assert!(state.game_map.contains_key(&res_lobby_create.id));
 
-    let lobby_arc = state
-        .game_map
-        .get(&state.player_lobby_map.get(res1.players_info[0].id))
-        .unwrap();
+    let lobby_arc = state.game_map.get(&lobby_id).unwrap();
     let lobby = lobby_arc.lock().unwrap();
     let GameLogic::Game7Logic(ref game7) = *lobby else {
         panic!("Expected Game7Logic variant");
@@ -99,8 +100,9 @@ fn test_create_7_lobby_200() {
         .game_data
         .players
         .get_all()
+        .iter()
         .flat_map(|p| {
-            if let PlayerGameData::Player7Data(d) = p.game.as_ref().unwrap() {
+            if let PlayerGameData::Player7(d) = &p.game {
                 d.hand.clone()
             } else {
                 panic!("Should not have gotten to here");
@@ -109,22 +111,27 @@ fn test_create_7_lobby_200() {
         .collect();
     deck.sort();
     assert_eq!(deck, (0..52).collect::<Vec<_>>());
-    let starting_player = "".to_string();
+    let mut starting_player = "".to_string();
     for player in game7.game_data.players.get_all() {
-        let PlayerGameData::Player7(ref player7) = *player else {
+        let PlayerGameData::Player7(ref player7) = player.game else {
             panic!("Expected Game7Logic variant");
         };
         assert_eq!(player7.cards_left, 26);
         assert_eq!(player7.total_score, 0);
-        if player7.hand.contains(19) {
-            starting_player = player.get_id();
+        if player7.hand.contains(&19) {
+            starting_player = player.get_id().to_string();
         }
     }
     assert_eq!(game7.starting_player_id, starting_player);
     assert_eq!(game7.turn_manager.get_current(), starting_player);
 
     assert!(
-    game7.game_data.players.get_all().any(|p| p.get_id() == game7.turn_manager.get_next()),
-    "Next player should exist in player list"
-);
+        game7
+            .game_data
+            .players
+            .get_all()
+            .iter()
+            .any(|p| p.get_id() == game7.turn_manager.get_next()),
+        "Next player should exist in player list"
+    );
 }
