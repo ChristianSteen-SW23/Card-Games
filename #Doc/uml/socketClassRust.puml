@@ -12,7 +12,6 @@ class PlayerState{
 class GameData {
     + id: u32
     + host: String
-    + game_started: bool
     + players: Vec<Player>
     + new(id: u32, host: String): Lobby
     + add_player(player: Player): void

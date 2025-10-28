@@ -9,7 +9,7 @@ pub trait EmitSingle {
         Self: Serialize,
         Self: Debug,
     {
-        println!("{:?}",self);
+        // println!("{:?}",self);
         if let Err(err) = s.emit(event_name, self) {
             println!("SendError: {:?}", err);
         }
@@ -22,7 +22,7 @@ pub trait EmitAll {
         Self: Serialize,
         Self: Debug,
     {
-        println!("{:?}",self);
+        // println!("{:?}",self);
         if let Err(err) = io
             .within(room_id.to_string())
             .broadcast()

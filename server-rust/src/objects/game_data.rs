@@ -6,7 +6,6 @@ use crate::objects::{Player, Players};
 pub struct GameData {
     pub id: u32,
     pub host: String, // player id
-    pub game_started: bool,
     pub players: Players,
 }
 
@@ -63,7 +62,6 @@ impl From<(u32, Player)> for GameData {
         Self {
             id,
             host: player.id.to_string(),
-            game_started: false,
             players: player.into(),
         }
     }

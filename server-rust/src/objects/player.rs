@@ -22,6 +22,14 @@ impl Player {
     pub fn username_check(username: &str) -> bool {
         username.len() >= 2
     }
+
+    pub fn reset(&mut self) {
+        match &mut self.game {
+            PlayerGameData::Player7(data) => data.reset(),
+            PlayerGameData::Player31(data) => todo!(),
+            PlayerGameData::Lobby => {},
+        }
+    }
 }
 
 impl TryFrom<(String, String)> for Player {

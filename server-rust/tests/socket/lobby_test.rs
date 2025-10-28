@@ -91,7 +91,10 @@ fn test_lobby_control_event_createlobby_200() {
 
     let lobby_arc = state.game_map.get(&res.id).unwrap();
     let lobby = lobby_arc.lock().unwrap();
-    let GameLogic::LobbyLogic(ref lobby) = *lobby;
+    let GameLogic::LobbyLogic(ref lobby) = *lobby else {
+        panic!("how")
+    };
+
 
     assert_eq!(lobby.get_players().get_all()[0].name, "player1");
     assert_eq!(lobby.get_game_id(), res.id);
@@ -148,7 +151,9 @@ fn test_lobby_control_event_createlobby_and_join_200() {
 
     let lobby_arc = state.game_map.get(&res_lobby_create.id).unwrap();
     let lobby = lobby_arc.lock().unwrap();
-    let GameLogic::LobbyLogic(ref lobby) = *lobby;
+    let GameLogic::LobbyLogic(ref lobby) = *lobby else {
+        panic!("how")
+    };
 
     assert_eq!(lobby.get_players().get_all()[0].name, "player1");
     assert_eq!(lobby.get_players().get_all()[1].name, "player2");
@@ -204,7 +209,10 @@ fn test_lobby_control_event_createlobby_and_join_400() {
 
     let lobby_arc = state_gaurd.game_map.get(&res_lobby_create.id).unwrap();
     let lobby = lobby_arc.lock().unwrap();
-    let GameLogic::LobbyLogic(ref lobby) = *lobby;
+    let GameLogic::LobbyLogic(ref lobby) = *lobby else {
+        panic!("how")
+    };
+
 
     assert_eq!(lobby.get_players().get_all()[0].name, "player1");
     assert_eq!(lobby.get_game_id(), res_lobby_create.id);

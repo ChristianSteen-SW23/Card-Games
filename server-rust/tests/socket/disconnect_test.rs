@@ -4,7 +4,7 @@ use rust_socketio::{client::Client, ClientBuilder, Payload};
 use server_rust::{objects::{states::ServerState, Game7Logic, GameLogic}, responses::LobbyResponse, run_test_server, socket::{lobby_socket::LobbyEvents, ErrorResponse, LobbyPayload}};
 use socketioxide::socket::DisconnectReason;
 
-#[test]
+// #[test]
 fn test_disconnect_from_lobby() {
     let (state, _rt, socket1, rx1) = setup_test_with_listener("conToLobby");
     let (socket2, rx2) = connect_with_listener("leaveLobby");

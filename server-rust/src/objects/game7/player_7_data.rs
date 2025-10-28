@@ -1,3 +1,5 @@
+use std::vec;
+
 
 #[derive(Debug, Clone)]
 pub struct Player7Data {
@@ -13,6 +15,11 @@ impl Player7Data {
             total_score: 0,
             cards_left: 0,
         }
+    }
+
+    pub fn reset(&mut self){
+        self.hand = vec![];
+        self.cards_left = 0;
     }
 
     pub fn set_cards_left(&mut self){

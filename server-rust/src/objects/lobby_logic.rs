@@ -3,7 +3,7 @@ use crate::{objects::{GameData, Player, Players}, socket::{send_error_socket::Er
 
 #[derive(Debug, Clone)]
 pub struct LobbyLogic {
-    game_data: GameData,
+    pub game_data: GameData,
 }
 
 

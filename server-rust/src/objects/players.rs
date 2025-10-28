@@ -35,6 +35,7 @@ impl Players {
         let Some(idx) = self.0.iter().position(|player| player.id == key) else { return; };
         self.0.remove(idx);
     }
+
 }
 
 impl From<Player> for Players {

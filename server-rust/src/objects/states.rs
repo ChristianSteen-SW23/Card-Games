@@ -1,7 +1,8 @@
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, MutexGuard};
 
 use crate::objects::{GameLogic, LobbyLogic};
+use crate::socket::send_error_socket::Error;
 
 pub type SharedState = Arc<Mutex<ServerState>>;
 
@@ -64,5 +65,35 @@ impl ServerState {
     //         lobby.players.remove(&socket_id);
     //     }
     // }
+
+    pub fn get_lobby_mut<'a>(
+        &'a mut self,
+        socket_id: &str,
+    ) -> Result<MutexGuard<'a, GameLogic>, Error> {
+        let lobby_id = self
+            .player_lobby_map
+            .get(socket_id)
+            .ok_or_else(|| Error::LobbyError("Player not in any lobby".to_string()))?
+            .clone();
+
+        let lobby_arc = self
+            .game_map
+            .get(&lobby_id)
+            .ok_or_else(|| Error::LobbyError("Lobby not found".to_string()))?;
+
+        Ok(lobby_arc.lock().unwrap())
+    }
+
+    pub fn get_lobby_arc(&self, sid: &str) -> Result<Arc<Mutex<GameLogic>>, Error> {
+        let lobby_id = self.player_lobby_map
+            .get(sid)
+            .ok_or(Error::LobbyError("Player not in a lobby".into()))?;
+
+        let lobby_arc = self.game_map
+            .get(lobby_id)
+            .ok_or(Error::LobbyError("Lobby not found".into()))?;
+
+        Ok(lobby_arc.clone())
+    }
 }
 

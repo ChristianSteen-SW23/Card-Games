@@ -1,6 +1,8 @@
 
+use rand::{Rng, rng};
+
 use crate::objects::{
-        GameData, TurnManager
+        GameData, LobbyLogic, Player7Data, PlayerGameData, TurnManager, turn_manager
     };
 
 
@@ -11,6 +13,65 @@ pub struct Game7Logic {
     pub turn_manager: TurnManager,
     pub starting_player_id: String,
     pub game_data: GameData,
+}
+impl Game7Logic {
+    pub fn new_from_lobby(lobby: LobbyLogic) -> Self {
+        let mut lobby = Self {
+            game_data: lobby.game_data,
+            board: vec![vec![0; 4]; 3],
+            r#box: None,
+            turn_manager: TurnManager::new(),
+            starting_player_id: String::new()
+        };
+
+        lobby.game_data.players.get_mut_all().iter_mut().for_each(|player| player.game = PlayerGameData::Player7(Player7Data::new()));
+
+        lobby.start_game();
+
+        lobby
+    }
+
+    pub fn play_again(&mut self){
+        self.board = vec![vec![0; 4]; 3];
+        self.r#box = None;
+        self.starting_player_id = String::new();
+
+        self.game_data.players.get_mut_all().iter_mut().for_each(|player| player.reset());
+
+        self.start_game();
+    }
+
+    fn start_game(&mut self){
+        println!(
+            "Starting Game 7 with {} players",
+            self.game_data.players.get_all().len()
+        );
+
+        self.turn_manager.update(self.game_data.host.to_string(), &self.game_data.players);
+        self.deal_cards();
+        self.game_data.players.get_mut_all().iter_mut().for_each(|p| if let PlayerGameData::Player7(d) = &mut p.game { d.cards_left = d.hand.len(); });
+
+        self.turn_manager.update(self.starting_player_id.to_owned(), &self.game_data.players);
+    }
+
+    fn deal_cards(&mut self){
+        let mut card_deck: Vec<u32> = (0..=51).collect();
+        let mut rng = rng();
+
+        while !card_deck.is_empty() {
+            let random_num = rng.random_range(0..card_deck.len() as u32) as usize;
+            let cur_id = self.turn_manager.get_current();
+            if card_deck[random_num] == 19 {
+                self.starting_player_id = cur_id.to_string()
+            }
+            match &mut self.game_data.players.get_mut(cur_id).unwrap().game {
+                PlayerGameData::Player7(player7_data) => player7_data.hand.push(card_deck[random_num]),
+                _ => unreachable!()
+            }
+            card_deck.remove(random_num);
+            self.turn_manager.advance_turn(&self.game_data.players);
+        }
+    }
 }
 
 // #[derive(Debug, Serialize)]
