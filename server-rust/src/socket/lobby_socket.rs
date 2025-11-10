@@ -5,9 +5,7 @@ use socketioxide::{SocketIo, extract::SocketRef};
 
 use crate::{
     objects::{GameLogic, LobbyLogic, lobby_logic, states::SharedState},
-    responses::{
-        self, LobbyResponse, Response, lobby_response::LobbyAction, responses_enum::Responses,
-    },
+    responses::{EmitContext, Event, LobbyResponse, Planned, Responses, responses},
     socket::send_error_socket::Error,
 };
 
@@ -40,13 +38,12 @@ pub fn lobby_controller(
     let mut lobby_id: u32 = 0;
 
     let result: Result<Responses, Error> = match payload_data.event_type {
-        LobbyEvents::JoinLobby => {
-            join_lobby(s.id.to_string(), payload_data, &mut state).and_then(|(id, res)| {
+        LobbyEvents::JoinLobby => join_lobby(s.id.to_string(), payload_data, &mut state, &io)
+            .and_then(|(id, res)| {
                 let _ = s.join(id.to_string());
                 lobby_id = id;
                 Ok(res)
-            })
-        }
+            }),
         LobbyEvents::CreateLobby => make_lobby(s.id.to_string(), payload_data, &mut state)
             .and_then(|id| -> Result<Responses, Error> {
                 let _ = s.join(id.to_string());
@@ -59,35 +56,21 @@ pub fn lobby_controller(
                 let lobby = lobby_arc.lock().unwrap();
 
                 match &*lobby {
-                    GameLogic::LobbyLogic(lobby) => Ok(Responses::Single(Response::Lobby((
-                        LobbyResponse::from(lobby),
-                        LobbyAction::Join,
-                    )))),
+                    GameLogic::LobbyLogic(lobby) => Ok(Responses::Single(Planned::new(
+                        Event::ConnectToLobby,
+                        EmitContext::SingleRef { s: &s },
+                        &LobbyResponse::from(lobby),
+                    ))),
                     _ => Err(Error::LobbyError(
                         "Lobby is not of type LobbyLogic".to_string(),
                     )),
                 }
-
-                // if let Some(lobby) = state
-                //     .lock()
-                //     .ok()
-                //     .map(|state| state.game_map.get(&id))
-                //     .flatten()
-                //     .map(|lobby_arc| lobby_arc.lock().ok().map(|lobby| lobby))
-                //     .flatten()
-                // {
-                //     let GameLogic::LobbyLogic(ref lobby_2) = *lobby;
-                //     // let lobby_2 =
-
-                // } else {
-                //     Err(Error::LobbyError("No".to_string()))
-                // }
             }),
     };
 
     match result {
         Err(e) => e.emit_error_response(&s),
-        Ok(value) => value.emit_ok_response(&s, &io, lobby_id),
+        Ok(value) => value.emit_all(),
     }
 }
 
@@ -131,11 +114,12 @@ pub fn create_lobby_id(state: &SharedState) -> Option<u32> {
     None
 }
 
-fn join_lobby(
+fn join_lobby<'a>(
     sid: String,
     payload_data: LobbyPayload,
-    state: &mut SharedState,
-) -> Result<(u32, Responses), Error> {
+    state: &'a mut SharedState,
+    io: &'a SocketIo,
+) -> Result<(u32, Responses<'a>), Error> {
     let lobby_id = payload_data
         .lobby_id
         .ok_or_else(|| Error::LobbyError("You need to send a ID".to_string()))?;
@@ -157,13 +141,24 @@ fn join_lobby(
         res = LobbyResponse::from(&*lobby).to_owned();
     }
 
-    state_guard.insert_player_lobby(sid, lobby_id);
+    state_guard.insert_player_lobby(sid.to_string(), lobby_id);
 
     Ok((
         lobby_id,
         Responses::Multiple(vec![
-            Response::Lobby((res.clone(), LobbyAction::Join)),
-            Response::Lobby((res, LobbyAction::Update)),
+            Planned::new(
+                Event::ConnectToLobby,
+                EmitContext::SingleString { io, sid },
+                &res,
+            ),
+            Planned::new(
+                Event::UpdateLobby,
+                EmitContext::Room {
+                    io,
+                    room_id: lobby_id,
+                },
+                &res,
+            ),
         ]),
     ))
 }

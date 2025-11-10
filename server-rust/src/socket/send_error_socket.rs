@@ -9,17 +9,21 @@ pub struct ErrorResponse {
 
 impl ErrorResponse {
     fn new(message: String, r#type: &str) -> Self {
-        Self{ message, r#type: r#type.to_string() }    }
+        Self {
+            message,
+            r#type: r#type.to_string(),
+        }
+    }
 
     pub fn emit(self, s: &SocketRef) {
-    // Use JSON formatting with serde_json for safety
-    let json = serde_json::json!({
-        "message": self.message,
-        "type": self.r#type,
-    });
+        // Use JSON formatting with serde_json for safety
+        let json = serde_json::json!({
+            "message": self.message,
+            "type": self.r#type,
+        });
 
-    let _ = s.emit("errorMessage", json);
-}
+        let _ = s.emit("errorMessage", json);
+    }
 }
 
 pub enum Error {
@@ -36,4 +40,3 @@ impl Error {
         }
     }
 }
-

@@ -4,10 +4,7 @@ use socketioxide::{SocketIo, extract::SocketRef};
 
 use crate::{
     objects::{Game7Logic, GameLogic, states::SharedState},
-    responses::{
-        LobbyResponse, Response, SevenGameAction, responses_enum::Responses,
-        seven_response::SevenGameStartResponse,
-    },
+    responses::{Event, Planned, Responses, seven_response::SevenGameStartResponse},
     socket::send_error_socket::Error,
 };
 
@@ -79,7 +76,7 @@ pub fn start_game_controller(
     );
 
     // we cannot use `?` here, so handle errors explicitly and return
-    let mut state_guard = state.lock().unwrap();
+    let state_guard = state.lock().unwrap();
 
     // find lobby_id from player map
     let lobby_id = match state_guard.player_lobby_map.get(&s.id.to_string()).cloned() {
@@ -114,7 +111,8 @@ pub fn start_game_controller(
 
                     // Borrow it back immutably
                     let GameLogic::Game7Logic(ref game7_ref) = *game_guard else {
-                        Error::LobbyError("Failed to assign new Game7Logic".into()).emit_error_response(&s);
+                        Error::LobbyError("Failed to assign new Game7Logic".into())
+                            .emit_error_response(&s);
                         return;
                     };
 
@@ -122,14 +120,19 @@ pub fn start_game_controller(
                     let responses = game7_ref
                         .game_data
                         .players
-                        .get_all().iter()
+                        .get_all()
+                        .iter()
                         .map(|player| {
-                            Response::SevenGame(SevenGameAction::GameStart(
-                                SevenGameStartResponse::from((player.id.as_str(), game7_ref)),
-                            ))
+                            Planned::new(
+                                Event::StartedGame,
+                                crate::responses::EmitContext::SingleString {
+                                    io: &io,
+                                    sid: player.id.to_string(),
+                                },
+                                &SevenGameStartResponse::from((player.id.as_str(), game7_ref)),
+                            )
                         })
                         .collect();
-
                     Ok(Responses::Multiple(responses))
                 }
                 StartGameEvents::ThirtyOne => todo!(),
@@ -144,7 +147,7 @@ pub fn start_game_controller(
 
     match result {
         Err(e) => e.emit_error_response(&s),
-        Ok(responses) => responses.emit_ok_response(&s, &io, lobby_id),
+        Ok(responses) => responses.emit_all(),
     }
 }
 

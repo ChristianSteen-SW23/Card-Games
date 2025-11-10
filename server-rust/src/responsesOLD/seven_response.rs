@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     objects::{Game7Logic, Player, PlayerGameData, game7::game_7_logic, player},
-    responses::{TurnResponse},
+    responses::{EmitAll, EmitSingle, TurnResponse},
 };
 
 #[derive(Serialize, Debug, Deserialize)]
@@ -19,6 +19,7 @@ pub struct SevenGameUpdateResponse {
     pub players_info: Vec<SevenPlayerResponse>,
     pub turn: TurnResponse,
 }
+impl EmitAll for SevenGameUpdateResponse {}
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -29,6 +30,8 @@ pub struct SevenGameStartResponse {
     pub turn: TurnResponse,
     pub game_mode: String,
 }
+
+impl EmitSingle for SevenGameStartResponse {}
 
 impl From<(&str, &Game7Logic)> for SevenGameStartResponse {
     fn from((sid, game_7_logic): (&str, &Game7Logic)) -> Self {
@@ -88,3 +91,5 @@ impl From<&Player> for SevenPlayerResponse {
 pub struct Hand7GameResponse {
     pub hand_info: Vec<u32>,
 }
+
+impl EmitSingle for Hand7GameResponse {}

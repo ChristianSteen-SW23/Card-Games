@@ -1,12 +1,9 @@
 use crate::socket::mocks::*;
 use rust_socketio::{ClientBuilder, Payload, client::Client};
 use server_rust::{
-    objects::{Game7Logic, GameLogic, PlayerGameData, states::ServerState},
-    responses::{LobbyResponse, seven_response::SevenGameStartResponse},
-    run_test_server,
-    socket::{
+    objects::{Game7Logic, GameLogic, PlayerGameData, states::ServerState}, responses::seven_response::SevenGameStartResponse, run_test_server, socket::{
         ErrorResponse, LobbyPayload, lobby_socket::LobbyEvents, start_game_socket::{StartGameEvents, StartGamePayload},
-    },
+    }
 };
 use socketioxide::socket::DisconnectReason;
 use std::{sync::{
@@ -57,7 +54,7 @@ fn test_create_7_lobby_200() {
     let res1: SevenGameStartResponse =
         serde_json::from_str(&msg1).expect("invalid JSON in response");
 
-    let msg2 = rx1
+    let msg2 = rx2
         .recv_timeout(std::time::Duration::from_secs(3))
         .expect("no response");
     let res2: SevenGameStartResponse =

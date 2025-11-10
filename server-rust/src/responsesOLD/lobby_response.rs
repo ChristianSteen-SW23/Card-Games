@@ -1,6 +1,12 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{objects::LobbyLogic, responses::{PlayerResponse}};
+use crate::{objects::{LobbyLogic}, responses::{EmitAll, EmitSingle, PlayerResponse}};
+
+#[derive(Serialize, Debug, Deserialize)]
+pub enum LobbyAction {
+    Join,
+    Update,
+}
 
 #[derive(Serialize, Debug, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -18,3 +24,7 @@ impl From<&LobbyLogic> for LobbyResponse {
         }
     }
 }
+
+
+impl EmitSingle for LobbyResponse {}
+impl EmitAll for LobbyResponse {}
