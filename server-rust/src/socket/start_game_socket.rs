@@ -27,40 +27,6 @@ pub enum StartGameEvents {
     PlanningPoker,
 }
 
-// pub fn start_game_controller(
-//     s: SocketRef,
-//     playload_data: StartGamePayload,
-//     state: SharedState,
-//     io: SocketIo,
-// ) {
-//     println!(
-//         "Lobby Event:{} {}",
-//         format!("{:?}", playload_data).blue(),
-//         s.id.to_string().green()
-//     );
-
-//     let mut state = state.lock().unwrap();
-
-//     let result: Result<Responses, Error> = {
-//         let lobby_arc = state.get_lobby_arc(s.id.as_str())?;
-//         let mut lobby_guard = lobby_arc.lock().unwrap();
-
-//         match *lobby_guard {
-//             GameLogic::LobbyLogic(lobby_logic) => {
-//                 let new_game = GameLogic::Game7Logic(Game7Logic::new_from_lobby(lobby_logic));
-//                 *lobby_guard = new_game;
-//                 todo!()
-//             }
-//             _ => Err(Error::LobbyError("Expected LobbyLogic".into())),
-//         }
-//     };
-
-//     match result {
-//         Err(e) => e.emit_error_response(&s),
-//         Ok(value) => value.emit_ok_response(&s, &io, lobby_id),
-//     }
-// }
-
 pub fn start_game_controller(
     s: SocketRef,
     payload: StartGamePayload,
@@ -150,18 +116,3 @@ pub fn start_game_controller(
         Ok(responses) => responses.emit_all(),
     }
 }
-
-// let mut state = state.lock().unwrap();
-
-// let result: Result<Responses, Error> = {
-//     let mut lobby = state.get_lobby_mut(s.id.as_str())?;
-//     match playload_data.game_mode {
-//         StartGameEvents::Seven => {
-//             lobby = GameLogic::Game7Logic(Game7Logic::new_from_lobby(lobby));
-//             todo!()
-//         }
-//         StartGameEvents::ThirtyOne => todo!(),
-//         StartGameEvents::FiveHundred => todo!(),
-//         StartGameEvents::PlanningPoker => todo!(),
-//     }
-// };

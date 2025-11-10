@@ -23,7 +23,7 @@ class Player {
     // Hvordan skal denne maps sammen med Lobby og gameData
     + id: String
     + name: String
-    + game: Option<PlayerGameData>
+    + game: PlayerGameData
     + new(id: String, name: String): Player
 }
 

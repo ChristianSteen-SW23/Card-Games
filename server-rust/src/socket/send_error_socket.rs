@@ -1,6 +1,26 @@
 use serde::{Deserialize, Serialize};
 use socketioxide::extract::SocketRef;
 
+pub enum Error {
+    NotYourTurn(String),
+    LobbyError(String),
+    Game7Error(String)
+}
+
+impl Error {
+    pub fn emit_error_response(self, s: &SocketRef) {
+        use Error::*;
+        match self {
+            NotYourTurn(err) => ErrorResponse::new(err, "Not your turn").emit(s),
+            LobbyError(err) => ErrorResponse::new(err, "Lobby Error").emit(s),
+            Game7Error(err) => ErrorResponse::new(err, "7 Game Error").emit(s),
+        }
+    }
+}
+
+
+
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ErrorResponse {
     pub message: String,
@@ -26,17 +46,3 @@ impl ErrorResponse {
     }
 }
 
-pub enum Error {
-    NotYourTurn(String),
-    LobbyError(String),
-}
-
-impl Error {
-    pub fn emit_error_response(self, s: &SocketRef) {
-        use Error::*;
-        match self {
-            NotYourTurn(err) => ErrorResponse::new(err, "Not your turn").emit(s),
-            LobbyError(err) => ErrorResponse::new(err, "Lobby Error").emit(s),
-        }
-    }
-}
