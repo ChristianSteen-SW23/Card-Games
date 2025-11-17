@@ -26,9 +26,9 @@ export default function PlanningPoker({ lobbyStateStart }) {
         10: "10",
         11: "14",
         12: "20",
-        11: "∞",
-        12: "?",
-        13: "☕"
+        13: "∞",
+        14: "?",
+        15: "☕"
     };
     
     const valueRange = Object.keys(cardValues).length;
