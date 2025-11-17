@@ -1,6 +1,11 @@
 import PlayerDisplay from "./PlayerDisplay";
 
-export default function PlayersDisplay({ players, mustNewRound, valueRange, cardValues }) {
+export default function PlayersDisplay({
+    players,
+    mustNewRound,
+    valueRange,
+    cardValues,
+}) {
     const half = Math.ceil(players.length / 2);
     const topRow = players.slice(0, half);
     const bottomRow = players.slice(half);
@@ -12,18 +17,28 @@ export default function PlayersDisplay({ players, mustNewRound, valueRange, card
 
     return (
         <div style={{ overflow: "hidden" }}>
-            <div className="m-3 border p-3 bg-light rounded">
+            <div className="m-3 p-3 rounded">
                 <div className="row mb-3 justify-content-center">
                     {topRow.map((player) => (
                         <div key={player.id} className={colClass}>
-                            <PlayerDisplay player={player} mustNewRound={mustNewRound} valueRange={valueRange} cardValues={cardValues} />
+                            <PlayerDisplay
+                                player={player}
+                                mustNewRound={mustNewRound}
+                                valueRange={valueRange}
+                                cardValues={cardValues}
+                            />
                         </div>
                     ))}
                 </div>
                 <div className="row justify-content-center">
                     {bottomRow.map((player) => (
                         <div key={player.id} className={colClass}>
-                            <PlayerDisplay player={player} mustNewRound={mustNewRound} valueRange={valueRange} cardValues={cardValues} />
+                            <PlayerDisplay
+                                player={player}
+                                mustNewRound={mustNewRound}
+                                valueRange={valueRange}
+                                cardValues={cardValues}
+                            />
                         </div>
                     ))}
                 </div>
