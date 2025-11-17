@@ -80,6 +80,7 @@ impl<'c> Responses<'c> {
             Responses::Single(p) => p.emit(),
             Responses::Multiple(list) => {
                 for p in list {
+                    println!("{:?}",p);
                     p.emit();
                 }
             }

@@ -1,8 +1,17 @@
+use std::ops::Deref;
+
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
 use socketioxide::{SocketIo, extract::SocketRef};
 
-use crate::{objects::{GameLogic, states::SharedState}, responses::Responses, socket::send_error_socket::Error};
+use crate::{
+    objects::{GameLogic, states::SharedState},
+    responses::{
+        EmitContext, Event, Planned, Responses, SevenGameUpdateResponse,
+        seven_response::SevenHandUpdateResponse,
+    },
+    socket::send_error_socket::Error,
+};
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -58,8 +67,21 @@ pub fn game_7_controller(s: SocketRef, data: Game7Payload, state: SharedState, i
         }
     };
 
-    let result: Result<Responses, Error> = match game7.handle_move(data, &s.id.to_string()){
-        Ok(_) => todo!(),
+    let result: Result<Responses, Error> = match game7.handle_move(data, &s.id.to_string()) {
+        Ok(_) => {
+            Ok(Responses::Multiple(vec![
+                Planned::new(
+                    Event::GameInfo,
+                    EmitContext::Room { io: &io, room_id: game7.game_data.id },
+                    &SevenGameUpdateResponse::from(&*game7),
+                ),
+                Planned::new(
+                    Event::HandInfo,
+                    EmitContext::SingleRef { s: &s },
+                    &SevenHandUpdateResponse::from((s.id.to_string().as_str(), &*game7)),
+                ),
+            ]))
+        }
         Err(err) => Err(err),
     };
 

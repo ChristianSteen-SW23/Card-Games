@@ -112,18 +112,41 @@ impl Game7Logic {
 
     fn play_card(&mut self, card: i32, sid: &str) -> Result<(), Error> {
         let board = &self.board;
-        let Some(player_ref) = self.game_data.players.get(sid) else {
+        let Some(player_ref) = self.game_data.players.get_mut(sid) else {
             return Err(Error::Game7Error("Player not found".into()));
         };
-        let PlayerGameData::Player7(player7) = &player_ref.game else {
+        let PlayerGameData::Player7(player7) = &mut player_ref.game else {
             return Err(Error::Game7Error("Expected Game7 data for player".into()));
         };
-        if card_playable(&(player7.hand[card as usize] as i32), board) {
-            Ok(())
-            
-        } else {
-            Err(Error::Game7Error("You can not play that card".into()))
+
+        if !card_playable(&(card), board) {
+            return Err(Error::Game7Error("You can not play that card".into()));
         }
+        if !player7.hand.contains(&(card as u32)) {
+            return Err(Error::Game7Error(
+                "You do not have that card in your hand".into(),
+            ));
+        }
+        let Some(pos) = player7.hand.iter().position(|c| *c == card as u32) else {
+            return Err(Error::Game7Error("Failed to remove card".into()));
+        };
+        player7.hand.remove(pos);
+
+        let suit = ((card - (card % 13)) / 13) as usize;
+        let rank = card % 13 + 1;
+        if rank == 7 {
+            self.board[1][suit] = rank;
+        } else if rank > 7 {
+            self.board[0][suit] = rank;
+        } else if rank < 7 {
+            self.board[2][suit] = rank;
+        }
+
+        self.turn_manager
+            .advance_turn(&self.game_data.players)
+            .map_err(|_| Error::Game7Error("Could not advance turn".into()))?;
+
+        Ok(())
     }
 
     fn skip_turn(&mut self, sid: &str) -> Result<(), Error> {
@@ -173,6 +196,6 @@ fn card_playable(card: &i32, board: &Vec<Vec<i32>>) -> bool {
 }
 
 fn possible_skip(hand: &Vec<u32>, board: &Vec<Vec<i32>>) -> bool {
-    hand.iter()
+    !hand.iter()
         .any(|card| card_playable(&(*card as i32), board))
 }
