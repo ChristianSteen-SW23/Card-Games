@@ -37,6 +37,9 @@ function updateSetting(key, value) {
     settings[key] = value;
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
     cachedSettings = settings;
+    
+    // Dispatch custom event to notify components of settings change
+    window.dispatchEvent(new CustomEvent("settingsChanged", { detail: { key, value } }));
 }
 
 function resetSettings() {

@@ -1,0 +1,130 @@
+/* Light and Dark Theme Variables */
+:root {
+  /* Light theme colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+  --border-color: #dee2e6;
+  --card-bg: #fff;
+  --card-border: #666;
+  --card-shadow: rgba(51, 51, 51, 0.3);
+  --modal-bg: #ffffff;
+  --modal-header-bg: #ffffff;
+  --input-bg: #ffffff;
+  --input-border: #ced4da;
+}
+
+[data-theme="dark"] {
+  /* Dark theme colors */
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2d2d2d;
+  --text-primary: #e0e0e0;
+  --text-secondary: #b0b0b0;
+  --border-color: #404040;
+  --card-bg: #2d2d2d;
+  --card-border: #888;
+  --card-shadow: rgba(0, 0, 0, 0.5);
+  --modal-bg: #2d2d2d;
+  --modal-header-bg: #252525;
+  --input-bg: #1a1a1a;
+  --input-border: #404040;
+}
+
+/* Apply theme colors to body */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Card styling for dark mode */
+[data-theme="dark"] .playingCards .card {
+  background-color: var(--card-bg);
+  border-color: var(--card-border);
+  box-shadow: 0.2em 0.2em 0.5em var(--card-shadow);
+}
+
+[data-theme="dark"] .playingCards .card .rank:after,
+[data-theme="dark"] .playingCards .card.joker .rank:before {
+  background: var(--card-bg);
+}
+
+/* Bootstrap modal overrides for dark mode */
+[data-theme="dark"] .modal-content {
+  background-color: var(--modal-bg);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .modal-header {
+  background-color: var(--modal-header-bg);
+  border-bottom-color: var(--border-color);
+}
+
+[data-theme="dark"] .modal-footer {
+  border-top-color: var(--border-color);
+}
+
+[data-theme="dark"] .modal-body {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select {
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  border-color: var(--input-border);
+}
+
+[data-theme="dark"] .form-control:focus,
+[data-theme="dark"] .form-select:focus {
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  border-color: #4a90e2;
+}
+
+[data-theme="dark"] .form-label,
+[data-theme="dark"] .form-check-label,
+[data-theme="dark"] .col-form-label {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .text-muted {
+  color: var(--text-secondary) !important;
+}
+
+/* Button overrides for dark mode */
+[data-theme="dark"] .btn-close {
+  filter: invert(1);
+}
+
+[data-theme="dark"] .btn-outline-secondary {
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .btn-outline-secondary:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+/* Container and general elements */
+[data-theme="dark"] .container {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6 {
+  color: var(--text-primary);
+}
+
+/* Specific adjustments for card back in dark mode */
+[data-theme="dark"] .playingCards .card.back {
+  background-color: #444;
+}
