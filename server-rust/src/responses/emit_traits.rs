@@ -9,6 +9,7 @@ pub enum Event {
     StartedGame,
     GameInfo,
     HandInfo,
+    GameEnded7,
 }
 impl Event {
     pub fn as_str(self) -> &'static str {
@@ -18,6 +19,7 @@ impl Event {
             Event::StartedGame => "startedGame",
             Event::GameInfo => "gameInfo",
             Event::HandInfo => "handInfo",
+            Event::GameEnded7 => "gameEnded",
         }
     }
 }

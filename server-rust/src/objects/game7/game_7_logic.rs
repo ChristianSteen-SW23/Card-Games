@@ -1,4 +1,5 @@
 use rand::{Rng, rng};
+use tokio::time::MissedTickBehavior::Skip;
 
 use crate::{
     objects::{GameData, LobbyLogic, Player7Data, PlayerGameData, TurnManager, turn_manager},
@@ -68,7 +69,8 @@ impl Game7Logic {
                 }
             });
 
-        self.turn_manager
+        let _ = self
+            .turn_manager
             .update(self.starting_player_id.to_owned(), &self.game_data.players);
     }
 
@@ -105,9 +107,28 @@ impl Game7Logic {
                 let card = data
                     .card
                     .ok_or_else(|| Error::Game7Error("Did not send any card".into()))?;
-                self.play_card(card, sid)
+                self.play_card(card, sid)?;
+
+                todo!()
             }
         }
+    }
+
+    pub fn check_and_calculate_win(&mut self) -> Result<Option<i32>, Error> {
+        if !self
+            .game_data
+            .players
+            .iter()
+            .any(|p| p.get_7_game().map(|g| g.cards_left == 0).unwrap_or(false))
+        {
+            return Ok(None);
+        }
+
+        self.game_data.players.iter().for_each(|p| p.get_7_game()?.count_and_reset_hand(true));
+
+
+
+        todo!()
     }
 
     fn play_card(&mut self, card: i32, sid: &str) -> Result<(), Error> {
@@ -131,6 +152,7 @@ impl Game7Logic {
             return Err(Error::Game7Error("Failed to remove card".into()));
         };
         player7.hand.remove(pos);
+        player7.cards_left -= 1;
 
         let suit = ((card - (card % 13)) / 13) as usize;
         let rank = card % 13 + 1;
@@ -196,6 +218,7 @@ fn card_playable(card: &i32, board: &Vec<Vec<i32>>) -> bool {
 }
 
 fn possible_skip(hand: &Vec<u32>, board: &Vec<Vec<i32>>) -> bool {
-    !hand.iter()
+    !hand
+        .iter()
         .any(|card| card_playable(&(*card as i32), board))
 }

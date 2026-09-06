@@ -1,4 +1,4 @@
-use crate::{objects::PlayerGameData, socket::send_error_socket::Error};
+use crate::{objects::{Player7Data, PlayerGameData}, socket::send_error_socket::Error};
 
 #[derive(Debug, Clone)]
 pub struct Player {
@@ -28,6 +28,13 @@ impl Player {
             PlayerGameData::Player7(data) => data.reset(),
             PlayerGameData::Player31(data) => todo!(),
             PlayerGameData::Lobby => {},
+        }
+    }
+
+    pub fn get_7_game(&self) -> Result<&Player7Data,Error> {
+        match &self.game {
+            PlayerGameData::Player7(data) => Ok(data),
+            _ => Err(Error::Game7Error(String::from("Game mode is not 7")))
         }
     }
 }

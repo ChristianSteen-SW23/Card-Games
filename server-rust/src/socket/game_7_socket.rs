@@ -59,7 +59,7 @@ pub fn game_7_controller(s: SocketRef, data: Game7Payload, state: SharedState, i
     // mutate the game in-place
     let mut game_guard = lobby_arc.lock().unwrap();
 
-    let mut game7 = match &mut *game_guard {
+    let game7 = match &mut *game_guard {
         GameLogic::Game7Logic(game7_logic) => game7_logic, // &mut Game7Logic
         _ => {
             Error::LobbyError("Current gamemode is not 7".into()).emit_error_response(&s);
@@ -68,20 +68,21 @@ pub fn game_7_controller(s: SocketRef, data: Game7Payload, state: SharedState, i
     };
 
     let result: Result<Responses, Error> = match game7.handle_move(data, &s.id.to_string()) {
-        Ok(_) => {
-            Ok(Responses::Multiple(vec![
-                Planned::new(
-                    Event::GameInfo,
-                    EmitContext::Room { io: &io, room_id: game7.game_data.id },
-                    &SevenGameUpdateResponse::from(&*game7),
-                ),
-                Planned::new(
-                    Event::HandInfo,
-                    EmitContext::SingleRef { s: &s },
-                    &SevenHandUpdateResponse::from((s.id.to_string().as_str(), &*game7)),
-                ),
-            ]))
-        }
+        Ok(_) => Ok(Responses::Multiple(vec![
+            Planned::new(
+                Event::GameInfo,
+                EmitContext::Room {
+                    io: &io,
+                    room_id: game7.game_data.id,
+                },
+                &SevenGameUpdateResponse::from(&*game7),
+            ),
+            Planned::new(
+                Event::HandInfo,
+                EmitContext::SingleRef { s: &s },
+                &SevenHandUpdateResponse::from((s.id.to_string().as_str(), &*game7)),
+            ),
+        ])),
         Err(err) => Err(err),
     };
 
@@ -89,4 +90,11 @@ pub fn game_7_controller(s: SocketRef, data: Game7Payload, state: SharedState, i
         Err(e) => e.emit_error_response(&s),
         Ok(responses) => responses.emit_all(),
     }
+
+    match game7.check_and_calculate_win() {
+        Ok(None) => todo!(),
+        Ok(Some(win_data)) => todo!(),
+        Err(_) => todo!(),
+    }
+
 }

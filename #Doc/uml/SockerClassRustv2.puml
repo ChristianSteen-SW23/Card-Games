@@ -1,0 +1,140 @@
+@startuml socketClassRust
+
+class SharedState{
+    + // Todo hvordan skal denn map til lobbystate? Måske bruge en enum
+}
+
+class PlayerState{
+    + players: Hash<String, id> // PlayerID → LobbyId
+}
+
+enum GameLogic {
+    LobbyLogic
+    Game7Logic
+    Game31Logic
+    Game500Logic
+    PlanningPokerLogic
+}
+
+class LobbyLogic {
+    + id: u32
+    + host: String
+    + players: Vec<LobbyPlayer>
+    + new(id: u32, host: String): LobbyLogic
+    + add_player(player: LobbyPlayer): void
+    + to_response(): LobbyResponse
+    + start_game(self, game_type: GameType, s: SocketRef): Result<GameLogic, Error>
+}
+
+class LobbyPlayer {
+    + id: String
+    + name: String
+    + new(id: String, name: String): LobbyPlayer
+}
+
+class Game7Logic {
+    + id: u32
+    + host: String
+    + players: Vec<Player7Data>
+    + board: Vec<Vec<Option<u32>>>
+    + box: Option<playerID>
+    + turn_manager: TurnManager
+    + starting_player_id: String
+    + new(lobby: LobbyLogic, s: SocketRef): Game7Logic
+    - handle_move(player_id: string, data: JSON): void
+    - get_player_mut(id: &str): Option<&mut Player7Data>
+}
+
+class Player7Data {
+    + id: String
+    + name: String
+    + hand: Vec<u32>
+    + total_score: u32
+    + cards_left: usize
+    + new(id: String, name: String): Player7Data
+    + set_cards_left(): void
+}
+
+class Game31Logic {
+    + id: u32
+    + host: String
+    + players: Vec<Player31Data>
+    // TODO
+}
+
+class Player31Data {
+    + id: String
+    + name: String
+    - hand: [int]
+    // TODO
+}
+
+class Game500Logic {
+    + id: u32
+    + host: String
+    + players: Vec<Player500Data>
+    - deck: int[]
+    - stack: int[]
+    // TODO
+}
+
+class Player500Data {
+    + id: String
+    + name: String
+    - hand: [int]
+    // TODO
+}
+
+class PlanningPokerLogic {
+    + id: u32
+    + host: String
+    + players: Vec<PlayerPlanningPokerData>
+    // TODO
+}
+
+class PlayerPlanningPokerData {
+    + id: String
+    + name: String
+    - value: int
+    - ready: bool
+    // TODO
+}
+
+class TurnManager {
+    - current: Option<playerID>
+    - next: Option<playerID>
+    + new(): TurnManager
+    + setCurrent(id: playerID): void
+    + getCurrent(): Option<playerID>
+    + setNext(players: [Player]): void
+    + getNext(players: [Player]): Option<playerID>
+    + advanceTurn(players: [Player]): void
+}
+
+
+SharedState --> PlayerState
+SharedState --> GameLogic
+
+GameLogic --> LobbyLogic
+GameLogic --> Game7Logic
+GameLogic --> Game31Logic
+GameLogic --> Game500Logic
+GameLogic --> PlanningPokerLogic
+
+LobbyLogic "1" *-- "1..*" LobbyPlayer
+
+Game7Logic "1" *-- "1..*" Player7Data
+Game31Logic "1" *-- "1..*" Player31Data
+Game500Logic "1" *-- "1..*" Player500Data
+PlanningPokerLogic "1" *-- "1..*" PlayerPlanningPokerData
+
+Game7Logic --> TurnManager
+Game31Logic --> TurnManager
+Game500Logic --> TurnManager
+
+LobbyLogic ..> Game7Logic : start_game(Game7)
+LobbyLogic ..> Game31Logic : start_game(Game31)
+LobbyLogic ..> Game500Logic : start_game(Game500)
+LobbyLogic ..> PlanningPokerLogic : start_game(Planning)
+
+@enduml

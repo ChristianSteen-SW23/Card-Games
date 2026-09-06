@@ -1,3 +1,5 @@
+use std::slice::Iter;
+
 use crate::objects::Player;
 #[derive(Debug, Clone)]
 pub struct Players(Vec<Player>);
@@ -34,6 +36,10 @@ impl Players {
     pub fn remove(&mut self, key: &str) {
         let Some(idx) = self.0.iter().position(|player| player.id == key) else { return; };
         self.0.remove(idx);
+    }
+
+    pub fn iter(&self) -> Iter<'_, Player>{
+        self.0.iter()
     }
 
 }

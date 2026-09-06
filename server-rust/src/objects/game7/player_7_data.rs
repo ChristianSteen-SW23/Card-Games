@@ -30,5 +30,19 @@ impl Player7Data {
         self.cards_left = 0;
         self.hand.clear();
     }
+
+    pub fn count_and_reset_hand(&mut self, with_box: bool) {
+        self.total_score += self.hand.iter().map(|e| {
+            match e % 13 {
+                0 => 15,
+                13|12|11|10 => 10,
+                _ => 5
+            }
+        }).sum::<u32>();
+        if with_box {
+            self.total_score += 25;
+        }
+        self.reset();
+    }
 }
 
