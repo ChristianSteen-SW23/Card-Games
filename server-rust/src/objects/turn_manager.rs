@@ -1,4 +1,4 @@
-use crate::{objects::Players, responses::TurnResponse, socket::send_error_socket::Error};
+use crate::{responses::TurnResponse, socket::send_error_socket::Error};
 
 #[derive(Debug, Clone)]
 pub struct TurnManager {
@@ -28,7 +28,10 @@ impl TurnManager {
     /// assert_eq!(manager.get_current(), "");
     /// ```
     pub fn new() -> Self {
-        Self { current: String::new(), next: String::new() }
+        Self {
+            current: String::new(),
+            next: String::new(),
+        }
     }
 
     /// Updates the current player and determines who plays next.
@@ -40,12 +43,14 @@ impl TurnManager {
     /// # Returns
     /// * `Ok(())` if the turn was successfully updated.
     /// * `Err(())` if the next player could not be determined.
-    pub fn update(&mut self, current: String, players: &Players) -> Result<(), ()> {
-        if let Some(next) = players.get_next(&current).and_then(|player| Some(player.id.to_string())) {
-            self.current = current; 
-            self.next = next; 
-            Ok(())
-        } else { Err(()) }
+    pub fn update(&mut self, current: String, players: &Vec<String>) -> Result<(), ()> {
+        let current_index = players.iter().position(|p| *p == current).ok_or(())?;
+        let next_index = (current_index + 1) % players.len();
+        let next = players[next_index].clone();
+
+        self.current = current;
+        self.next = next;
+        Ok(())
     }
 
     /// Returns the ID of the current player.
@@ -63,7 +68,7 @@ impl TurnManager {
     pub fn get_next(&self) -> &str {
         &self.next
     }
-    
+
     /// Advances the turn to the next player and recalculates the following player.
     ///
     /// This moves the turn forward in the player list by one position.
@@ -74,7 +79,7 @@ impl TurnManager {
     /// # Returns
     /// * `Ok(())` if the turn advanced successfully.
     /// * `Err(())` if the next player could not be determined.
-    pub fn advance_turn(&mut self, players: &Players) -> Result<(), ()> {
+    pub fn advance_turn(&mut self, players: &Vec<String>) -> Result<(), ()> {
         self.update(self.next.to_string(), players)
     }
 
@@ -105,4 +110,3 @@ impl TurnManager {
         }
     }
 }
-

@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex, MutexGuard};
 
-use crate::objects::{GameLogic, LobbyLogic};
+use crate::objects::GameLogic;
+use crate::objects::lobby::lobby::Lobby;
+use crate::objects::traits::has_players::HasPlayers;
 use crate::socket::send_error_socket::Error;
 
 pub type SharedState = Arc<Mutex<ServerState>>;
@@ -28,14 +30,15 @@ impl ServerState {
         }
     }
 
-    pub fn insert_game(&mut self, lobby: LobbyLogic, lobby_id: u32) {
-        self.game_map.insert(lobby_id, Arc::new(Mutex::new(GameLogic::LobbyLogic(lobby))));
+    pub fn insert_game(&mut self, lobby: Lobby, lobby_id: u32) {
+        self.game_map
+            .insert(lobby_id, Arc::new(Mutex::new(GameLogic::Lobby(lobby))));
     }
 
     pub fn insert_player_lobby(&mut self, sid: String, lobby_id: u32) {
         self.player_lobby_map.insert(sid, lobby_id);
     }
-    
+
     // pub fn add_player_to_lobby(&mut self, lobby_id: u32, player: Player) {
     //     if let Some(lobby_arc) = self.games.get(&lobby_id) {
     //         self.player_lobby.insert(player.id.clone(), lobby_id);
@@ -50,10 +53,13 @@ impl ServerState {
             .get(lobby_id)
             .unwrap()
             .lock()
-            .unwrap().get_players().get_all().iter()
-            .for_each(|player| {
-                self.player_lobby_map.remove(&player.id);
+            .unwrap()
+            .player_ids()
+            .iter()
+            .for_each(|id| {
+                self.player_lobby_map.remove(id);
             });
+
         self.game_map.remove(lobby_id);
     }
 
@@ -85,15 +91,16 @@ impl ServerState {
     }
 
     pub fn get_lobby_arc(&self, sid: &str) -> Result<Arc<Mutex<GameLogic>>, Error> {
-        let lobby_id = self.player_lobby_map
+        let lobby_id = self
+            .player_lobby_map
             .get(sid)
             .ok_or(Error::LobbyError("Player not in a lobby".into()))?;
 
-        let lobby_arc = self.game_map
+        let lobby_arc = self
+            .game_map
             .get(lobby_id)
             .ok_or(Error::LobbyError("Lobby not found".into()))?;
 
         Ok(lobby_arc.clone())
     }
 }
-

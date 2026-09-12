@@ -1,11 +1,11 @@
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
 use socketioxide::{SocketIo, extract::SocketRef};
-
+use crate::objects::traits::has_players::HasPlayers;
+use crate::responses::seven_response::SevenGameStartResponse;
+use crate::responses::{Event, Planned};
 use crate::{
-    objects::{Game7Logic, GameLogic, states::SharedState},
-    responses::{Event, Planned, Responses, seven_response::SevenGameStartResponse},
-    socket::send_error_socket::Error,
+    objects::{GameLogic, game7::Game7, states::SharedState}, responses::Responses, socket::send_error_socket::Error,
 };
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -66,27 +66,24 @@ pub fn start_game_controller(
     let mut game_guard = lobby_arc.lock().unwrap();
 
     let result: Result<Responses, Error> = match &*game_guard {
-        GameLogic::LobbyLogic(lobby_logic) => {
+        GameLogic::Lobby(lobby_logic) => {
             match payload.game_mode {
                 StartGameEvents::Seven => {
                     // Build the new game
-                    let new_game = Game7Logic::new_from_lobby(lobby_logic.to_owned());
-
+                    let new_game = Game7::from(lobby_logic.to_owned());
                     // Move it into the guard
-                    *game_guard = GameLogic::Game7Logic(new_game);
+                    *game_guard = GameLogic::Game7(new_game);
+
 
                     // Borrow it back immutably
-                    let GameLogic::Game7Logic(ref game7_ref) = *game_guard else {
-                        Error::LobbyError("Failed to assign new Game7Logic".into())
+                    let GameLogic::Game7(ref game7_ref) = *game_guard else {
+                        Error::LobbyError("Failed to assign new Game7".into())
                             .emit_error_response(&s);
                         return;
                     };
 
                     // Build responses for all players
-                    let responses = game7_ref
-                        .game_data
-                        .players
-                        .get_all()
+                    let responses = game7_ref.players
                         .iter()
                         .map(|player| {
                             Planned::new(
@@ -107,7 +104,7 @@ pub fn start_game_controller(
             }
         }
         _ => Err(Error::LobbyError(
-            "Expected LobbyLogic before starting".into(),
+            "Expected Lobby before starting".into(),
         )),
     };
 

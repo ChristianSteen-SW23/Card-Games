@@ -1,22 +1,19 @@
 use std::vec;
 
+use crate::objects::lobby::lobby_player::PlayerLobby;
+
 
 #[derive(Debug, Clone)]
-pub struct Player7Data {
+pub struct Player7 {
+    pub id: String,
+    pub name: String,
+    pub is_bot: bool,
     pub hand: Vec<u32>,
     pub total_score: u32,
     pub cards_left: usize,
 }
 
-impl Player7Data {
-    pub fn new() -> Self {
-        Self {
-            hand: vec![],
-            total_score: 0,
-            cards_left: 0,
-        }
-    }
-
+impl Player7 {
     pub fn reset(&mut self){
         self.hand = vec![];
         self.cards_left = 0;
@@ -46,3 +43,15 @@ impl Player7Data {
     }
 }
 
+impl From <&PlayerLobby> for Player7 {
+    fn from(p: &PlayerLobby) -> Self {
+        Player7 {
+            id: p.id.to_owned(),
+            name: p.name.to_owned(),
+            is_bot: p.is_bot,
+            hand: vec![],
+            total_score: 0,
+            cards_left: 0,
+        }
+    }
+}

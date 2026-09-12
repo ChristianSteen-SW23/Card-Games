@@ -1,42 +1,38 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    objects::{Game7Logic, Player, PlayerGameData, game7::game_7_logic, player},
-    responses::{TurnResponse},
-};
+use crate::{objects::game7::{Game7, player7::Player7}, responses::TurnResponse};
 
 #[derive(Serialize, Debug, Deserialize)]
 pub enum SevenGameAction {
     GameStart(SevenGameStartResponse),
-    Update(SevenGameUpdateResponse),
-    Hand(SevenHandUpdateResponse),
+    // Update(SevenGameUpdateResponse),
+    // Hand(SevenHandUpdateResponse),
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SevenGameUpdateResponse {
-    pub board: Vec<Vec<i32>>,
-    pub players_info: Vec<SevenPlayerResponse>,
-    pub turn: TurnResponse,
-}
+// #[derive(Debug, Serialize, Deserialize)]
+// #[serde(rename_all = "camelCase")]
+// pub struct SevenGameUpdateResponse {
+//     pub board: Vec<Vec<i32>>,
+//     pub players_info: Vec<SevenPlayerResponse>,
+//     pub turn: TurnResponse,
+// }
 
-impl From<&Game7Logic> for SevenGameUpdateResponse {
-    fn from(game_7_logic: &Game7Logic) -> Self {
-        let players_info = game_7_logic
-            .game_data
-            .players
-            .get_all().iter()
-            .map(|p| SevenPlayerResponse::from(p))
-            .collect();
+// impl From<&Game7Logic> for SevenGameUpdateResponse {
+//     fn from(game_7_logic: &Game7Logic) -> Self {
+//         let players_info = game_7_logic
+//             .game_data
+//             .players
+//             .get_all().iter()
+//             .map(|p| SevenPlayerResponse::from(p))
+//             .collect();
 
-        Self {
-            board: game_7_logic.board.clone(),
-            players_info,
-            turn: game_7_logic.turn_manager.make_respone(),
-        }
-    }
-}
-
+//         Self {
+//             board: game_7_logic.board.clone(),
+//             players_info,
+//             turn: game_7_logic.turn_manager.make_respone(),
+//         }
+//     }
+// }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -48,28 +44,20 @@ pub struct SevenGameStartResponse {
     pub game_mode: String,
 }
 
-impl From<(&str, &Game7Logic)> for SevenGameStartResponse {
-    fn from((sid, game_7_logic): (&str, &Game7Logic)) -> Self {
+impl From<(&str, &Game7)> for SevenGameStartResponse {
+    fn from((sid, game_7_logic): (&str, &Game7)) -> Self {
         let player = game_7_logic
-            .game_data
-            .players
-            .get(sid)
+            .get_player(sid)
             .expect("Player not found in Game7Logic");
 
-        let hand_info = match &player.game {
-            PlayerGameData::Player7(data) => data.hand.clone(),
-            _ => Vec::new(),
-        };
-
         let players_info = game_7_logic
-            .game_data
             .players
-            .get_all().iter()
+            .iter()
             .map(|p| SevenPlayerResponse::from(p))
             .collect();
 
         Self {
-            hand_info,
+            hand_info: player.hand.clone(),
             board: game_7_logic.board.clone(),
             players_info,
             turn: game_7_logic.turn_manager.make_respone(),
@@ -86,43 +74,37 @@ pub struct SevenPlayerResponse {
     pub cards_left: usize,
 }
 
-impl From<&Player> for SevenPlayerResponse {
-    fn from(player: &Player) -> Self {
-        let cards_left = match &player.game {
-            PlayerGameData::Player7(data) => data.cards_left,
-            _ => 0,
-        };
-
+impl From<&Player7> for SevenPlayerResponse {
+    fn from(player: &Player7) -> Self {
         Self {
             name: player.name.clone(),
             id: player.id.clone(),
-            cards_left,
+            cards_left: player.cards_left,
         }
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SevenHandUpdateResponse {
-    pub hand_info: Vec<u32>,
-}
+// #[derive(Debug, Serialize, Deserialize)]
+// #[serde(rename_all = "camelCase")]
+// pub struct SevenHandUpdateResponse {
+//     pub hand_info: Vec<u32>,
+// }
 
-impl From<(&str, &Game7Logic)> for SevenHandUpdateResponse {
-    fn from((sid, game_7_logic): (&str, &Game7Logic)) -> Self {
-        let player = game_7_logic
-            .game_data
-            .players
-            .get(sid)
-            .expect("Player not found in Game7Logic");
+// impl From<(&str, &Game7Logic)> for SevenHandUpdateResponse {
+//     fn from((sid, game_7_logic): (&str, &Game7Logic)) -> Self {
+//         let player = game_7_logic
+//             .game_data
+//             .players
+//             .get(sid)
+//             .expect("Player not found in Game7Logic");
 
-        let hand_info = match &player.game {
-            PlayerGameData::Player7(data) => data.hand.clone(),
-            _ => Vec::new(),
-        };
+//         let hand_info = match &player.game {
+//             PlayerGameData::Player7(data) => data.hand.clone(),
+//             _ => Vec::new(),
+//         };
 
-        Self {
-            hand_info,
-        }
-    }
-}
-
+//         Self {
+//             hand_info,
+//         }
+//     }
+// }

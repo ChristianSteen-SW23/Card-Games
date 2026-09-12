@@ -1,5 +1,5 @@
-pub mod game_7_logic;
-pub mod player_7_data; 
+pub mod game_7;
+pub mod player7; 
 
 
-pub use game_7_logic::Game7Logic;
+pub use game_7::Game7;

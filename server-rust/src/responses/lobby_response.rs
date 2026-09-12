@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{objects::LobbyLogic, responses::{PlayerResponse}};
+use crate::{objects::lobby::{lobby::Lobby}, responses::PlayerResponse};
 
 #[derive(Serialize, Debug, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -9,8 +9,8 @@ pub struct LobbyResponse {
     pub players: Vec<PlayerResponse>,
 }
 
-impl From<&LobbyLogic> for LobbyResponse {
-    fn from(value: &LobbyLogic) -> Self {
+impl From<&Lobby> for LobbyResponse {
+    fn from(value: &Lobby) -> Self {
         let host = value.get_host();
         Self {
             id: value.get_game_id(),

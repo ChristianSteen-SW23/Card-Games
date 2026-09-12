@@ -1,22 +1,24 @@
-use crate::objects::{Game7Logic, LobbyLogic, Players};
+use crate::objects::{game7::Game7, lobby::lobby::Lobby};
 
 
 #[derive(Debug, Clone)]
 pub enum GameLogic {
-    Game7Logic(Game7Logic),
-    LobbyLogic(LobbyLogic),
+    Game7(Game7),
+    Lobby(Lobby),
     // Player31(Player31Data),
     // Player500(Player500Data),
     // PlanningPoker(PlayerPlanningPokerData),
 }
 
 
-impl GameLogic {
-    pub fn get_players(&self) -> &Players {
-        match self {
-            GameLogic::Game7Logic(game) => /*game.get_players()*/ todo!(),
-            GameLogic::LobbyLogic(lobby) => lobby.get_players(),
-            //_ => vec![],
-        }
-    }
-}
+// impl GameLogic {
+//     pub fn get_players(&self) -> &Players {
+//         match self {
+//             GameLogic::Game7(game) => /*game.get_players()*/ todo!(),
+//             GameLogic::Lobby(lobby) => lobby.get_players(),
+//             //_ => vec![],
+//         }
+//     }
+// }
+
+

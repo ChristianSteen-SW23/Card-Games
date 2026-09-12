@@ -1,6 +1,6 @@
 use serde::Serialize;
 use serde_json::Value;
-use socketioxide::{extract::SocketRef, socket::Sid};
+use socketioxide::socket::Sid;
 
 use crate::responses::{EmitContext, Event};
 use std::{fmt::Debug, str::FromStr};

@@ -4,9 +4,7 @@ use serde::{Deserialize, Serialize};
 use socketioxide::{SocketIo, extract::SocketRef};
 
 use crate::{
-    objects::{GameLogic, LobbyLogic, lobby_logic, states::SharedState},
-    responses::{EmitContext, Event, LobbyResponse, Planned, Responses, responses},
-    socket::send_error_socket::Error,
+    objects::{GameLogic, lobby::lobby::Lobby, states::SharedState}, responses::{EmitContext, Event, LobbyResponse, Planned, Responses}, socket::send_error_socket::Error,
 };
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -56,7 +54,7 @@ pub fn lobby_controller(
                 let lobby = lobby_arc.lock().unwrap();
 
                 match &*lobby {
-                    GameLogic::LobbyLogic(lobby) => Ok(Responses::Single(Planned::new(
+                    GameLogic::Lobby(lobby) => Ok(Responses::Single(Planned::new(
                         Event::ConnectToLobby,
                         EmitContext::SingleRef { s: &s },
                         &LobbyResponse::from(lobby),
@@ -86,7 +84,7 @@ fn make_lobby(
     let new_id = create_lobby_id(&state)
         .ok_or_else(|| Error::LobbyError("Could not generate a free lobby code".to_string()))?;
 
-    let new_lobby_logic: LobbyLogic = (data_payload, new_id, sid.to_string()).try_into()?;
+    let new_lobby_logic: Lobby = (data_payload, new_id, sid.to_string()).try_into()?;
     let mut locked_state = state
         .lock()
         .map_err(|err| Error::LobbyError(err.to_string()))?; // lock global state
@@ -134,7 +132,7 @@ fn join_lobby<'a>(
 
         let mut lobby_guard = lobby_arc.lock().unwrap();
         let lobby = match &mut *lobby_guard {
-            GameLogic::LobbyLogic(lobby) => lobby,
+            GameLogic::Lobby(lobby) => lobby,
             _ => return Err(Error::LobbyError("Game is not a lobby".into())),
         };
         lobby.add_player(&sid, payload_data.username)?;

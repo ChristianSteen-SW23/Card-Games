@@ -1,4 +1,3 @@
-use serde::Serialize;
 use socketioxide::{SocketIo, extract::SocketRef};
 use std::fmt::Debug;
 
