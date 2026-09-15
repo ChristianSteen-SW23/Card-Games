@@ -63,14 +63,9 @@ impl ServerState {
         self.game_map.remove(lobby_id);
     }
 
-    // pub fn delete_player(&mut self, lobby_id: &u32, socket_id: String) {
-    //     self.player_lobby.remove(&socket_id);
-
-    //     if let Some(lobby_arc) = self.games.get(lobby_id) {
-    //         let mut lobby = lobby_arc.lock().unwrap();
-    //         lobby.players.remove(&socket_id);
-    //     }
-    // }
+    pub fn delete_player_from_player_map(&mut self, sid: String) {
+        self.player_lobby_map.remove(&sid);
+    }
 
     pub fn get_lobby_mut<'a>(
         &'a mut self,

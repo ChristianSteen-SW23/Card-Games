@@ -1,6 +1,5 @@
 use crate::{
-    objects::lobby::{lobby_player::PlayerLobby, lobby_players::PlayersLobby},
-    socket::{LobbyPayload, send_error_socket::Error},
+    objects::{lobby::{lobby_player::PlayerLobby, lobby_players::PlayersLobby}, traits::has_players::HasPlayers}, socket::{LobbyPayload, send_error_socket::Error},
 };
 
 #[derive(Debug, Clone)]
@@ -30,6 +29,13 @@ impl Lobby {
         ))?;
         self.players.add(player);
         Ok(())
+    }
+
+    pub fn remove_player(&mut self, sid: &String) {
+        self.players.remove(sid);
+        if self.get_host() == sid && self.players.0.len() > 0{
+            self.host = self.player_ids()[0].to_string();
+        }
     }
 }
 

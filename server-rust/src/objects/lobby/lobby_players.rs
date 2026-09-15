@@ -6,7 +6,7 @@ use std::{slice::Iter};
 use crate::objects::lobby::lobby_player::PlayerLobby;
 
 #[derive(Debug, Clone)]
-pub struct PlayersLobby(Vec<PlayerLobby>);
+pub struct PlayersLobby(pub Vec<PlayerLobby>);
 
 impl PlayersLobby {
     pub fn new() -> Self {

@@ -4,7 +4,9 @@ use serde::{Deserialize, Serialize};
 use socketioxide::{SocketIo, extract::SocketRef};
 
 use crate::{
-    objects::{GameLogic, lobby::lobby::Lobby, states::SharedState}, responses::{EmitContext, Event, LobbyResponse, Planned, Responses}, socket::send_error_socket::Error,
+    objects::{GameLogic, lobby::lobby::Lobby, states::SharedState},
+    responses::{EmitContext, Event, LobbyResponse, Planned, Responses},
+    socket::send_error_socket::Error,
 };
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -129,6 +131,15 @@ fn join_lobby<'a>(
             .game_map
             .get(&lobby_id)
             .ok_or_else(|| Error::LobbyError(format!("Lobby with ID {} not found", lobby_id)))?;
+
+        state_guard
+            .player_lobby_map
+            .get(&sid)
+            .map_or(Ok(()), |_| {
+                Err(Error::LobbyError(
+                    "Socket is already in a game".to_string()
+                ))
+            })?;
 
         let mut lobby_guard = lobby_arc.lock().unwrap();
         let lobby = match &mut *lobby_guard {
