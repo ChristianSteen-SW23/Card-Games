@@ -17,7 +17,7 @@ export default function Lobby({ lobbyState }) {
 
     useEffect(() => {
         socket.on("playerHandler", (players) => {
-            setPlayers(players);
+            setPlayers(players.players);
         });
         return () => {
             socket.off("playerHandler");

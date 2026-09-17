@@ -1,0 +1,21 @@
+[package]
+name = "server-rust"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+axum = "0.7"
+socketioxide = "0.10"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
+colored = "2"
+serde = "1.0.228"
+serde_json = "1.0.145"
+rand = "0.9.2"
+tower-http = { version = "0.5", features = ["cors"] }
+
+[dev-dependencies]
+rust_socketio = "0.6"  # or whatever the latest version is
+tokio = { version = "1", features = ["full"] }
+

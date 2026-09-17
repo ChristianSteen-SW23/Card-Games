@@ -18,22 +18,22 @@ function lobbyController(socketData, io, socket) {
 }
 
 function joinLobbyController(joined, socket, io) {
-    const roomID = `/${joined.id}`;
+    const roomID = `/${joined.lobbyId}`;
     const roomData = Rooms.get(roomID);
     if (roomData === undefined) return sendErrorMessage(socket.id, io, "Lobby code does not exit", "Lobby");
     if (roomData && roomData.gameStarted) return sendErrorMessage(socket.id, io, "The lobby has start their game", "Lobby");
-    if (!isUsernameValid(joined.name)) return sendErrorMessage(socket.id, io, "Invalided user name", "Lobby");
+    if (!isUsernameValid(joined.username)) return sendErrorMessage(socket.id, io, "Invalided user name", "Lobby");
 
     const playersArr = joinLobby(joined, roomID, socket, Rooms, PlayerRooms);
     socket.to(roomID).emit("playerHandler", playersArr);
 
     //Adds the current settings to the Object for the joining player
     const joinedreturnData = {
-        id: joined.id,
+        id: joined.lobbyId,
         players: playersArr,
     };
     socket.emit("conToLobby", joinedreturnData);
-    console.log(joined.name, "/", socket.id, "has joined the lobby with id:", roomID);
+    console.log(joined.username, "/", socket.id, "has joined the lobby with id:", roomID);
 }
 
 
@@ -142,7 +142,7 @@ function mapToArrayObj(map) {
     let array = [];
     for (const [key, value] of map.entries()) {
         array.push({
-            name: value.name,
+            name: value.username,
             host: value.host,
             playerid: key,
         });

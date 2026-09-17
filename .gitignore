@@ -26,3 +26,8 @@ dist-ssr
 # enveriment varibles
 .env
 ./temp
+
+# Rust things
+/server-rust/target
+**/*.rs.bk
+tarpaulin-report.html
