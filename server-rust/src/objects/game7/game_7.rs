@@ -1,6 +1,7 @@
 use crate::objects::traits::has_players::HasPlayers;
 use crate::objects::turn_manager::TurnManager;
 use crate::objects::{game7::player7::Player7, lobby::lobby::Lobby};
+use crate::socket::Game7Payload;
 use crate::socket::send_error_socket::Error;
 use rand::{Rng, rng};
 use serde::de::value;
@@ -17,6 +18,22 @@ pub struct Game7 {
     pub starting_player_id: String,
 }
 
+impl From<Lobby> for Game7 {
+    fn from(value: Lobby) -> Game7 {
+        let new_players: Vec<Player7> = value.players.get_all().iter().map(Player7::from).collect();
+        let mut game = Game7 {
+            id: value.id,
+            host: value.host,
+            players: new_players,
+            board: vec![vec![0; 4]; 3],
+            r#box: None,
+            starting_player_id: String::from(""),
+            turn_manager: TurnManager::new(),
+        };
+        game.set_up_game();
+        game
+    }
+}
 // Impls used on players
 impl Game7 {
     pub fn get_player(&self, key: &str) -> Option<&Player7> {
@@ -35,23 +52,6 @@ impl Game7 {
                 key
             ))),
         }
-    }
-}
-
-impl From<Lobby> for Game7 {
-    fn from(value: Lobby) -> Game7 {
-        let new_players: Vec<Player7> = value.players.get_all().iter().map(Player7::from).collect();
-        let mut game = Game7 {
-            id: value.id,
-            host: value.host,
-            players: new_players,
-            board: vec![vec![0; 4]; 3],
-            r#box: None,
-            starting_player_id: String::from(""),
-            turn_manager: TurnManager::new(),
-        };
-        game.set_up_game();
-        game
     }
 }
 impl Game7 {
@@ -81,32 +81,84 @@ impl Game7 {
             .update(self.starting_player_id.to_owned(), &self.player_ids());
     }
 
-    // fn deal_cards(&mut self) {
-    //     let mut card_deck: Vec<u32> = (0..=51).collect();
-    //     let mut rng = rng();
+    pub fn handle_move(&mut self, data: Game7Payload, sid: &String) -> Result<(), Error> {
+        match data.move_type {
+            crate::socket::game_7_socket::Game7Events::PlayCard => {
+                self.turn_manager.check_turn_with_error(sid)?;
+                self.play_card(
+                    data.card
+                        .ok_or_else(|| Error::Game7Error("Did not send any card".into()))?,
+                    sid,
+                )
+            }
+            crate::socket::game_7_socket::Game7Events::SkipTurn => {
+                self.turn_manager.check_turn_with_error(sid)?;
+                self.skip_turn(sid)
+            }
+            crate::socket::game_7_socket::Game7Events::PlayAgain => {self.set_up_game(); Ok(())},
+        }
+    }
 
-    //     while !card_deck.is_empty() {
-    //         let random_num = rng.random_range(0..card_deck.len() as u32) as usize;
-    //         let cur_id = self.turn_manager.get_current();
-    //         if card_deck[random_num] == 19 {
-    //             self.starting_player_id = cur_id.to_string()
-    //         }
-    //         card_deck.remove(random_num);
-    //         self.get_mut_player(cur_id)
-    //             .expect("Not possible")
-    //             .hand
-    //             .push(card_deck[random_num]);
-    //         let ids = self.player_ids().clone(); // compute before the mutable borrow needed by advance_turn, if that also takes &mut
-    //         self.turn_manager.advance_turn(&ids);
-    //     }
-    // }
+    fn skip_turn(&mut self, sid: &String) -> Result<(), Error> {
+        let board = &self.board;
+
+        let Some(player_ref) = self.get_player(sid) else {
+            return Err(Error::Game7Error("Player not found".into()));
+        };
+
+        if possible_skip(&player_ref.hand, &board) {
+            let _ = self.turn_manager.advance_turn(&self.player_ids());
+            self.r#box = Some(sid.to_string());
+            Ok(())
+        } else {
+            Err(Error::Game7Error("You can not skip right now... 😿".into()))
+        }
+    }
+
+    fn play_card(&mut self, card_num: i32, sid: &String) -> Result<(), Error> {
+        let board = &self.board;
+        if !card_playable(&(card_num), board) {
+            return Err(Error::Game7Error("You can not play that card".into()));
+        }
+
+        let Some(player_ref) = self.get_mut_player(sid) else {
+            return Err(Error::Game7Error("Player not found".into()));
+        };
+
+        if !player_ref.hand.contains(&(card_num as u32)) {
+            return Err(Error::Game7Error(
+                "You do not have that card in your hand".into(),
+            ));
+        }
+        let Some(pos) = player_ref.hand.iter().position(|c| *c == card_num as u32) else {
+            return Err(Error::Game7Error("Failed to remove card".into()));
+        };
+        player_ref.hand.remove(pos);
+        player_ref.cards_left -= 1;
+
+        let suit = ((card_num - (card_num % 13)) / 13) as usize;
+        let rank = card_num % 13 + 1;
+        if rank == 7 {
+            self.board[1][suit] = rank;
+        } else if rank > 7 {
+            self.board[0][suit] = rank;
+        } else if rank < 7 {
+            self.board[2][suit] = rank;
+        }
+
+        self.turn_manager
+            .advance_turn(&self.player_ids())
+            .map_err(|_| Error::Game7Error("Could not advance turn".into()))?;
+
+        Ok(())
+    }
+
     fn deal_cards(&mut self) {
         let mut card_deck: Vec<u32> = (0..=51).collect();
         let mut rng = rng();
 
         while !card_deck.is_empty() {
             let random_num = rng.random_range(0..card_deck.len() as u32) as usize;
-            print!("{}", random_num);
             let cur_id: String = self.turn_manager.get_current().to_string();
             if card_deck[random_num] == 19 {
                 self.starting_player_id = cur_id.clone();
@@ -115,103 +167,26 @@ impl Game7 {
                 .expect("Not possible")
                 .hand
                 .push(card_deck[random_num]); // Works with just "2"
-            self.turn_manager.advance_turn(&self.player_ids());
+            let _ = self.turn_manager.advance_turn(&self.player_ids());
             card_deck.remove(random_num);
         }
     }
 
-    // pub fn handle_move(&mut self, data: Game7Payload, sid: &str) -> Result<(), Error> {
-    //     match data.move_type {
-    //         crate::socket::game_7_socket::Game7Events::PlayAgain => todo!(),
-    //         crate::socket::game_7_socket::Game7Events::SkipTurn => {
-    //             self.turn_manager.check_turn_with_error(sid)?;
-    //             self.skip_turn(sid)
-    //         }
-    //         crate::socket::game_7_socket::Game7Events::PlayCard => {
-    //             self.turn_manager.check_turn_with_error(sid)?;
-    //             let card = data
-    //                 .card
-    //                 .ok_or_else(|| Error::Game7Error("Did not send any card".into()))?;
-    //             self.play_card(card, sid)?;
+    pub fn check_and_calculate_win(&mut self) -> Result<Option<()>, Error> {
+        if !self.players.iter().any(|p| p.cards_left == 0) {
+            return Ok(None);
+        }
 
-    //             todo!()
-    //         }
-    //     }
-    // }
-
-    // pub fn check_and_calculate_win(&mut self) -> Result<Option<i32>, Error> {
-    //     if !self
-    //         .game_data
-    //         .players
-    //         .iter()
-    //         .any(|p| p.get_7_game().map(|g| g.cards_left == 0).unwrap_or(false))
-    //     {
-    //         return Ok(None);
-    //     }
-
-    //     self.game_data.players.iter().for_each(|p| p.get_7_game()?.count_and_reset_hand(true));
-
-    //     todo!()
-    // }
-
-    // fn play_card(&mut self, card: i32, sid: &str) -> Result<(), Error> {
-    //     let board = &self.board;
-    //     let Some(player_ref) = self.game_data.players.get_mut(sid) else {
-    //         return Err(Error::Game7Error("Player not found".into()));
-    //     };
-    //     let PlayerGameData::Player7(player7) = &mut player_ref.game else {
-    //         return Err(Error::Game7Error("Expected Game7 data for player".into()));
-    //     };
-
-    //     if !card_playable(&(card), board) {
-    //         return Err(Error::Game7Error("You can not play that card".into()));
-    //     }
-    //     if !player7.hand.contains(&(card as u32)) {
-    //         return Err(Error::Game7Error(
-    //             "You do not have that card in your hand".into(),
-    //         ));
-    //     }
-    //     let Some(pos) = player7.hand.iter().position(|c| *c == card as u32) else {
-    //         return Err(Error::Game7Error("Failed to remove card".into()));
-    //     };
-    //     player7.hand.remove(pos);
-    //     player7.cards_left -= 1;
-
-    //     let suit = ((card - (card % 13)) / 13) as usize;
-    //     let rank = card % 13 + 1;
-    //     if rank == 7 {
-    //         self.board[1][suit] = rank;
-    //     } else if rank > 7 {
-    //         self.board[0][suit] = rank;
-    //     } else if rank < 7 {
-    //         self.board[2][suit] = rank;
-    //     }
-
-    //     self.turn_manager
-    //         .advance_turn(&self.game_data.players)
-    //         .map_err(|_| Error::Game7Error("Could not advance turn".into()))?;
-
-    //     Ok(())
-    // }
-
-    // fn skip_turn(&mut self, sid: &str) -> Result<(), Error> {
-    //     let board = &self.board;
-
-    //     let Some(player_ref) = self.game_data.players.get(sid) else {
-    //         return Err(Error::Game7Error("Player not found".into()));
-    //     };
-
-    //     let PlayerGameData::Player7(player7) = &player_ref.game else {
-    //         return Err(Error::Game7Error("Expected Game7 data for player".into()));
-    //     };
-
-    //     if possible_skip(&player7.hand, &board) {
-    //         self.turn_manager.advance_turn(&self.game_data.players);
-    //         Ok(())
-    //     } else {
-    //         Err(Error::Game7Error("You can not skip right now".into()))
-    //     }
-    // }
+        let box_id = self.r#box.clone().unwrap_or_default();
+        self.players.iter_mut().for_each(|p| {
+            if p.id == box_id {
+                p.count_and_reset_hand(true)
+            } else {
+                p.count_and_reset_hand(false)
+            }
+        });
+        Ok(Some(()))
+    }
 }
 
 fn card_playable(card: &i32, board: &Vec<Vec<i32>>) -> bool {

@@ -10,6 +10,7 @@ pub struct Player7 {
     pub is_bot: bool,
     pub hand: Vec<u32>,
     pub total_score: u32,
+    pub cur_score: u32,
     pub cards_left: usize,
 }
 
@@ -17,6 +18,7 @@ impl Player7 {
     pub fn reset(&mut self){
         self.hand = vec![];
         self.cards_left = 0;
+        self.cur_score = 0;
     }
 
     pub fn set_cards_left(&mut self){
@@ -29,7 +31,7 @@ impl Player7 {
     }
 
     pub fn count_and_reset_hand(&mut self, with_box: bool) {
-        self.total_score += self.hand.iter().map(|e| {
+        self.cur_score = self.hand.iter().map(|e| {
             match e % 13 {
                 0 => 15,
                 13|12|11|10 => 10,
@@ -37,8 +39,9 @@ impl Player7 {
             }
         }).sum::<u32>();
         if with_box {
-            self.total_score += 25;
+            self.cur_score = 25;
         }
+        self.total_score += self.cur_score;
         self.reset();
     }
 }
@@ -52,6 +55,7 @@ impl From <&PlayerLobby> for Player7 {
             hand: vec![],
             total_score: 0,
             cards_left: 0,
+            cur_score: 0,
         }
     }
 }

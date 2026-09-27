@@ -106,7 +106,7 @@ impl TurnManager {
         if self.get_current().eq(to_check) {
             Ok(())
         } else {
-            Err(Error::NotYourTurn(String::from("It is not your turn")))
+            Err(Error::NotYourTurn(String::from("It is not your turn 🐴")))
         }
     }
 }
