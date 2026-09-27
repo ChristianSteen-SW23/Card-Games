@@ -5,14 +5,7 @@ use crate::{
     responses::TurnResponse,
 };
 
-// #[derive(Serialize, Debug, Deserialize)]
-// pub enum SevenGameAction {
-//     GameStart(SevenGameStartResponse),
-//     // Update(SevenGameUpdateResponse),
-//     // Hand(SevenHandUpdateResponse),
-// }
-
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct SevenGameUpdateResponse {
     pub board: Vec<Vec<i32>>,
@@ -68,13 +61,13 @@ impl From<(&str, &Game7)> for SevenGameStartResponse {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct SevenGameEndedResponse {
     pub win_data: Vec<SevenWinDataEntry>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct SevenWinDataEntry {
     pub name: String,
@@ -98,7 +91,7 @@ impl From<(&Game7)> for SevenGameEndedResponse {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct SevenPlayerResponse {
     pub name: String,

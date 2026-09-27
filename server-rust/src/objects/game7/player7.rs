@@ -30,7 +30,7 @@ impl Player7 {
         self.hand.clear();
     }
 
-    pub fn count_and_reset_hand(&mut self, with_box: bool) {
+    pub fn count_points_hand(&mut self, with_box: bool) {
         self.cur_score = self.hand.iter().map(|e| {
             match e % 13 {
                 0 => 15,
@@ -42,7 +42,6 @@ impl Player7 {
             self.cur_score = 25;
         }
         self.total_score += self.cur_score;
-        self.reset();
     }
 }
 

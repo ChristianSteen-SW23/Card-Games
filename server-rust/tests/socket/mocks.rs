@@ -1,10 +1,27 @@
-use rust_socketio::{client::Client, ClientBuilder, Payload};
+use rust_socketio::{ClientBuilder, Payload, client::Client};
 use serde::{Serialize, de::DeserializeOwned};
-use std::{cell::RefCell, collections::{HashMap, HashSet}, net::{TcpListener, TcpStream}, sync::{Arc, Mutex, mpsc::{self, Receiver}}, time::Instant};
-use tokio::runtime::Runtime;
+use server_rust::{
+    objects::{GameLogic, states::ServerState},
+    responses::LobbyResponse,
+    run_test_server,
+    socket::{
+        LobbyPayload,
+        lobby_socket::LobbyEvents,
+        start_game_socket::{StartGameEvents::Seven, StartGamePayload},
+    },
+};
 use std::time::Duration;
-use server_rust::{objects::{GameLogic, states::ServerState}, run_test_server, socket::{LobbyPayload, lobby_socket::LobbyEvents}};
-
+use std::{
+    cell::RefCell,
+    collections::{HashMap, HashSet},
+    net::{TcpListener, TcpStream},
+    sync::{
+        Arc, Mutex,
+        mpsc::{self, Receiver},
+    },
+    time::Instant,
+};
+use tokio::runtime::Runtime;
 
 static WAIT_TIME: u64 = 3;
 
@@ -41,7 +58,9 @@ fn wait_for_server_ready(addr: &str) {
 }
 
 /// Starts a test server and returns the shared state, runtime, socket, and receiver.
-pub fn setup_test_with_listener(event_name: &str) -> (Arc<Mutex<ServerState>>, Runtime, Client, Receiver<String>) {
+pub fn setup_test_with_listener(
+    event_name: &str,
+) -> (Arc<Mutex<ServerState>>, Runtime, Client, Receiver<String>) {
     let addr = next_test_addr();
     TEST_ADDR.with(|a| *a.borrow_mut() = Some(addr.clone()));
     // --- Start server ---
@@ -64,7 +83,7 @@ pub fn setup_test_with_listener(event_name: &str) -> (Arc<Mutex<ServerState>>, R
     let event = event_name.to_string();
 
     let tx_clone = tx.clone();
-    let socket = rust_socketio::ClientBuilder::new(format!("http://{}",addr.to_owned()))
+    let socket = rust_socketio::ClientBuilder::new(format!("http://{}", addr.to_owned()))
         .on(&*event, move |payload, _| {
             // println!("Got payload for '{}': {:?}", event, payload);
             match payload {
@@ -89,7 +108,12 @@ pub fn setup_test_with_listener(event_name: &str) -> (Arc<Mutex<ServerState>>, R
 
 pub fn setup_test_with_listeners(
     events: &[&str],
-) -> (Arc<Mutex<ServerState>>, Runtime, Client, HashMap<String, Receiver<String>>) {
+) -> (
+    Arc<Mutex<ServerState>>,
+    Runtime,
+    Client,
+    HashMap<String, Receiver<String>>,
+) {
     let addr = next_test_addr();
     TEST_ADDR.with(|a| *a.borrow_mut() = Some(addr.clone()));
     let state: Arc<Mutex<ServerState>> = Arc::new(Mutex::new(ServerState::new()));
@@ -106,7 +130,7 @@ pub fn setup_test_with_listeners(
     wait_for_server_ready(&addr);
 
     let mut receivers = HashMap::new();
-    let mut builder = rust_socketio::ClientBuilder::new(format!("http://{}",addr.to_owned()));
+    let mut builder = rust_socketio::ClientBuilder::new(format!("http://{}", addr.to_owned()));
 
     for &event in events {
         let (tx, rx) = mpsc::channel::<String>();
@@ -132,7 +156,6 @@ pub fn setup_test_with_listeners(
     (state, rt, socket, receivers)
 }
 
-
 /// Connects to a Socket.IO server and listens for a given event name.
 /// Returns both the connected client and the receiver channel for incoming messages.
 pub fn connect_with_listener(event_name: &str) -> (Client, Receiver<String>) {
@@ -141,19 +164,17 @@ pub fn connect_with_listener(event_name: &str) -> (Client, Receiver<String>) {
 
     let tx_clone = tx.clone();
     let socket = ClientBuilder::new(format!("http://{addr}"))
-        .on(event_name, move |payload, _| {
-            match payload {
-                Payload::Text(values) => {
-                    if let Some(v) = values.get(0) {
-                        let _ = tx_clone.send(v.to_string());
-                    }
+        .on(event_name, move |payload, _| match payload {
+            Payload::Text(values) => {
+                if let Some(v) = values.get(0) {
+                    let _ = tx_clone.send(v.to_string());
                 }
-                Payload::Binary(bin) => {
-                    let _ = tx_clone.send(format!("(binary) {:?}", bin.len()));
-                }
-                Payload::String(s) => {
-                    let _ = tx_clone.send(s);
-                }
+            }
+            Payload::Binary(bin) => {
+                let _ = tx_clone.send(format!("(binary) {:?}", bin.len()));
+            }
+            Payload::String(s) => {
+                let _ = tx_clone.send(s);
             }
         })
         .connect()
@@ -189,7 +210,6 @@ pub fn connect_with_listeners(events: &[&str]) -> (Client, HashMap<String, Recei
     let socket = builder.connect().expect("could not connect to test server");
     (socket, receivers)
 }
-
 
 /// Spins up a test server, emits `payload` on `emit_event`, waits for a response
 /// on `listen_event`, and parses it into `R`.
@@ -229,7 +249,9 @@ pub fn emit_and_recv<P: Serialize, R: DeserializeOwned>(
 }
 
 pub fn recv<R: DeserializeOwned>(rx: &Receiver<String>) -> R {
-    let msg = rx.recv_timeout(Duration::from_secs(WAIT_TIME)).expect("no response");
+    let msg = rx
+        .recv_timeout(Duration::from_secs(WAIT_TIME))
+        .expect("no response");
     serde_json::from_str(&msg).expect("invalid JSON in response")
 }
 
@@ -239,7 +261,9 @@ pub fn create_lobby(socket: &Client, rx: &Receiver<String>, username: &str) {
         event_type: LobbyEvents::CreateLobby,
         lobby_id: None,
     };
-    socket.emit("lobbyControl", serde_json::to_value(&data).unwrap()).expect("emit failed");
+    socket
+        .emit("lobbyControl", serde_json::to_value(&data).unwrap())
+        .expect("emit failed");
 }
 
 pub fn join_lobby(socket: &Client, username: &str, lobby_id: u32) {
@@ -248,7 +272,9 @@ pub fn join_lobby(socket: &Client, username: &str, lobby_id: u32) {
         event_type: LobbyEvents::JoinLobby,
         lobby_id: Some(lobby_id),
     };
-    socket.emit("lobbyControl", serde_json::to_value(&data).unwrap()).expect("emit failed");
+    socket
+        .emit("lobbyControl", serde_json::to_value(&data).unwrap())
+        .expect("emit failed");
 }
 
 pub fn get_lobby_id(state: &Arc<Mutex<ServerState>>) -> u32 {
@@ -257,7 +283,11 @@ pub fn get_lobby_id(state: &Arc<Mutex<ServerState>>) -> u32 {
     state.player_lobby_map.values().next().cloned().unwrap()
 }
 
-pub fn assert_lobby_state(state: &Arc<Mutex<ServerState>>, lobby_id: u32, expected_player_names: &[&str]) {
+pub fn assert_lobby_state(
+    state: &Arc<Mutex<ServerState>>,
+    lobby_id: u32,
+    expected_player_names: &[&str],
+) {
     let state = state.lock().unwrap();
     assert_eq!(state.player_lobby_map.len(), expected_player_names.len());
     assert!(state.game_map.contains_key(&lobby_id));
@@ -270,13 +300,17 @@ pub fn assert_lobby_state(state: &Arc<Mutex<ServerState>>, lobby_id: u32, expect
 
     assert!(lobby.players.iter().any(|p| p.id == lobby.host));
 
-    let actual_names: HashSet<&str> = lobby.get_players().get_all().iter().map(|p| p.name.as_str()).collect();
+    let actual_names: HashSet<&str> = lobby
+        .get_players()
+        .get_all()
+        .iter()
+        .map(|p| p.name.as_str())
+        .collect();
     let expected_names: HashSet<&str> = expected_player_names.iter().copied().collect();
 
     assert_eq!(actual_names, expected_names);
     assert_eq!(lobby.get_game_id(), lobby_id);
 }
-
 
 /// Polls `state` until `predicate` returns true, or panics after a timeout.
 /// Use this only when there's no event/broadcast to synchronize on (e.g. a
@@ -299,3 +333,4 @@ where
         std::thread::sleep(Duration::from_millis(20));
     }
 }
+

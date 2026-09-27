@@ -180,9 +180,9 @@ impl Game7 {
         let box_id = self.r#box.clone().unwrap_or_default();
         self.players.iter_mut().for_each(|p| {
             if p.id == box_id {
-                p.count_and_reset_hand(true)
+                p.count_points_hand(true)
             } else {
-                p.count_and_reset_hand(false)
+                p.count_points_hand(false)
             }
         });
         Ok(Some(()))
