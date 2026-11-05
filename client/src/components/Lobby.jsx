@@ -110,7 +110,7 @@ function SettingsHost({ settings, socket }) {
     const modeSettings = getGameModeSettings(settings.gamemode);
 
     const send = (newSettings) => {
-        socket.emit("lobbyControl1", { eventType: "changeSettings", settings: newSettings });
+        socket.emit("lobbyControl", { eventType: "changeSettings", settings: newSettings });
     };
 
     const changeGeneral = (key, value) => {
