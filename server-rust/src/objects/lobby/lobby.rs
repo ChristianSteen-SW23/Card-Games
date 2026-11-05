@@ -1,5 +1,5 @@
 use crate::{
-    objects::{lobby::{lobby_player::PlayerLobby, lobby_players::PlayersLobby}, traits::has_players::HasPlayers}, socket::{LobbyPayload, send_error_socket::Error},
+    objects::{lobby::{lobby_player::PlayerLobby, lobby_players::PlayersLobby, settings_lobby::SettingsLobby}, traits::has_players::HasPlayers}, socket::{LobbyPayload, send_error_socket::Error},
 };
 
 #[derive(Debug, Clone)]
@@ -7,6 +7,7 @@ pub struct Lobby {
     pub id: u32,
     pub host: String,
     pub players: PlayersLobby,
+    pub settings: SettingsLobby
 }
 
 impl Lobby {
@@ -16,6 +17,14 @@ impl Lobby {
 
     pub fn get_host(&self) -> &str {
         &self.host
+    }
+
+    pub fn get_settings(&self) -> &SettingsLobby {
+        &self.settings
+    }
+
+    pub fn set_settings(&mut self, setting: SettingsLobby) {
+        self.settings = setting;
     }
 
     pub fn get_players(&self) -> &PlayersLobby {
@@ -52,7 +61,8 @@ impl TryFrom<(LobbyPayload, u32, String)> for Lobby {
         Ok(Self {
             id: new_lobby_id,
             host: sid,
-            players: PlayersLobby::from(player)
+            players: PlayersLobby::from(player),
+            settings: SettingsLobby::new(),
         })
     }
 }

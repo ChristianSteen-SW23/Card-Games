@@ -1,13 +1,11 @@
 use rust_socketio::{ClientBuilder, Payload, client::Client};
 use serde::{Serialize, de::DeserializeOwned};
 use server_rust::{
-    objects::{GameLogic, states::ServerState},
-    responses::LobbyResponse,
+    objects::{GameLogic, lobby::settings_lobby::SettingsLobby, states::ServerState},
     run_test_server,
     socket::{
         LobbyPayload,
         lobby_socket::LobbyEvents,
-        start_game_socket::{StartGameEvents::Seven, StartGamePayload},
     },
 };
 use std::time::Duration;
@@ -83,7 +81,7 @@ pub fn setup_test_with_listener(
     let event = event_name.to_string();
 
     let tx_clone = tx.clone();
-    let socket = rust_socketio::ClientBuilder::new(format!("http://{}", addr.to_owned()))
+    let builder = rust_socketio::ClientBuilder::new(format!("http://{}", addr.to_owned()))
         .on(&*event, move |payload, _| {
             // println!("Got payload for '{}': {:?}", event, payload);
             match payload {
@@ -99,9 +97,8 @@ pub fn setup_test_with_listener(
                     let _ = tx_clone.send(s);
                 }
             }
-        })
-        .connect()
-        .expect("could not connect to test server");
+        });
+    let socket = connect_and_wait(builder);
 
     (state, rt, socket, rx)
 }
@@ -151,7 +148,7 @@ pub fn setup_test_with_listeners(
         });
     }
 
-    let socket = builder.connect().expect("could not connect to test server");
+    let socket = connect_and_wait(builder);
 
     (state, rt, socket, receivers)
 }
@@ -163,7 +160,7 @@ pub fn connect_with_listener(event_name: &str) -> (Client, Receiver<String>) {
     let (tx, rx) = mpsc::channel::<String>();
 
     let tx_clone = tx.clone();
-    let socket = ClientBuilder::new(format!("http://{addr}"))
+    let builder = ClientBuilder::new(format!("http://{addr}"))
         .on(event_name, move |payload, _| match payload {
             Payload::Text(values) => {
                 if let Some(v) = values.get(0) {
@@ -176,9 +173,8 @@ pub fn connect_with_listener(event_name: &str) -> (Client, Receiver<String>) {
             Payload::String(s) => {
                 let _ = tx_clone.send(s);
             }
-        })
-        .connect()
-        .expect("Could not connect to Socket.IO server");
+        });
+    let socket = connect_and_wait(builder);
 
     (socket, rx)
 }
@@ -207,8 +203,26 @@ pub fn connect_with_listeners(events: &[&str]) -> (Client, HashMap<String, Recei
         });
     }
 
-    let socket = builder.connect().expect("could not connect to test server");
+    let socket = connect_and_wait(builder);
     (socket, receivers)
+}
+
+/// Connects and blocks until the server has acknowledged the namespace CONNECT.
+///
+/// Since socketioxide 0.17 the namespace connect runs in a spawned task, so an
+/// event emitted right after `connect()` can reach the server before the socket
+/// is registered. The server then drops it (SocketGone) and closes the transport.
+fn connect_and_wait(builder: ClientBuilder) -> Client {
+    let (tx, rx) = mpsc::channel::<()>();
+    let socket = builder
+        .on(rust_socketio::Event::Connect, move |_, _| {
+            let _ = tx.send(());
+        })
+        .connect()
+        .expect("could not connect to test server");
+    rx.recv_timeout(Duration::from_secs(WAIT_TIME))
+        .expect("server never acknowledged the namespace connect");
+    socket
 }
 
 /// Spins up a test server, emits `payload` on `emit_event`, waits for a response
@@ -260,6 +274,7 @@ pub fn create_lobby(socket: &Client, rx: &Receiver<String>, username: &str) {
         username: Some(username.to_string()),
         event_type: LobbyEvents::CreateLobby,
         lobby_id: None,
+        settings: None,
     };
     socket
         .emit("lobbyControl", serde_json::to_value(&data).unwrap())
@@ -271,6 +286,7 @@ pub fn join_lobby(socket: &Client, username: &str, lobby_id: u32) {
         username: Some(username.to_string()),
         event_type: LobbyEvents::JoinLobby,
         lobby_id: Some(lobby_id),
+        settings: None,
     };
     socket
         .emit("lobbyControl", serde_json::to_value(&data).unwrap())
@@ -310,6 +326,7 @@ pub fn assert_lobby_state(
 
     assert_eq!(actual_names, expected_names);
     assert_eq!(lobby.get_game_id(), lobby_id);
+    assert_eq!(lobby.settings, SettingsLobby::new())
 }
 
 /// Polls `state` until `predicate` returns true, or panics after a timeout.
@@ -333,4 +350,3 @@ where
         std::thread::sleep(Duration::from_millis(20));
     }
 }
-

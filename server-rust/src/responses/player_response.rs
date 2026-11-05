@@ -9,6 +9,7 @@ pub struct PlayerResponse {
     pub playerid: String,
     pub name: String,
     pub host: bool,
+    pub is_bot: bool,
 }
 
 impl From<(&PlayerLobby,bool)> for PlayerResponse {
@@ -18,6 +19,7 @@ impl From<(&PlayerLobby,bool)> for PlayerResponse {
             playerid: player.id.to_string(),
             name: player.name.to_string(),
             host: is_host,
+            is_bot: player.is_bot
         }
     }
 }

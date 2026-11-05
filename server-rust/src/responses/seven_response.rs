@@ -75,7 +75,7 @@ pub struct SevenWinDataEntry {
     pub total_score: u32,
 }
 
-impl From<(&Game7)> for SevenGameEndedResponse {
+impl From<&Game7> for SevenGameEndedResponse {
     fn from(game_7_logic: &Game7) -> Self {
         let win_data = game_7_logic
             .players

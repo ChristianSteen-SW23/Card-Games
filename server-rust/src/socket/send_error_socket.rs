@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use socketioxide::extract::SocketRef;
 
+#[derive(Debug)]
 pub enum Error {
     NotYourTurn(String),
     LobbyError(String),
@@ -42,7 +43,7 @@ impl ErrorResponse {
             "type": self.r#type,
         });
 
-        let _ = s.emit("errorMessage", json);
+        let _ = s.emit("errorMessage", &json);
     }
 }
 

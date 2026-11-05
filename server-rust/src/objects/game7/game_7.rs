@@ -4,8 +4,6 @@ use crate::objects::{game7::player7::Player7, lobby::lobby::Lobby};
 use crate::socket::Game7Payload;
 use crate::socket::send_error_socket::Error;
 use rand::{Rng, rng};
-use serde::de::value;
-use std::fmt::format;
 
 #[derive(Debug, Clone)]
 pub struct Game7 {

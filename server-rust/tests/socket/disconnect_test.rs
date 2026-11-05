@@ -4,8 +4,7 @@ use std::{collections::HashMap, sync::mpsc::Receiver, thread::sleep};
 use crate::socket::mocks::*;
 use rust_socketio::client::Client;
 use server_rust::{
-    responses::LobbyResponse,
-    socket::{LobbyPayload, lobby_socket::LobbyEvents},
+    objects::lobby::settings_lobby::SettingsLobby, responses::LobbyResponse, socket::{LobbyPayload, lobby_socket::LobbyEvents},
 };
 
 #[test]
@@ -17,6 +16,7 @@ fn test_disconnect_from_lobby() {
         username: Some("player1".to_string()),
         event_type: LobbyEvents::CreateLobby,
         lobby_id: None,
+        settings: None,
     };
     let res_lobby_create: LobbyResponse =
         emit_and_recv(&socket1, &rx1["conToLobby"], "lobbyControl", &create_data);
@@ -25,6 +25,7 @@ fn test_disconnect_from_lobby() {
         username: Some("player2".to_string()),
         event_type: LobbyEvents::JoinLobby,
         lobby_id: Some(res_lobby_create.id),
+        settings: None,
     };
     let res_join_lobby: LobbyResponse =
         emit_and_recv(&socket2, &rx2["conToLobby"], "lobbyControl", &join_data);
@@ -49,6 +50,7 @@ fn test_disconnect_from_big_lobby() {
         username: Some("player1".to_string()),
         event_type: LobbyEvents::CreateLobby,
         lobby_id: None,
+        settings: None,
     };
     let res_lobby_create: LobbyResponse =
         emit_and_recv(&socket1, &rx1["conToLobby"], "lobbyControl", &create_data);
@@ -61,8 +63,10 @@ fn test_disconnect_from_big_lobby() {
             username: Some(format!("player{i}")),
             event_type: LobbyEvents::JoinLobby,
             lobby_id: Some(res_lobby_create.id),
+            settings: None,
         };
         let _: LobbyResponse = emit_and_recv(&socket_n, &rx_n["conToLobby"], "lobbyControl", &join_data);
+        println!("AIOSDHOIASHDIOHAOIDSHOIASHDIOASDIOHASDIOOIADSHOHDASIOHDSAIOHODASIHOIDAHOI##############################################################");
         joined.push((socket_n, rx_n));
     }
 
@@ -102,6 +106,7 @@ fn test_disconnect_from_single_player_lobby_removes_lobby() {
         username: Some("player1".to_string()),
         event_type: LobbyEvents::CreateLobby,
         lobby_id: None,
+        settings: None,
     };
     let res_lobby_create: LobbyResponse =
         emit_and_recv(&socket1, &rx1["conToLobby"], "lobbyControl", &create_data);

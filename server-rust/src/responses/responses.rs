@@ -29,13 +29,16 @@ impl<'c> Planned<'c> {
                 }
             }
             EmitContext::Room { io, room_id } => {
-                if let Err(err) = io
-                    .within(room_id.to_string())
-                    .broadcast()
-                    .emit(self.event.as_str(), &self.data)
-                {
-                    eprintln!("SendError(room): {:?}", err);
-                }
+                let io = io.clone();
+                let room = room_id.to_string();
+                let event = self.event.as_str().to_string();
+                let data = self.data;
+
+                tokio::spawn(async move {
+                    if let Err(err) = io.within(room).broadcast().emit(event, &data).await {
+                        eprintln!("SendError(room): {:?}", err);
+                    }
+                });
             }
             EmitContext::SingleString { io, sid } => {
                 // Parse the socket id string into the library’s type safely
@@ -69,6 +72,8 @@ impl<'c> Planned<'c> {
 }
 
 /// Keep your “single/multiple” envelope API
+#[derive(Debug)]
+///
 pub enum Responses<'c> {
     Single(Planned<'c>),
     Multiple(Vec<Planned<'c>>),
@@ -80,7 +85,6 @@ impl<'c> Responses<'c> {
             Responses::Single(p) => p.emit(),
             Responses::Multiple(list) => {
                 for p in list {
-                    println!("{:?}",p);
                     p.emit();
                 }
             }

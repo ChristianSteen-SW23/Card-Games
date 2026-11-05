@@ -21,6 +21,7 @@ function ScreenController() {
             setCurrentPage('StartPage')
         }
         function conToLobbyFunc(data, string) {
+            console.log(data) // TODO: remove this print
             data.lobbyState
             data.gameMode
             setTempData(data);

@@ -115,7 +115,6 @@ fn test_play_card_with_win_200() {
     let GameLogic::Game7(ref game7) = *lobby else {
         panic!("Expected Game7Logic variant");
     };
-    println!("{:?}",game7);
         assert_eq!(game7.board, [[0, 0, 0, 0], [0, 7, 0, 0], [0, 0, 0, 0]]);
     assert_eq!(game7.players.len(), 2);
     assert_eq!(game7.players[0].cur_score, 0);

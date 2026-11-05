@@ -4,7 +4,11 @@ use serde::{Deserialize, Serialize};
 use socketioxide::{SocketIo, extract::SocketRef};
 
 use crate::{
-    objects::{GameLogic, lobby::lobby::Lobby, states::SharedState},
+    objects::{
+        GameLogic,
+        lobby::{lobby::Lobby, settings_lobby::SettingsLobby},
+        states::SharedState,
+    },
     responses::{EmitContext, Event, LobbyResponse, Planned, Responses},
     socket::send_error_socket::Error,
 };
@@ -15,6 +19,7 @@ pub struct LobbyPayload {
     pub lobby_id: Option<u32>,
     pub username: Option<String>,
     pub event_type: LobbyEvents,
+    pub settings: Option<SettingsLobby>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -22,6 +27,7 @@ pub struct LobbyPayload {
 pub enum LobbyEvents {
     JoinLobby,
     CreateLobby,
+    ChangeSettings,
 }
 
 pub fn lobby_controller(
@@ -35,19 +41,16 @@ pub fn lobby_controller(
         format!("{:?}", payload_data).blue(),
         s.id.to_string().green()
     );
-    let mut lobby_id: u32 = 0;
 
     let result: Result<Responses, Error> = match payload_data.event_type {
         LobbyEvents::JoinLobby => join_lobby(s.id.to_string(), payload_data, &mut state, &io)
             .and_then(|(id, res)| {
                 let _ = s.join(id.to_string());
-                lobby_id = id;
                 Ok(res)
             }),
         LobbyEvents::CreateLobby => make_lobby(s.id.to_string(), payload_data, &mut state)
             .and_then(|id| -> Result<Responses, Error> {
                 let _ = s.join(id.to_string());
-                lobby_id = id;
 
                 let state = state.lock().unwrap();
 
@@ -66,6 +69,9 @@ pub fn lobby_controller(
                     )),
                 }
             }),
+        LobbyEvents::ChangeSettings => {
+            change_settings(s.id.to_string(), payload_data, &mut state, &io)
+        }
     };
 
     match result {
@@ -126,30 +132,32 @@ fn join_lobby<'a>(
 
     let mut state_guard = state.lock().unwrap();
     let res: LobbyResponse;
+
     {
         let lobby_arc = state_guard
             .game_map
             .get(&lobby_id)
             .ok_or_else(|| Error::LobbyError(format!("Lobby with ID {} not found", lobby_id)))?;
 
-        state_guard
-            .player_lobby_map
-            .get(&sid)
-            .map_or(Ok(()), |_| {
-                Err(Error::LobbyError(
-                    "Socket is already in a game".to_string()
-                ))
-            })?;
+        state_guard.player_lobby_map.get(&sid).map_or(Ok(()), |_| {
+            Err(Error::LobbyError("Socket is already in a game".to_string()))
+        })?;
+
+
 
         let mut lobby_guard = lobby_arc.lock().unwrap();
         let lobby = match &mut *lobby_guard {
             GameLogic::Lobby(lobby) => lobby,
             _ => return Err(Error::LobbyError("Game is not a lobby".into())),
         };
+        
+        if lobby.get_settings().get_max_players() <= lobby.get_players().0.len() as u32 {
+            return Err(Error::LobbyError("The max player count is reached, you can not join...".into()))
+        }
+
         lobby.add_player(&sid, payload_data.username)?;
         res = LobbyResponse::from(&*lobby).to_owned();
     }
-
     state_guard.insert_player_lobby(sid.to_string(), lobby_id);
 
     Ok((
@@ -170,4 +178,50 @@ fn join_lobby<'a>(
             ),
         ]),
     ))
+}
+
+fn change_settings<'a>(
+    sid: String,
+    data_payload: LobbyPayload,
+    state: &mut SharedState,
+    io: &'a SocketIo,
+) -> Result<Responses<'a>, Error> {
+    let Some(settings) = data_payload.settings else {
+        return Err(Error::LobbyError("You did not send some settings".into()));
+    };
+
+    let state_guard = state.lock().unwrap();
+    let Some(&lobby_id) = state_guard.player_lobby_map.get(&sid) else {
+        return Err(Error::LobbyError("You are not in a lobby".into()));
+    };
+
+    let res: LobbyResponse;
+
+    let lobby_arc = state_guard
+        .game_map
+        .get(&lobby_id)
+        .ok_or_else(|| Error::LobbyError(format!("Lobby with ID {} not found", lobby_id)))?;
+
+    let mut lobby_guard = lobby_arc.lock().unwrap();
+    let lobby = match &mut *lobby_guard {
+        GameLogic::Lobby(lobby) => lobby,
+        _ => return Err(Error::LobbyError("Game is not a lobby".into())),
+    };
+
+    if !sid.eq(lobby.get_host()) {
+        return Err(Error::LobbyError("You are not the lobby host".into()));
+    }
+
+
+    lobby.set_settings(settings);
+    res = LobbyResponse::from(&*lobby).to_owned();
+
+    Ok(Responses::Single(Planned::new(
+        Event::UpdateLobby,
+        EmitContext::Room {
+            io,
+            room_id: lobby_id,
+        },
+        &res,
+    )))
 }

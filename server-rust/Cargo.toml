@@ -6,7 +6,7 @@ edition = "2024"
 [dependencies]
 tokio = { version = "1", features = ["full"] }
 axum = "0.7"
-socketioxide = "0.10"
+socketioxide = "0.17"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
 colored = "2"

@@ -1,21 +1,41 @@
 import { useState } from "react";
 import { socket } from "../../../socket";
 
-export default function LobbyID( { roomID } ) {
-    const copyToClipboard = () => {      
-        navigator.clipboard.writeText(roomID)
-          .then(() => {
-          })
-          .catch(err => {
-            console.error('Failed to copy text: ', err);
-          });
-      };
+export default function LobbyID({ roomID }) {
+    const copyToClipboard = async () => {
+        // Works on https and localhost
+        if (navigator.clipboard && window.isSecureContext) {
+            try {
+                await navigator.clipboard.writeText(roomID);
+                return;
+            } catch (err) {
+                console.error("Failed to copy text: ", err);
+            }
+        }
+
+        // Fallback for plain http
+        const textArea = document.createElement("textarea");
+        textArea.value = roomID;
+        textArea.style.position = "fixed";
+        textArea.style.opacity = "0";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            document.execCommand("copy");
+        } catch (err) {
+            console.error("Fallback copy failed: ", err);
+        }
+        document.body.removeChild(textArea);
+    };
 
     return (
         <>
-            <button type="button" className="btn btn-primary p-3 m-3 btn-lg" onClick={copyToClipboard}>
-                Lobby ID: {roomID} <span className="badge text-bg-secondary">Click to copy</span>
-            </button>
+            <div className="d-grid mt-3 p-3">
+                <button type="button" className="btn btn-primary btn-lg" onClick={copyToClipboard}>
+                    Lobby ID: {roomID} <span className="badge text-bg-secondary">Click to copy</span>
+                </button>
+            </div>
         </>
     );
 }
