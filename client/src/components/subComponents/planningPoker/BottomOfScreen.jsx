@@ -1,7 +1,10 @@
 import { socket } from "./../../../socket";
 
-
-export default function BottomOfScreen({ mustNewRound, valueRange, cardValues }) {
+export default function BottomOfScreen({
+    mustNewRound,
+    valueRange,
+    cardValues,
+}) {
     if (mustNewRound) {
         return <NewRound />;
     } else {
@@ -11,15 +14,15 @@ export default function BottomOfScreen({ mustNewRound, valueRange, cardValues })
 
 function ScoreRound({ valueRange, cardValues }) {
     function sendValue(value) {
-        socket.emit("PlanningPokerMove", { "moveType": "choice", "value": value });
+        socket.emit("PlanningPokerMove", { moveType: "choice", value: value });
     }
     const values = Array.from({ length: valueRange }, (_, i) => i);
     const max = Math.max(...values);
     const min = Math.min(...values);
     return (
         <div className="container">
-            <div className="row fixed-bottom bg-light border">
-                <div className="col text-center py-3 bg-dark d-flex justify-content-center gap-3 flex-wrap">
+            <div className="row fixed-bottom planning-bottom-fixed">
+                <div className="col text-center py-3 d-flex justify-content-center gap-3 flex-wrap">
                     {values.map((value, index) => {
                         const percent = (value - min) / (max - min); // 0 to 1
                         const red = Math.round(128 + percent * 127); // from 128 (gray) to 255 (red)
@@ -32,9 +35,11 @@ function ScoreRound({ valueRange, cardValues }) {
                                 style={{
                                     backgroundColor: color,
                                     color: "white",
-                                    border: "none"
+                                    border: "none",
                                 }}
-                                onClick={() => { sendValue(value) }}
+                                onClick={() => {
+                                    sendValue(value);
+                                }}
                             >
                                 {cardValues[value]}
                             </button>
@@ -46,20 +51,20 @@ function ScoreRound({ valueRange, cardValues }) {
     );
 }
 
-function NewRound({ }) {
+function NewRound({}) {
     function sendValue(value) {
-        socket.emit("PlanningPokerMove", { "moveType": "newRound" });
+        socket.emit("PlanningPokerMove", { moveType: "newRound" });
     }
 
     return (
         <div className="container">
-            <div className="row fixed-bottom bg-light border-top">
-                <div className="col text-center py-3 bg-dark d-flex justify-content-center">
+            <div className="row fixed-bottom planning-bottom-fixed">
+                <div className="col text-center py-3 d-flex justify-content-center">
                     <button
                         className="btn btn-light fs-5 shadow rounded-pill"
                         style={{
                             maxWidth: "300px", // prevent full screen width
-                            width: "80%",      // responsive scaling
+                            width: "80%", // responsive scaling
                         }}
                         onClick={sendValue}
                     >

@@ -30,7 +30,7 @@ export default function PlanningPoker({ lobbyStateStart }) {
         14: "?",
         15: "☕"
     };
-
+    
     const valueRange = Object.keys(cardValues).length;
 
     useEffect(() => {

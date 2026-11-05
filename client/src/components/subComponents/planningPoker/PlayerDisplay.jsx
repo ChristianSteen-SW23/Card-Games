@@ -1,7 +1,11 @@
 import { socket } from "../../../socket";
 
-
-export default function PlayerDisplay({ player, mustNewRound, valueRange, cardValues }) {
+export default function PlayerDisplay({
+    player,
+    mustNewRound,
+    valueRange,
+    cardValues,
+}) {
     // Clamp value between 0 and valueRange
     const normalized = Math.min(player.value ?? 0, valueRange) / valueRange;
 
@@ -9,15 +13,22 @@ export default function PlayerDisplay({ player, mustNewRound, valueRange, cardVa
     const backgroundColor = `hsl(${(1 - normalized) * 0}, 70%, ${80 - normalized * 40}%)`;
 
     return (
-        <div className="container border p-3 bg-light rounded" style={{ minHeight: "200px" }}>
+        <div
+            className="container planning-player-display p-3 rounded"
+            style={{ minHeight: "200px" }}
+        >
             {/* Top Text Section */}
             <div className="d-flex align-items-start justify-content-start mb-2">
                 <span className="me-2 fw-semibold">Name: {player.name}</span>
                 {socket.id === player.id && (
-                    <span className="badge text-bg-danger rounded-pill ms-2">You</span>
+                    <span className="badge text-bg-danger rounded-pill ms-2">
+                        You
+                    </span>
                 )}
                 {player.ready && (
-                    <span className="badge text-bg-primary rounded-pill ms-2">Ready</span>
+                    <span className="badge text-bg-primary rounded-pill ms-2">
+                        Ready
+                    </span>
                 )}
             </div>
 
@@ -27,7 +38,9 @@ export default function PlayerDisplay({ player, mustNewRound, valueRange, cardVa
             <div
                 className="d-flex justify-content-center align-items-center rounded"
                 style={{
-                    backgroundColor: mustNewRound ? backgroundColor : "transparent", // only apply when false
+                    backgroundColor: mustNewRound
+                        ? backgroundColor
+                        : "transparent", // only apply when false
                     height: "80%",
                     minHeight: "150px",
                     width: "100%",
