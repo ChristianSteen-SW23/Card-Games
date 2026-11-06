@@ -3,22 +3,26 @@ use std::fmt::Debug;
 
 #[derive(Clone, Copy, Debug)]
 pub enum Event {
+    LeaveLobby,
     ConnectToLobby,
     UpdateLobby,
     StartedGame,
     GameInfo,
     HandInfo,
     GameEnded7,
+    GameEnded31,
 }
 impl Event {
     pub fn as_str(self) -> &'static str {
         match self {
+            Event::LeaveLobby => "leaveLobby",
             Event::ConnectToLobby => "conToLobby",
             Event::UpdateLobby => "playerHandler",
             Event::StartedGame => "startedGame",
             Event::GameInfo => "gameInfo",
             Event::HandInfo => "handInfo",
             Event::GameEnded7 => "gameEnded",
+            Event::GameEnded31 => "GameOver31",
         }
     }
 }

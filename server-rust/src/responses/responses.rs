@@ -1,3 +1,4 @@
+use colored::Colorize;
 use serde::Serialize;
 use serde_json::Value;
 use socketioxide::socket::Sid;
@@ -24,11 +25,30 @@ impl<'c> Planned<'c> {
     pub fn emit(self) {
         match self.ctx {
             EmitContext::SingleRef { s } => {
+                println!(
+                    "{}",
+                    format!(
+                        "[single_ref emit] s: {} | evnet: {}",
+                        s.ns().to_string(),
+                        self.event.as_str()
+                    )
+                    .bright_black()
+                );
                 if let Err(err) = s.emit(self.event.as_str(), &self.data) {
                     eprintln!("SendError(single): {:?}", err);
                 }
             }
             EmitContext::Room { io, room_id } => {
+                println!(
+                    "{}",
+                    format!(
+                        "[room emit] room: {} | event: {}",
+                        room_id,
+                        self.event.as_str(),
+                        // serde_json::to_string_pretty(&self.data).unwrap_or_default()
+                    )
+                    .bright_black()
+                );
                 let io = io.clone();
                 let room = room_id.to_string();
                 let event = self.event.as_str().to_string();
@@ -41,6 +61,15 @@ impl<'c> Planned<'c> {
                 });
             }
             EmitContext::SingleString { io, sid } => {
+                println!(
+                    "{}",
+                    format!(
+                        "[single_string emit] s: {} | evnet: {}",
+                        sid,
+                        self.event.as_str()
+                    )
+                    .bright_black()
+                );
                 // Parse the socket id string into the library’s type safely
                 let sid = match Sid::from_str(&sid) {
                     Ok(id) => id,

@@ -80,11 +80,6 @@ pub fn game_7_controller(s: SocketRef, data: Game7Payload, state: SharedState, i
                     },
                     &SevenGameUpdateResponse::from(&*game7),
                 ),
-                // Planned::new(
-                //     Event::HandInfo,
-                //     EmitContext::SingleRef { s: &s },
-                //     &SevenHandUpdateResponse::from((s.id.to_string().as_str(), &*game7)),
-                // ),
             ];
 
             planned.extend(game7.players.iter().map(|player| {

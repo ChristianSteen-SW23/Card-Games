@@ -17,7 +17,8 @@ function ScreenController() {
             setCurrentPage('StartPage')
         }
 
-        function leaveLobbyFunc() {
+        function leaveLobbyFunc(str) {
+            console.log("LEAVE LOBBY")
             setCurrentPage('StartPage')
         }
         function conToLobbyFunc(data, string) {

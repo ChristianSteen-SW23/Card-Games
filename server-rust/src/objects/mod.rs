@@ -1,4 +1,5 @@
 pub mod game7;
+pub mod game31;
 pub mod game_logic;
 pub mod lobby;
 pub mod states;

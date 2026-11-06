@@ -13,7 +13,7 @@ export default function MakeBoard({ stack, pickedCard, mustPickCard }) {
 
         socket.emit("31Move", data);*/
         let data = {}
-        data.moveType = "showTopCard"
+        data.moveType = "pickTopCard"
         socket.emit("31Move", data);
     }
     function swapCard() {

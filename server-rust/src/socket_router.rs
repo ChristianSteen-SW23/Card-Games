@@ -1,11 +1,6 @@
 use crate::{
-    objects::states::SharedState,
-    socket::{
-        Game7Payload, disconnect_controller,
-        game_7_socket::game_7_controller,
-        lobby_socket::{LobbyPayload, lobby_controller},
-        start_game_controller,
-        start_game_socket::StartGamePayload,
+    objects::states::SharedState, socket::{
+        Game7Payload, Game31Payload, disconnect_controller, game_7_socket::game_7_controller, game_31_socket::game_31_controller, lobby_socket::{LobbyPayload, lobby_controller}, start_game_controller, start_game_socket::StartGamePayload,
     },
 };
 use colored::Colorize;
@@ -64,6 +59,16 @@ pub fn register_socket_routes(io: &SocketIo, state: &SharedState) {
             |socket: SocketRef, TryData::<Game7Payload>(data)| match data {
                 Ok(data) => game_7_controller(socket, data, state_for_game_7, io_for_game_7),
                 Err(err) => log_bad_payload("7Move", &socket, err),
+            },
+        );
+
+        let state_for_game_31 = state.clone();
+        let io_for_game_31 = io_inside.clone();
+        s.on(
+            "31Move",
+            |socket: SocketRef, TryData::<Game31Payload>(data)| match data {
+                Ok(data) => game_31_controller(socket, data, state_for_game_31, io_for_game_31),
+                Err(err) => log_bad_payload("31Move", &socket, err),
             },
         );
 

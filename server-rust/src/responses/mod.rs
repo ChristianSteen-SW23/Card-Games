@@ -3,6 +3,7 @@ pub mod lobby_response;
 pub mod emit_traits;
 pub mod player_response;
 pub mod seven_response;
+pub mod thirty_one_response;
 pub mod turn_response;
 
 pub use responses::{Planned, Responses};

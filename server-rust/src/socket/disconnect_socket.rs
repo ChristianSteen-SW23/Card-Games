@@ -1,8 +1,13 @@
+use std::any::Any;
+
 use colored::Colorize;
 use socketioxide::{SocketIo, extract::SocketRef, socket::DisconnectReason};
 
 use crate::{
-    objects::{GameLogic, lobby::lobby::Lobby, states::SharedState, traits::has_players::HasPlayers}, responses::{EmitContext, Event, LobbyResponse, Planned, Responses},
+    objects::{
+        GameLogic, lobby::lobby::Lobby, states::SharedState, traits::has_players::HasPlayers,
+    },
+    responses::{EmitContext, Event, LobbyResponse, Planned, Responses},
 };
 
 pub fn disconnect_controller(
@@ -40,13 +45,13 @@ pub fn disconnect_controller(
         }
         (GameLogic::Lobby(lobby), _) => {
             lobby.remove_player(&sid);
-            send_lobby_update(lobby,&io,room_id);
+            send_lobby_update(lobby, &io, room_id);
             drop(game_guard);
             state.delete_player_from_player_map(sid);
         }
         _ => {
             drop(game_guard);
-            let _ = io.within(room_id.to_string()).emit("leaveLobby", "");
+            send_leave_lobby(&io, room_id);
             let _ = io.leave(room_id.to_string());
             state.delete_room(&room_id);
         }
@@ -61,5 +66,18 @@ fn send_lobby_update<'a>(lobby: &'a Lobby, io: &'a SocketIo, lobby_id: u32) {
             room_id: lobby_id,
         },
         &LobbyResponse::from(&*lobby).to_owned(),
-    )).emit_all();
+    ))
+    .emit_all();
+}
+
+fn send_leave_lobby<'a>(io: &'a SocketIo, lobby_id: u32) {
+    Responses::Single(Planned::new(
+        Event::LeaveLobby,
+        EmitContext::Room {
+            io,
+            room_id: lobby_id,
+        },
+        &None::<u32>,
+    ))
+    .emit_all();
 }

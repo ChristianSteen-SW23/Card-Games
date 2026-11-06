@@ -5,7 +5,8 @@ use socketioxide::extract::SocketRef;
 pub enum Error {
     NotYourTurn(String),
     LobbyError(String),
-    Game7Error(String)
+    Game7Error(String),
+    Game31Error(String),
 }
 
 impl Error {
@@ -15,6 +16,7 @@ impl Error {
             NotYourTurn(err) => ErrorResponse::new(err, "Not your turn").emit(s),
             LobbyError(err) => ErrorResponse::new(err, "Lobby Error").emit(s),
             Game7Error(err) => ErrorResponse::new(err, "7 Game Error").emit(s),
+            Game31Error(err) => ErrorResponse::new(err, "31 Game Error").emit(s),
         }
     }
 }

@@ -1,22 +1,22 @@
+use crate::objects::game31::{self, Game31};
 use crate::objects::lobby::settings_lobby::GameModeSettings;
 use crate::objects::traits::has_players::HasPlayers;
 use crate::responses::seven_response::SevenGameStartResponse;
-use crate::responses::{Event, Planned};
+use crate::responses::thirty_one_response::ThirtyOneGameStartResponse;
+use crate::responses::{EmitContext, Event, Planned};
 use crate::{
     objects::{GameLogic, game7::Game7, states::SharedState},
     responses::Responses,
     socket::send_error_socket::Error,
 };
+use axum::http::response;
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
 use socketioxide::{SocketIo, extract::SocketRef};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct StartGamePayload {
-    
-}
-
+pub struct StartGamePayload {}
 
 pub fn start_game_controller(
     s: SocketRef,
@@ -69,7 +69,9 @@ pub fn start_game_controller(
 
                     // Borrow it back immutably
                     let GameLogic::Game7(ref game7_ref) = *game_guard else {
-                        break 'match_game_mode Err(Error::LobbyError("Failed to assign new Game7".into()));
+                        break 'match_game_mode Err(Error::LobbyError(
+                            "Failed to assign new Game7".into(),
+                        ));
                     };
 
                     // Build responses for all players
@@ -79,7 +81,7 @@ pub fn start_game_controller(
                         .map(|player| {
                             Planned::new(
                                 Event::StartedGame,
-                                crate::responses::EmitContext::SingleString {
+                                EmitContext::SingleString {
                                     io: &io,
                                     sid: player.id.to_string(),
                                 },
@@ -89,15 +91,38 @@ pub fn start_game_controller(
                         .collect();
                     Ok(Responses::Multiple(responses))
                 }
-                GameModeSettings::Game31 { bot_count } => Err(Error::LobbyError(
-                    "Game mode are not done".into(),
-                )),
-                GameModeSettings::Game500 { bot_count } => Err(Error::LobbyError(
-                    "Game mode are not done".into(),
-                )),
-                GameModeSettings::PlanningPoker { bot_count } => Err(Error::LobbyError(
-                    "Game mode are not done".into(),
-                )),
+                GameModeSettings::Game31 { bot_count } => 'match_game_mode: {
+                    let new_game = Game31::from(lobby_logic.to_owned());
+                    *game_guard = GameLogic::Game31(new_game);
+
+                    let GameLogic::Game31(ref game31_ref) = *game_guard else {
+                        break 'match_game_mode Err(Error::LobbyError(
+                            "Failed to assign new Game31".into(),
+                        ));
+                    };
+
+                    let responses = game31_ref
+                        .get_players()
+                        .iter()
+                        .map(|p| {
+                            Planned::new(
+                                Event::StartedGame,
+                                EmitContext::SingleString {
+                                    io: &io,
+                                    sid: String::from(p.id.to_string()),
+                                },
+                                &ThirtyOneGameStartResponse::from((p.id.as_str(), game31_ref)),
+                            )
+                        })
+                        .collect();
+                    Ok(Responses::Multiple(responses))
+                }
+                GameModeSettings::Game500 { bot_count } => {
+                    Err(Error::LobbyError("Game mode are not done".into()))
+                }
+                GameModeSettings::PlanningPoker { bot_count } => {
+                    Err(Error::LobbyError("Game mode are not done".into()))
+                }
                 GameModeSettings::Unselected {} => Err(Error::LobbyError(
                     "You can not play the game Unselected... 🐬".into(),
                 )),

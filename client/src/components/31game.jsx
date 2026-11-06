@@ -12,7 +12,7 @@ export default function GamePage31({ lobbyStateStart }) {
     const [winData, setWinData] = useState([]);
     const [pickedCard, setPickedCard] = useState(-1);
     const [mustPickCard, setMustPickCard] = useState(false);
-    const [hand, setHand] = useState([]);
+    const [hand, setHand] = useState(lobbyStateStart.handInfo);
 
     useEffect(() => {
         function elseKnockedFunc() {
@@ -41,7 +41,6 @@ export default function GamePage31({ lobbyStateStart }) {
 
         function New31GameFunc() {
             setWinPop(false);
-            socket.emit("31Move", { moveType: "ReadyForHand" });
         }
 
         function gameInfoFunc(data) {
@@ -67,9 +66,9 @@ export default function GamePage31({ lobbyStateStart }) {
         };
     }, []);
 
-    useEffect(() => {
-        socket.emit("31Move", { moveType: "ReadyForHand" });
-    }, [])
+    // useEffect(() => {
+    //     socket.emit("31Move", { moveType: "ReadyForHand" });
+    // }, [])
 
     function knockBTNFunc() {
         socket.emit("31Move", { moveType: "Knock" });
@@ -94,7 +93,7 @@ export default function GamePage31({ lobbyStateStart }) {
                         <InGamePlayerList31 lobbyState={lobbyState} />
                     </div>
                     <div className="col-8">
-                        <MakeBoard31 stack={lobbyState.stack} pickedCard={pickedCard} mustPickCard={mustPickCard} />
+                        <MakeBoard31 stack={lobbyState.topStackCard} pickedCard={pickedCard} mustPickCard={mustPickCard} />
                     </div>
                 </div>
                 <div className="row">
