@@ -18,10 +18,9 @@ export default function Lobby({ lobbyState }) {
 
     useEffect(() => {
         socket.on("playerHandler", (data) => {
-            console.log(data)
             setPlayers(data.players);
             setSettings(data.lobbySettings);
-            setGameModeName(getGameModeName(lobbyState.lobbySettings.gamemode))
+            setGameModeName(getGameModeName(data.lobbySettings.gamemode))            
         });
 
         function errorMessage(data) {

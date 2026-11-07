@@ -1,5 +1,8 @@
 use serde::{Deserialize, Serialize};
 use socketioxide::extract::SocketRef;
+use colored::Colorize;
+
+
 
 #[derive(Debug)]
 pub enum Error {
@@ -20,9 +23,6 @@ impl Error {
         }
     }
 }
-
-
-
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ErrorResponse {
@@ -45,7 +45,16 @@ impl ErrorResponse {
             "type": self.r#type,
         });
 
+        println!(
+            "{}",
+            format!(
+                "[error emit] to: {} | event: errorMessage\n{}",
+                s.id,
+                serde_json::to_string_pretty(&json).unwrap_or_default()
+            )
+            .bright_black()
+        );
+
         let _ = s.emit("errorMessage", &json);
     }
 }
-

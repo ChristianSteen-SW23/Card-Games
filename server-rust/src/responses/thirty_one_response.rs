@@ -93,6 +93,8 @@ impl From<(&str, &Game31)> for ThirtyOneGameStartResponse {
 pub struct ThirtyOnePlayerResponse {
     pub name: String,
     pub id: String,
+    pub is_bot: bool,
+    pub has_knocked: bool,
 }
 
 impl From<&Player31> for ThirtyOnePlayerResponse {
@@ -100,6 +102,8 @@ impl From<&Player31> for ThirtyOnePlayerResponse {
         Self {
             name: player.name.clone(),
             id: player.id.clone(),
+            is_bot: player.is_bot,
+            has_knocked: player.has_knocked,
         }
     }
 }

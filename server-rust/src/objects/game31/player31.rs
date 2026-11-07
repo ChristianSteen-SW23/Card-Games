@@ -8,6 +8,7 @@ pub struct Player31 {
     pub id: String,
     pub name: String,
     pub is_bot: bool,
+    pub has_knocked: bool,
     pub hand: Vec<u32>,
     pub total_wins: u32,
 }
@@ -15,6 +16,7 @@ pub struct Player31 {
 impl Player31 {
     pub fn reset(&mut self){
         self.hand = vec![];
+        self.has_knocked = false;
     }
 
     pub fn play_again(&mut self){
@@ -46,6 +48,7 @@ impl From <&PlayerLobby> for Player31 {
             is_bot: p.is_bot,
             hand: vec![],
             total_wins: 0,
+            has_knocked: false,
         }
     }
 }

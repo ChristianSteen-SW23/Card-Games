@@ -25,6 +25,7 @@ pub enum Game31Events {
     Swap,
     PickTopCard,
     PlayTopCard,
+    Knock,
 }
 
 pub fn game_31_controller(s: SocketRef, data: Game31Payload, state: SharedState, io: SocketIo) {
@@ -101,6 +102,7 @@ pub fn game_31_controller(s: SocketRef, data: Game31Payload, state: SharedState,
         Ok(responses) => responses.emit_all(),
     };
 
+    // TODO: If game is over emit it
     // match game31.check_and_calculate_win() {
     //     Ok(None) => {}
     //     Ok(Some(())) => Responses::Single(Planned::new(

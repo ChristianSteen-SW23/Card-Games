@@ -22,7 +22,7 @@ impl Event {
             Event::GameInfo => "gameInfo",
             Event::HandInfo => "handInfo",
             Event::GameEnded7 => "gameEnded",
-            Event::GameEnded31 => "GameOver31",
+            Event::GameEnded31 => "gameOver31",
         }
     }
 }
