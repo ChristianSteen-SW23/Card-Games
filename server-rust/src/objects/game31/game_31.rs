@@ -80,9 +80,32 @@ impl Game31 {
     pub fn get_id(&self) -> u32 {
         self.id
     }
+    pub fn get_game_over(&self) -> bool {
+        self.game_over
+    }
 }
 
 impl Game31 {
+    pub fn set_game_over(&mut self) -> bool {
+        match self.game_over {
+            true => {
+                self.players.iter_mut().for_each(|p| {
+                    p.count_points_hand();
+                    ()
+                });
+                let max_score = self.players.iter().map(|p| p.cur_score).max().unwrap_or(0);
+
+                self.players
+                    .iter_mut()
+                    .filter(|p| p.cur_score == max_score)
+                    .for_each(|p| p.total_wins += 1);
+
+                true
+            }
+            false => false,
+        }
+    }
+
     pub fn set_up_game(&mut self) {
         self.starting_player_id = String::new();
 
@@ -127,32 +150,58 @@ impl Game31 {
     }
 
     pub fn handle_move(&mut self, data: Game31Payload, sid: &String) -> Result<(), Error> {
+        let is_new_game = matches!(data.move_type, Game31Events::NewGame);
+        if self.game_over != is_new_game {
+            return Err(Error::Game31Error(if self.game_over {
+                "Game is over, click play again".into()
+            } else {
+                "The game is not over yet".into()
+            }));
+        }
+
         self.confirm_turn(sid)?;
         match data.move_type {
             Game31Events::Swap => self.swap_card(data.card, sid),
             Game31Events::PickTopCard => self.pick_top_card(sid),
             Game31Events::PlayTopCard => self.play_top_card(data.card, sid),
             Game31Events::Knock => self.knock_table(sid),
+            Game31Events::NewGame => {
+                self.set_up_game();
+                Ok(())
+            }
         }?;
 
         match data.move_type {
             Game31Events::Swap | Game31Events::PlayTopCard | Game31Events::Knock => {
-                self.turn_manager.advance_turn(&self.player_ids()).map_err(|_| Error::Game31Error(
-                "Could not advance turn".into()))?;
-                
-                self.first_turn &= self.turn_manager.get_current() != self.starting_player_id;
+                let turn_player = self
+                    .get_mut_player(sid)
+                    .ok_or_else(|| {
+                        Error::Game31Error("Could not find your player ID in the game data".into())
+                    })?
+                    .count_points_hand();
+                self.game_over |= turn_player.cur_score == 31;
+
+                self.turn_manager
+                    .advance_turn(&self.player_ids())
+                    .map_err(|_| Error::Game31Error("Could not advance turn".into()))?;
+
+                let cur_player = self.turn_manager.get_current().to_string();
+                self.first_turn &= cur_player != self.starting_player_id;
+                self.game_over |= self
+                    .get_mut_player(&cur_player)
+                    .ok_or_else(|| {
+                        Error::Game31Error("Could not find your player ID in the game data".into())
+                    })?
+                    .has_knocked;
 
                 Ok(())
             }
-            Game31Events::PickTopCard => Ok(()),
+            Game31Events::PickTopCard | Game31Events::NewGame => Ok(()),
         }
-
-        // TODO: After check logic, Current player have they knowked? Win logic
     }
     fn knock_table(&mut self, sid: &String) -> Result<(), Error> {
-        // TODO:  player ahve not picked a card
         if self.first_turn {
-            return  Err(Error::Game31Error("You can not knock first turn".into()));
+            return Err(Error::Game31Error("You can not knock first turn".into()));
         }
 
         if self
@@ -178,7 +227,11 @@ impl Game31 {
     }
 
     fn confirm_turn(&mut self, sid: &String) -> Result<(), Error> {
-        self.turn_manager.check_turn_with_error(sid)
+        if self.game_over {
+            Ok(())
+        } else {
+            self.turn_manager.check_turn_with_error(sid)
+        }
     }
 
     fn swap_card(&mut self, card_idx: Option<u32>, sid: &String) -> Result<(), Error> {

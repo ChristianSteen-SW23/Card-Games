@@ -4,6 +4,7 @@ pub struct ThirtyOneGameUpdateResponse {
     pub top_stack_card: u32,
     pub players_info: Vec<ThirtyOnePlayerResponse>,
     pub turn: TurnResponse,
+    pub game_over: bool,
 }
 
 impl From<&Game31> for ThirtyOneGameUpdateResponse {
@@ -18,6 +19,7 @@ impl From<&Game31> for ThirtyOneGameUpdateResponse {
             players_info,
             turn: game_31_logic.get_turn_manager().make_respone(),
             top_stack_card: game_31_logic.get_top_stack_card(),
+            game_over: game_31_logic.get_game_over(),
         }
     }
 }
@@ -58,35 +60,34 @@ impl From<(&str, &Game31)> for ThirtyOneGameStartResponse {
     }
 }
 
-// #[derive(Debug, Serialize, Deserialize, PartialEq)]
-// #[serde(rename_all = "camelCase")]
-// pub struct ThirtyOneGameEndedResponse {
-//     pub win_data: Vec<ThirtyOneWinDataEntry>,
-// }
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct ThirtyOneGameEndedResponse {
+    pub win_data: Vec<ThirtyOneWinDataEntry>,
+}
 
-// #[derive(Debug, Serialize, Deserialize, PartialEq)]
-// #[serde(rename_all = "camelCase")]
-// pub struct ThirtyOneWinDataEntry {
-//     pub name: String,
-//     pub round_score: u32,
-//     pub total_score: u32,
-// }
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct ThirtyOneWinDataEntry {
+    pub name: String,
+    pub round_score: u32,
+    pub total_wins: u32,
+}
 
-// impl From<&Game31> for ThirtyOneGameEndedResponse {
-//     fn from(game_31_logic: &Game31) -> Self {
-//         let win_data = game_31_logic
-//             .players
-//             .iter()
-//             .map(|p| ThirtyOneWinDataEntry {
-//                 name: p.name.clone(),
-//                 round_score: p.cur_score,
-//                 total_score: p.total_score,
-//             })
-//             .collect();
-
-//         Self { win_data }
-//     }
-// }
+impl From<&Game31> for ThirtyOneGameEndedResponse {
+    fn from(game_31_logic: &Game31) -> Self {
+        let win_data = game_31_logic
+            .get_players()
+            .iter()
+            .map(|p| ThirtyOneWinDataEntry {
+                name: p.name.clone(),
+                round_score: p.cur_score,
+                total_wins: p.total_wins,
+            })
+            .collect();
+        Self { win_data }
+    }
+}
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]

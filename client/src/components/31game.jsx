@@ -21,8 +21,9 @@ export default function GamePage31({ lobbyStateStart }) {
         }
 
         function GameOver31Func(data) {
-            let newData = data
-            setWinData(newData)
+            console.log(data)
+            let temp = data.winData; 
+            setWinData(temp)
             setWinPop(true)
         }
         function hand31Func(data) {
@@ -34,28 +35,26 @@ export default function GamePage31({ lobbyStateStart }) {
                 setMustPickCard(false);
 
         }
-        function New31GameFunc() {
-            setWinPop(false);
-        }
+
         function gameInfoFunc(data) {
             console.log(data)
             setLobbyState(data);
             if (socket.id == data.turn.current)
                 showPopup("It is your turn🥳", "success");
+            if (!data.gameOver)
+                setWinPop(false);
         }
 
 
         socket.on("errorMessage", errorMessage);
-        socket.on('GameOver31', GameOver31Func);
+        socket.on('gameOver31', GameOver31Func);
         socket.on('handInfo', hand31Func);
-        socket.on('New31Game', New31GameFunc);
         socket.on('gameInfo', gameInfoFunc);
 
         return () => {
             socket.off("errorMessage");
-            socket.off("GameOver31");
+            socket.off("gameOver31");
             socket.off("handInfo");
-            socket.off("New31Game");
             socket.off("gameInfo");
         };
     }, []);
@@ -110,21 +109,21 @@ export default function GamePage31({ lobbyStateStart }) {
                             <ul className="list-group">
                                 <li className="list-group-item d-flex justify-content-between align-items-center">
                                     <strong>Name:</strong>
-                                    <span className="badge text-bg-primary rounded-pill">Score</span>
+                                    <span className="badge text-bg-primary rounded-pill">Round Score</span>
+                                    <span className="badge text-bg-primary rounded-pill">Total Wins</span>
                                 </li>
                                 {winData.map((player, index) => (
                                     <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
                                         <p>{player.name}</p>
-                                        <span className="badge text-bg-primary rounded-pill">{player.point}</span>
+                                        <span className="badge text-bg-primary rounded-pill">{player.roundScore}</span>
+                                        <span className="badge text-bg-primary rounded-pill">{player.totalWins}</span>
                                     </li>
                                 ))}
                             </ul>
                         </div>
                         <div className='modal-footer'>
                             <button type="button" className="btn btn-success" data-bs-dismiss="modal"
-                                onClick={() => { socket.emit("31Move", { moveType: "NewGame", data: true }) }}>Play again?</button>
-                            <button type="button" className="btn btn-danger" data-bs-dismiss="modal"
-                                onClick={() => { socket.emit("31Move", { moveType: "NewGame", data: false }) }}>Leave lobby</button>
+                                onClick={() => { socket.emit("31Move", { moveType: "newGame" }) }}>Play again?</button>
                         </div>
                     </div>
                 </div>

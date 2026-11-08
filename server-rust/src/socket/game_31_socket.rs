@@ -5,11 +5,18 @@ use serde::{Deserialize, Serialize};
 use socketioxide::{SocketIo, extract::SocketRef};
 
 use crate::{
-    objects::{GameLogic, states::SharedState}, responses::{
-        EmitContext, Event, Planned, Responses, seven_response::{
+    objects::{GameLogic, states::SharedState},
+    responses::{
+        EmitContext, Event, Planned, Responses,
+        seven_response::{
             SevenGameEndedResponse, SevenGameUpdateResponse, SevenHandUpdateResponse,
-        }, thirty_one_response::{ThirtyOneGameUpdateResponse, ThirtyOneHandUpdateResponse},
-    }, socket::send_error_socket::Error,
+        },
+        thirty_one_response::{
+            ThirtyOneGameEndedResponse, ThirtyOneGameUpdateResponse, ThirtyOneHandUpdateResponse,
+            ThirtyOneWinDataEntry,
+        },
+    },
+    socket::send_error_socket::Error,
 };
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
@@ -26,6 +33,7 @@ pub enum Game31Events {
     PickTopCard,
     PlayTopCard,
     Knock,
+    NewGame,
 }
 
 pub fn game_31_controller(s: SocketRef, data: Game31Payload, state: SharedState, io: SocketIo) {
@@ -66,19 +74,16 @@ pub fn game_31_controller(s: SocketRef, data: Game31Payload, state: SharedState,
             return;
         }
     };
-
     let result: Result<Responses, Error> = match game31.handle_move(data, &s.id.to_string()) {
         Ok(_) => {
-            let mut planned = vec![
-                Planned::new(
-                    Event::GameInfo,
-                    EmitContext::Room {
-                        io: &io,
-                        room_id: game31.get_id(),
-                    },
-                    &ThirtyOneGameUpdateResponse::from(&*game31),
-                ),
-            ];
+            let mut planned = vec![Planned::new(
+                Event::GameInfo,
+                EmitContext::Room {
+                    io: &io,
+                    room_id: game31.get_id(),
+                },
+                &ThirtyOneGameUpdateResponse::from(&*game31),
+            )];
 
             planned.extend(game31.get_players().iter().map(|player| {
                 let sid = player.id.to_string();
@@ -102,18 +107,16 @@ pub fn game_31_controller(s: SocketRef, data: Game31Payload, state: SharedState,
         Ok(responses) => responses.emit_all(),
     };
 
-    // TODO: If game is over emit it
-    // match game31.check_and_calculate_win() {
-    //     Ok(None) => {}
-    //     Ok(Some(())) => Responses::Single(Planned::new(
-    //         Event::GameEnded31,
-    //         EmitContext::Room {
-    //             io: &io,
-    //             room_id: game7.id,
-    //         },
-    //         &SevenGameEndedResponse::from(&*game7),
-    //     ))
-    //     .emit_all(),
-    //     Err(err) => err.emit_error_response(&s),
-    // };
+    match game31.set_game_over() {
+        true => Responses::Single(Planned::new(
+            Event::GameEnded31,
+            EmitContext::Room {
+                io: &io,
+                room_id: lobby_id,
+            },
+            &ThirtyOneGameEndedResponse::from(&*game31),
+        ))
+        .emit_all(),
+        false => (),
+    };
 }
