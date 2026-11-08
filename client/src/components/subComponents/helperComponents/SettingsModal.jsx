@@ -53,6 +53,8 @@ export default function SettingsModal({ show, onClose }) {
                             >
                                 <option value="light">Light</option>
                                 <option value="dark">Dark</option>
+                                <option value="black">Black</option>
+                                <option value="girly">Girly🦄💖</option>
                             </select>
                         </div>
 
