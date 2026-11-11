@@ -16,7 +16,7 @@ pub enum GameModeSettings {
     Game500 {
         bot_count: u32,
     },
-    #[serde(rename = "Planningc Poker")]
+    #[serde(rename = "Planning Poker")]
     PlanningPoker {
         bot_count: u32,
     },

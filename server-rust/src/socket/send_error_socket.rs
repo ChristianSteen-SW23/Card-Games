@@ -10,6 +10,7 @@ pub enum Error {
     LobbyError(String),
     Game7Error(String),
     Game31Error(String),
+    PlanningPokerError(String),
 }
 
 impl Error {
@@ -20,6 +21,7 @@ impl Error {
             LobbyError(err) => ErrorResponse::new(err, "Lobby Error").emit(s),
             Game7Error(err) => ErrorResponse::new(err, "7 Game Error").emit(s),
             Game31Error(err) => ErrorResponse::new(err, "31 Game Error").emit(s),
+            PlanningPokerError(err) => ErrorResponse::new(err, "Planning Poker Game Error").emit(s),
         }
     }
 }

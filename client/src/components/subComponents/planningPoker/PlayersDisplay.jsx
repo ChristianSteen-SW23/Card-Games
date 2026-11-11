@@ -2,7 +2,7 @@ import PlayerDisplay from "./PlayerDisplay";
 
 export default function PlayersDisplay({
     players,
-    mustNewRound,
+    gameOver,
     valueRange,
     cardValues,
 }) {
@@ -23,7 +23,7 @@ export default function PlayersDisplay({
                         <div key={player.id} className={colClass}>
                             <PlayerDisplay
                                 player={player}
-                                mustNewRound={mustNewRound}
+                                mustNewRound={gameOver}
                                 valueRange={valueRange}
                                 cardValues={cardValues}
                             />
@@ -35,7 +35,7 @@ export default function PlayersDisplay({
                         <div key={player.id} className={colClass}>
                             <PlayerDisplay
                                 player={player}
-                                mustNewRound={mustNewRound}
+                                mustNewRound={gameOver}
                                 valueRange={valueRange}
                                 cardValues={cardValues}
                             />

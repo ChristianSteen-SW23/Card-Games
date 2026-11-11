@@ -1,6 +1,8 @@
 use crate::objects::game31::{self, Game31};
 use crate::objects::lobby::settings_lobby::GameModeSettings;
+use crate::objects::planning_poker::game_planning_poker::PlanningPoker;
 use crate::objects::traits::has_players::HasPlayers;
+use crate::responses::planning_poker_response::PlanningPokerResponse;
 use crate::responses::seven_response::SevenGameStartResponse;
 use crate::responses::thirty_one_response::ThirtyOneGameStartResponse;
 use crate::responses::{EmitContext, Event, Planned};
@@ -120,8 +122,31 @@ pub fn start_game_controller(
                 GameModeSettings::Game500 { bot_count } => {
                     Err(Error::LobbyError("Game mode are not done".into()))
                 }
-                GameModeSettings::PlanningPoker { bot_count } => {
-                    Err(Error::LobbyError("Game mode are not done".into()))
+                GameModeSettings::PlanningPoker { bot_count } => 'match_game_mode: {
+                    let new_game = PlanningPoker::from(lobby_logic.to_owned());
+                    *game_guard = GameLogic::PlanningPoker(new_game);
+
+                    let GameLogic::PlanningPoker(ref planning_poker_ref) = *game_guard else {
+                        break 'match_game_mode Err(Error::LobbyError(
+                            "Failed to assign new Planning Poker".into(),
+                        ));
+                    };
+
+                    let responses = planning_poker_ref
+                        .get_players()
+                        .iter()
+                        .map(|p| {
+                            Planned::new(
+                                Event::StartedGame,
+                                EmitContext::Room {
+                                    io: &io,
+                                    room_id: planning_poker_ref.get_id(),
+                                },
+                                &PlanningPokerResponse::from(&*planning_poker_ref),
+                            )
+                        })
+                        .collect();
+                    Ok(Responses::Multiple(responses))
                 }
                 GameModeSettings::Unselected {} => Err(Error::LobbyError(
                     "You can not play the game Unselected... 🐬".into(),

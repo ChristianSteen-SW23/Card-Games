@@ -42,10 +42,10 @@ impl<'c> Planned<'c> {
                 println!(
                     "{}",
                     format!(
-                        "[room emit] room: {} | event: {}",
+                        "[room emit] room: {} | event: {} \n {}",
                         room_id,
                         self.event.as_str(),
-                        // serde_json::to_string_pretty(&self.data).unwrap_or_default()
+                        serde_json::to_string_pretty(&self.data).unwrap_or_default()
                     )
                     .bright_black()
                 );

@@ -1,11 +1,11 @@
 import { socket } from "./../../../socket";
 
 export default function BottomOfScreen({
-    mustNewRound,
+    gameOver,
     valueRange,
     cardValues,
 }) {
-    if (mustNewRound) {
+    if (gameOver) {
         return <NewRound />;
     } else {
         return <ScoreRound valueRange={valueRange} cardValues={cardValues} />;
@@ -14,7 +14,7 @@ export default function BottomOfScreen({
 
 function ScoreRound({ valueRange, cardValues }) {
     function sendValue(value) {
-        socket.emit("PlanningPokerMove", { moveType: "choice", value: value });
+        socket.emit("PlanningPokerMove", { moveType: "playCard", card: value });
     }
     const values = Array.from({ length: valueRange }, (_, i) => i);
     const max = Math.max(...values);
@@ -24,22 +24,14 @@ function ScoreRound({ valueRange, cardValues }) {
             <div className="row fixed-bottom planning-bottom-fixed">
                 <div className="col text-center py-3 d-flex justify-content-center gap-3 flex-wrap">
                     {values.map((value, index) => {
-                        const percent = (value - min) / (max - min); // 0 to 1
-                        const red = Math.round(128 + percent * 127); // from 128 (gray) to 255 (red)
-                        const color = `rgb(${red}, ${128 - percent * 64}, ${128 - percent * 64})`; // from gray to red
+                        const color = valueColor(value, min, max);
 
                         return (
                             <button
                                 key={index}
                                 className="btn fs-5"
-                                style={{
-                                    backgroundColor: color,
-                                    color: "white",
-                                    border: "none",
-                                }}
-                                onClick={() => {
-                                    sendValue(value);
-                                }}
+                                style={{ backgroundColor: color, color: "white", border: "none" }}
+                                onClick={() => sendValue(value)}
                             >
                                 {cardValues[value]}
                             </button>
@@ -51,9 +43,9 @@ function ScoreRound({ valueRange, cardValues }) {
     );
 }
 
-function NewRound({}) {
+function NewRound({ }) {
     function sendValue(value) {
-        socket.emit("PlanningPokerMove", { moveType: "newRound" });
+        socket.emit("PlanningPokerMove", { moveType: "playAnotherRound", card: 0 });
     }
 
     return (
@@ -75,3 +67,12 @@ function NewRound({}) {
         </div>
     );
 }
+
+export const valueColor = (value, min, max) => {
+    const percent = max === min
+        ? 0
+        : Math.min(Math.max((value - min) / (max - min), 0), 1); // 0 to 1
+    const red = Math.round(128 + percent * 127);   // 128 (grey) to 255 (red)
+    const other = Math.round(128 - percent * 64);  // 128 (grey) to 64 (red)
+    return `rgb(${red}, ${other}, ${other})`;
+};
