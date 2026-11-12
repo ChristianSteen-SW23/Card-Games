@@ -13,6 +13,10 @@
     --modal-header-bg: #ffffff;
     --input-bg: #ffffff;
     --input-border: #ced4da;
+    --accent: #0d6efd;
+    --accent-hover: #0b5ed7;
+    --accent-active: #0a58ca;
+    --accent-rgb: 13, 110, 253;
 }
 
 [data-theme="dark"] {
@@ -63,6 +67,10 @@
     --input-border: #f4a6c4;
     --close-filter: none;
     --card-back-bg: #f78fb8;
+    --accent: #e75a95;
+    --accent-hover: #d6407f;
+    --accent-active: #c42f6f;
+    --accent-rgb: 231, 90, 149;
 }
 
 /* Apply theme colors to body */
@@ -130,13 +138,12 @@ body {
     border-color: var(--input-border);
 }
 
-/* :is([data-theme="dark"], [data-theme="black"])  */
 .form-control:focus,
-/* :is([data-theme="dark"], [data-theme="black"])  */
 .form-select:focus {
     background-color: var(--input-bg);
     color: var(--text-primary);
-    border-color: #4a90e2;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 0.25rem rgba(var(--accent-rgb), 0.25);
 }
 
 /* :is([data-theme="dark"], [data-theme="black"])  */
@@ -197,4 +204,39 @@ h6 {
 /* :is([data-theme="dark"], [data-theme="black"])  */
 .playingCards .card.back {
     background-color: #444;
+}
+
+:root {
+    --bs-primary: var(--accent);
+    --bs-primary-rgb: var(--accent-rgb);
+    --bs-link-color-rgb: var(--accent-rgb);
+}
+
+.btn-primary {
+    --bs-btn-bg: var(--accent);
+    --bs-btn-border-color: var(--accent);
+    --bs-btn-hover-bg: var(--accent-hover);
+    --bs-btn-hover-border-color: var(--accent-hover);
+    --bs-btn-active-bg: var(--accent-active);
+    --bs-btn-active-border-color: var(--accent-active);
+    --bs-btn-disabled-bg: var(--accent);
+    --bs-btn-disabled-border-color: var(--accent);
+    --bs-btn-focus-shadow-rgb: var(--accent-rgb);
+}
+
+.btn-outline-primary {
+    --bs-btn-color: var(--accent);
+    --bs-btn-border-color: var(--accent);
+    --bs-btn-hover-bg: var(--accent);
+    --bs-btn-hover-border-color: var(--accent);
+    --bs-btn-active-bg: var(--accent-active);
+    --bs-btn-active-border-color: var(--accent-active);
+    --bs-btn-disabled-color: var(--accent);
+    --bs-btn-disabled-border-color: var(--accent);
+    --bs-btn-focus-shadow-rgb: var(--accent-rgb);
+}
+
+.list-group {
+    --bs-list-group-active-bg: var(--accent);
+    --bs-list-group-active-border-color: var(--accent);
 }
