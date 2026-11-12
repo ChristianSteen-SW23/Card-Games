@@ -1,4 +1,4 @@
-import React, { useState, useRef, useImperativeHandle, forwardRef } from "react";
+import { useState, useRef, useImperativeHandle, forwardRef } from "react";
 import "./../../../css/Popup.css"; // We'll move the styles here
 import { getSetting } from "../../../js/settings";
 
@@ -30,5 +30,7 @@ const Popup = forwardRef(({ message: defaultMessage = "Saved!", type: defaultTyp
         </div>
     );
 });
+
+Popup.displayName = "Popup";
 
 export default Popup;

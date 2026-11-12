@@ -17,12 +17,13 @@ export default function GamePage7({ lobbyStateStart }) {
             showPopup(`Error ${data.type}: ${data.message}`, "error");
         }
         function handInfoFunc(data) {
-            let newHand = data;
+            let newHand = data.handInfo;
             newHand.sort((a, b) => a - b)
             setHand(newHand);
         }
-
+        
         function gameInfoFunc(data) {
+            console.log(data)
             setWinPop(false);
             setLobbyState(data);
             if (socket.id == data.turn.current)
@@ -30,8 +31,6 @@ export default function GamePage7({ lobbyStateStart }) {
         }
 
         function gameEnded(data) {
-            console.log("Win event")
-            console.log(data)
             setWinPop(true);
             setWinData(data.winData);
         }

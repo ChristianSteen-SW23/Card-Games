@@ -13,6 +13,10 @@
     --modal-header-bg: #ffffff;
     --input-bg: #ffffff;
     --input-border: #ced4da;
+    --accent: #0d6efd;
+    --accent-hover: #0b5ed7;
+    --accent-active: #0a58ca;
+    --accent-rgb: 13, 110, 253;
 }
 
 [data-theme="dark"] {
@@ -31,6 +35,44 @@
     --input-border: #404040;
 }
 
+[data-theme="black"] {
+    /* Black theme colors */
+    --bg-primary: #000000;
+    --bg-secondary: #0d0d0d;
+    --text-primary: #f2f2f2;
+    --text-secondary: #a6a6a6;
+    --border-color: #2a2a2a;
+    --card-bg: #0d0d0d;
+    --card-border: #666;
+    --card-shadow: rgba(0, 0, 0, 0.8);
+    --modal-bg: #0d0d0d;
+    --modal-header-bg: #000000;
+    --input-bg: #000000;
+    --input-border: #2a2a2a;
+}
+
+[data-theme="girly"] {
+    /* Girly theme colors */
+    --bg-primary: #fff0f6;
+    --bg-secondary: #ffd6e7;
+    --text-primary: #5c1a3a;
+    --text-secondary: #a65578;
+    --border-color: #f4a6c4;
+    --card-bg: #ffffff;
+    --card-border: #e75a95;
+    --card-shadow: rgba(231, 90, 149, 0.3);
+    --modal-bg: #fff7fb;
+    --modal-header-bg: #ffd6e7;
+    --input-bg: #ffffff;
+    --input-border: #f4a6c4;
+    --close-filter: none;
+    --card-back-bg: #f78fb8;
+    --accent: #e75a95;
+    --accent-hover: #d6407f;
+    --accent-active: #c42f6f;
+    --accent-rgb: 231, 90, 149;
+}
+
 /* Apply theme colors to body */
 body {
     background-color: var(--bg-primary);
@@ -40,17 +82,20 @@ body {
         color 0.3s ease;
 }
 
-[data-theme="dark"] .playingCards {
+/* :is([data-theme="dark"], [data-theme="black"])  */
+.playingCards {
     background-color: var(--bg-primary);
 }
 
-[data-theme="dark"] .list-group .list-group-item.d-flex {
+/* :is([data-theme="dark"], [data-theme="black"])  */
+.list-group .list-group-item.d-flex {
     background-color: var(--bg-secondary);
     color: var(--text-primary);
     border-color: var(--border-color);
 }
 
-[data-theme="dark"] .planning-player-display,
+/* :is([data-theme="dark"], [data-theme="black"])  */
+.planning-player-display,
 .planning-bottom-fixed {
     background-color: var(--bg-secondary);
 }
@@ -59,93 +104,139 @@ body {
 .planning-bottom-fixed {
     background-color: var(--bg-secondary);
 }
-/* Card styling for dark mode */
-/*[data-theme="dark"] .playingCards .card {
-  background-color: var(--card-bg);
-  border-color: var(--card-border);
-  box-shadow: 0.2em 0.2em 0.5em var(--card-shadow);
-}
-
-[data-theme="dark"] .playingCards .card .rank:after,
-[data-theme="dark"] .playingCards .card.joker .rank:before {
-  background: var(--card-bg);
-}*/
 
 /* Bootstrap modal overrides for dark mode */
-[data-theme="dark"] .modal-content {
+/* :is([data-theme="dark"], [data-theme="black"])  */
+.modal-content {
     background-color: var(--modal-bg);
     color: var(--text-primary);
     border-color: var(--border-color);
 }
 
-[data-theme="dark"] .modal-header {
+/* :is([data-theme="dark"], [data-theme="black"])  */
+.modal-header {
     background-color: var(--modal-header-bg);
     border-bottom-color: var(--border-color);
 }
 
-[data-theme="dark"] .modal-footer {
+/* :is([data-theme="dark"], [data-theme="black"])  */
+.modal-footer {
     border-top-color: var(--border-color);
 }
 
-[data-theme="dark"] .modal-body {
+/* :is([data-theme="dark"], [data-theme="black"])  */
+.modal-body {
     color: var(--text-primary);
 }
 
-[data-theme="dark"] .form-control,
-[data-theme="dark"] .form-select {
+/* :is([data-theme="dark"], [data-theme="black"])  */
+.form-control,
+/* :is([data-theme="dark"], [data-theme="black"])  */
+.form-select {
     background-color: var(--input-bg);
     color: var(--text-primary);
     border-color: var(--input-border);
 }
 
-[data-theme="dark"] .form-control:focus,
-[data-theme="dark"] .form-select:focus {
+.form-control:focus,
+.form-select:focus {
     background-color: var(--input-bg);
     color: var(--text-primary);
-    border-color: #4a90e2;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 0.25rem rgba(var(--accent-rgb), 0.25);
 }
 
-[data-theme="dark"] .form-label,
-[data-theme="dark"] .form-check-label,
-[data-theme="dark"] .col-form-label {
+/* :is([data-theme="dark"], [data-theme="black"])  */
+.form-label,
+/* :is([data-theme="dark"], [data-theme="black"])  */
+.form-check-label,
+/* :is([data-theme="dark"], [data-theme="black"])  */
+.col-form-label {
     color: var(--text-primary);
 }
 
-[data-theme="dark"] .text-muted {
+/* :is([data-theme="dark"], [data-theme="black"])  */
+.text-muted {
     color: var(--text-secondary) !important;
 }
 
 /* Button overrides for dark mode */
-[data-theme="dark"] .btn-close {
+/* :is([data-theme="dark"], [data-theme="black"])  */
+.btn-close {
     filter: invert(1);
 }
 
-[data-theme="dark"] .btn-outline-secondary {
+/* :is([data-theme="dark"], [data-theme="black"])  */
+.btn-outline-secondary {
     color: var(--text-primary);
     border-color: var(--border-color);
 }
 
-[data-theme="dark"] .btn-outline-secondary:hover {
+/* :is([data-theme="dark"], [data-theme="black"])  */
+.btn-outline-secondary:hover {
     background-color: var(--bg-secondary);
     color: var(--text-primary);
     border-color: var(--border-color);
 }
 
 /* Container and general elements */
-[data-theme="dark"] .container {
+/* :is([data-theme="dark"], [data-theme="black"])  */
+.container {
     color: var(--text-primary);
 }
 
-[data-theme="dark"] h1,
-[data-theme="dark"] h2,
-[data-theme="dark"] h3,
-[data-theme="dark"] h4,
-[data-theme="dark"] h5,
-[data-theme="dark"] h6 {
+/* :is([data-theme="dark"], [data-theme="black"])  */
+h1,
+/* :is([data-theme="dark"], [data-theme="black"])  */
+h2,
+/* :is([data-theme="dark"], [data-theme="black"])  */
+h3,
+/* :is([data-theme="dark"], [data-theme="black"])  */
+h4,
+/* :is([data-theme="dark"], [data-theme="black"])  */
+h5,
+/* :is([data-theme="dark"], [data-theme="black"])  */
+h6 {
     color: var(--text-primary);
 }
 
 /* Specific adjustments for card back in dark mode */
-[data-theme="dark"] .playingCards .card.back {
+/* :is([data-theme="dark"], [data-theme="black"])  */
+.playingCards .card.back {
     background-color: #444;
+}
+
+:root {
+    --bs-primary: var(--accent);
+    --bs-primary-rgb: var(--accent-rgb);
+    --bs-link-color-rgb: var(--accent-rgb);
+}
+
+.btn-primary {
+    --bs-btn-bg: var(--accent);
+    --bs-btn-border-color: var(--accent);
+    --bs-btn-hover-bg: var(--accent-hover);
+    --bs-btn-hover-border-color: var(--accent-hover);
+    --bs-btn-active-bg: var(--accent-active);
+    --bs-btn-active-border-color: var(--accent-active);
+    --bs-btn-disabled-bg: var(--accent);
+    --bs-btn-disabled-border-color: var(--accent);
+    --bs-btn-focus-shadow-rgb: var(--accent-rgb);
+}
+
+.btn-outline-primary {
+    --bs-btn-color: var(--accent);
+    --bs-btn-border-color: var(--accent);
+    --bs-btn-hover-bg: var(--accent);
+    --bs-btn-hover-border-color: var(--accent);
+    --bs-btn-active-bg: var(--accent-active);
+    --bs-btn-active-border-color: var(--accent-active);
+    --bs-btn-disabled-color: var(--accent);
+    --bs-btn-disabled-border-color: var(--accent);
+    --bs-btn-focus-shadow-rgb: var(--accent-rgb);
+}
+
+.list-group {
+    --bs-list-group-active-bg: var(--accent);
+    --bs-list-group-active-border-color: var(--accent);
 }

@@ -1,10 +1,11 @@
 import { useState } from "react";
 
 export default function WinModal({ show, data, btns }) {
-    if (!data || data.length === 0) return null;
-
+    // Hooks must run on every render, so they go before any early return
     const [sortKey, setSortKey] = useState("name");
     const [sortAsc, setSortAsc] = useState(true);
+
+    if (!data || data.length === 0) return null;
 
     const sortedData = [...data].sort((a, b) => {
         if (sortKey === "name") {

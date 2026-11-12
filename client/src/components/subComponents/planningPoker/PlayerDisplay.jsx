@@ -1,4 +1,5 @@
 import { socket } from "../../../socket";
+import { valueColor } from "./valueColor"
 
 export default function PlayerDisplay({
     player,
@@ -6,11 +7,9 @@ export default function PlayerDisplay({
     valueRange,
     cardValues,
 }) {
-    // Clamp value between 0 and valueRange
-    const normalized = Math.min(player.value ?? 0, valueRange) / valueRange;
 
     // Generate color: 0% → grey (#ccc), 100% → red (#f44336)
-    const backgroundColor = `hsl(${(1 - normalized) * 0}, 70%, ${80 - normalized * 40}%)`;
+    const backgroundColor = valueColor(player.picked ?? 0, 0, valueRange);
 
     return (
         <div
@@ -25,7 +24,7 @@ export default function PlayerDisplay({
                         You
                     </span>
                 )}
-                {player.ready && (
+                {player.picked && (
                     <span className="badge text-bg-primary rounded-pill ms-2">
                         Ready
                     </span>
@@ -54,7 +53,7 @@ export default function PlayerDisplay({
                         lineHeight: 1,
                     }}
                 >
-                    {mustNewRound && cardValues[player.value]}
+                    {mustNewRound && cardValues[player.picked]}
                 </span>
             </div>
         </div>

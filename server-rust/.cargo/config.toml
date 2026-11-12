@@ -1,0 +1,5 @@
+# in path_to_your_project/.cargo/config.toml
+[alias]
+t = "test --all-targets"
+t1 = "test --all-targets -- --test-threads=1"
+c = "tarpaulin --engine llvm --ignore-tests --out Html -- --test-threads=1"

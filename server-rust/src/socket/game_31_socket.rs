@@ -1,0 +1,115 @@
+use colored::Colorize;
+use serde::{Deserialize, Serialize};
+use socketioxide::{SocketIo, extract::SocketRef};
+
+use crate::{
+    objects::{GameLogic, states::SharedState},
+    responses::{
+        EmitContext, Event, Planned, Responses,
+        thirty_one_response::{
+            ThirtyOneGameEndedResponse, ThirtyOneGameUpdateResponse, ThirtyOneHandUpdateResponse,
+        },
+    },
+    socket::send_error_socket::Error,
+};
+
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct Game31Payload {
+    pub card: Option<u32>,
+    pub move_type: Game31Events,
+}
+
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub enum Game31Events {
+    Swap,
+    PickTopCard,
+    PlayTopCard,
+    Knock,
+    NewGame,
+}
+
+pub fn game_31_controller(s: SocketRef, data: Game31Payload, state: SharedState, io: SocketIo) {
+    println!(
+        "Game 31 Event:{} {}",
+        format!("{:?}", data).blue(),
+        s.id.to_string().green()
+    );
+
+    // we cannot use `?` here, so handle errors explicitly and return
+    let state_guard = state.lock().unwrap();
+
+    // find lobby_id from player map
+    let lobby_id = match state_guard.player_lobby_map.get(&s.id.to_string()).cloned() {
+        Some(id) => id,
+        None => {
+            Error::LobbyError("Player not in any lobby".into()).emit_error_response(&s);
+            return;
+        }
+    };
+
+    // get the Arc<Mutex<GameLogic>>
+    let lobby_arc = match state_guard.game_map.get(&lobby_id).cloned() {
+        Some(arc) => arc,
+        None => {
+            Error::LobbyError("Lobby not found".into()).emit_error_response(&s);
+            return;
+        }
+    };
+
+    // mutate the game in-place
+    let mut game_guard = lobby_arc.lock().unwrap();
+
+    let game31 = match &mut *game_guard {
+        GameLogic::Game31(game31_logic) => game31_logic, // &mut Game31Logic
+        _ => {
+            Error::LobbyError("Current gamemode is not 31".into()).emit_error_response(&s);
+            return;
+        }
+    };
+    let result: Result<Responses, Error> = match game31.handle_move(data, &s.id.to_string()) {
+        Ok(_) => {
+            let mut planned = vec![Planned::new(
+                Event::GameInfo,
+                EmitContext::Room {
+                    io: &io,
+                    room_id: game31.get_id(),
+                },
+                &ThirtyOneGameUpdateResponse::from(&*game31),
+            )];
+
+            planned.extend(game31.get_players().iter().map(|player| {
+                let sid = player.id.to_string();
+                Planned::new(
+                    Event::HandInfo,
+                    EmitContext::SingleString {
+                        io: &io,
+                        sid: sid.to_string(),
+                    },
+                    &ThirtyOneHandUpdateResponse::from((sid.as_str(), &*game31)),
+                )
+            }));
+
+            Ok(Responses::Multiple(planned))
+        }
+        Err(err) => Err(err),
+    };
+
+    match result {
+        Err(e) => e.emit_error_response(&s),
+        Ok(responses) => responses.emit_all(),
+    };
+
+    if game31.set_game_over() {
+        Responses::Single(Planned::new(
+            Event::GameEnded31,
+            EmitContext::Room {
+                io: &io,
+                room_id: lobby_id,
+            },
+            &ThirtyOneGameEndedResponse::from(&*game31),
+        ))
+        .emit_all()
+    };
+}

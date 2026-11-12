@@ -1,5 +1,3 @@
-import { useState } from "react";
-import { socket } from "../../../socket";
 import MakeCard from "./MakeCard";
 
 export default function MakeBoard({ board }) {

@@ -1,0 +1,64 @@
+name: CI
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  rust-tests:
+    name: Run Rust tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: server-rust
+      - name: Run cargo test
+        run: cargo test --all --all-targets --verbose
+        working-directory: ./server-rust
+
+  rust-clippy:
+    name: Clippy and format (no warnings)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: server-rust
+      - name: Run clippy
+        run: cargo clippy --all-targets -- -D warnings
+        # To fix: cargo clippy --fix --allow-dirty --all-targets
+        working-directory: ./server-rust
+      - name: Check formatting
+        run: cargo fmt --check
+        working-directory: ./server-rust
+
+  frontend-build:
+    name: Frontend build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./client
+      - name: Lint
+        run: npm run lint
+        working-directory: ./client
+      - name: Build
+        run: npm run build
+        working-directory: ./client

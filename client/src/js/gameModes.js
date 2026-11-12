@@ -3,5 +3,6 @@ export const GAME_MODES = [
     "31",
     "500",
     "Planning Poker",
+    "unselected"
 ];
 

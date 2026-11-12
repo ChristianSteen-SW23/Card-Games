@@ -52,7 +52,7 @@ function HostGameModalButton() {
     const [displayName, setDisplayName] = useState("");
 
     function hostGame() {
-        socket.emit("lobbyControl", { eventType: "createLobby", username: displayName });
+        socket.emit("lobbyControl", { "eventType": "createLobby", username: displayName });
     }
 
     return (
@@ -130,7 +130,7 @@ function JoinGameModalButton() {
     const [gameCode, setGameCode] = useState("");
 
     function joinGame() {
-        socket.emit("lobbyControl", { eventType: "joinLobby", name: displayName, id: gameCode });
+        socket.emit("lobbyControl", { eventType: "joinLobby", username: displayName, lobbyId: parseInt(gameCode) });
     }
 
     return (
