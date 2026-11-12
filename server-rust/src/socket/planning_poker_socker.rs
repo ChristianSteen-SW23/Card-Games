@@ -1,9 +1,14 @@
+use colored::Colorize;
 use serde::{Deserialize, Serialize};
 use socketioxide::{SocketIo, extract::SocketRef};
-use colored::Colorize;
 
-use crate::{objects::{GameLogic, states::SharedState}, responses::{EmitContext, Event, Planned, Responses, planning_poker_response::PlanningPokerResponse}, socket::send_error_socket::Error};
-
+use crate::{
+    objects::{GameLogic, states::SharedState},
+    responses::{
+        EmitContext, Event, Planned, Responses, planning_poker_response::PlanningPokerResponse,
+    },
+    socket::send_error_socket::Error,
+};
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -19,7 +24,12 @@ pub enum PlanningPokerEvents {
     PlayAnotherRound,
 }
 
-pub fn planning_poker_controller(s: SocketRef, data: PlanningPokerPayload, state: SharedState, io: SocketIo) {
+pub fn planning_poker_controller(
+    s: SocketRef,
+    data: PlanningPokerPayload,
+    state: SharedState,
+    io: SocketIo,
+) {
     println!(
         "Game 7 Event:{} {}",
         format!("{:?}", data).blue(),
@@ -53,23 +63,23 @@ pub fn planning_poker_controller(s: SocketRef, data: PlanningPokerPayload, state
     let planning_poker = match &mut *game_guard {
         GameLogic::PlanningPoker(planning_poker_logic) => planning_poker_logic, // &mut Game7Logic
         _ => {
-            Error::LobbyError("Current gamemode is not planning poker".into()).emit_error_response(&s);
+            Error::LobbyError("Current gamemode is not planning poker".into())
+                .emit_error_response(&s);
             return;
         }
     };
 
-    let result: Result<Responses, Error> = match planning_poker.handle_move(data, &s.id.to_string()) {
+    let result: Result<Responses, Error> = match planning_poker.handle_move(data, &s.id.to_string())
+    {
         Ok(_) => {
-            let planned = vec![
-                Planned::new(
-                    Event::GameInfo,
-                    EmitContext::Room {
-                        io: &io,
-                        room_id: planning_poker.get_id(),
-                    },
-                    &PlanningPokerResponse::from(&*planning_poker),
-                ),
-            ];
+            let planned = vec![Planned::new(
+                Event::GameInfo,
+                EmitContext::Room {
+                    io: &io,
+                    room_id: planning_poker.get_id(),
+                },
+                &PlanningPokerResponse::from(&*planning_poker),
+            )];
             Ok(Responses::Multiple(planned))
         }
         Err(err) => Err(err),

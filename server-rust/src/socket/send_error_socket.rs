@@ -1,8 +1,6 @@
+use colored::Colorize;
 use serde::{Deserialize, Serialize};
 use socketioxide::extract::SocketRef;
-use colored::Colorize;
-
-
 
 #[derive(Debug)]
 pub enum Error {

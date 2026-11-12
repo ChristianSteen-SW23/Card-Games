@@ -1,4 +1,3 @@
-
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
 use socketioxide::{SocketIo, extract::SocketRef};
@@ -102,13 +101,15 @@ pub fn game_31_controller(s: SocketRef, data: Game31Payload, state: SharedState,
         Ok(responses) => responses.emit_all(),
     };
 
-    if game31.set_game_over() { Responses::Single(Planned::new(
-        Event::GameEnded31,
-        EmitContext::Room {
-            io: &io,
-            room_id: lobby_id,
-        },
-        &ThirtyOneGameEndedResponse::from(&*game31),
-    ))
-    .emit_all() };
+    if game31.set_game_over() {
+        Responses::Single(Planned::new(
+            Event::GameEnded31,
+            EmitContext::Room {
+                io: &io,
+                room_id: lobby_id,
+            },
+            &ThirtyOneGameEndedResponse::from(&*game31),
+        ))
+        .emit_all()
+    };
 }

@@ -1,6 +1,13 @@
 use crate::{
-    objects::states::SharedState, socket::{
-        Game7Payload, Game31Payload, PlanningPokerPayload, disconnect_controller, game_7_socket::game_7_controller, game_31_socket::game_31_controller, lobby_socket::{LobbyPayload, lobby_controller}, planning_poker_socker::planning_poker_controller, start_game_controller, start_game_socket::StartGamePayload,
+    objects::states::SharedState,
+    socket::{
+        Game7Payload, Game31Payload, PlanningPokerPayload, disconnect_controller,
+        game_7_socket::game_7_controller,
+        game_31_socket::game_31_controller,
+        lobby_socket::{LobbyPayload, lobby_controller},
+        planning_poker_socker::planning_poker_controller,
+        start_game_controller,
+        start_game_socket::StartGamePayload,
     },
 };
 use colored::Colorize;
@@ -77,12 +84,16 @@ pub fn register_socket_routes(io: &SocketIo, state: &SharedState) {
         s.on(
             "PlanningPokerMove",
             |socket: SocketRef, TryData::<PlanningPokerPayload>(data)| match data {
-                Ok(data) => planning_poker_controller(socket, data, state_for_planning_poker, io_for_planning_poker),
+                Ok(data) => planning_poker_controller(
+                    socket,
+                    data,
+                    state_for_planning_poker,
+                    io_for_planning_poker,
+                ),
                 Err(err) => log_bad_payload("31Move", &socket, err),
             },
         );
 
-        
         let state_for_disconnect = state.clone();
         let io_for_disconnect = io_inside.clone();
         s.on_disconnect(|socket: SocketRef, reason: DisconnectReason| {

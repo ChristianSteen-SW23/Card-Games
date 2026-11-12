@@ -34,7 +34,6 @@
 //     assert!(!card_playable(&10, &board));
 // }
 
-
 // #[test]
 // fn func_card_playable_all_7_played() {
 //     let board: Vec<Vec<i32>> = vec![vec![0, 0, 0, 0], vec![7, 7, 7, 7], vec![0, 0, 0, 0]];
@@ -55,4 +54,3 @@
 //     assert!(!card_playable(&43, &board));
 //     assert!(!card_playable(&47, &board));
 // }
-

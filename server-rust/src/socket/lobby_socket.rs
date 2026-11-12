@@ -43,11 +43,12 @@ pub fn lobby_controller(
     );
 
     let result: Result<Responses, Error> = match payload_data.event_type {
-        LobbyEvents::JoinLobby => join_lobby(s.id.to_string(), payload_data, &mut state, &io)
-            .map(|(id, res)| {
+        LobbyEvents::JoinLobby => {
+            join_lobby(s.id.to_string(), payload_data, &mut state, &io).map(|(id, res)| {
                 s.join(id.to_string());
                 res
-            }),
+            })
+        }
         LobbyEvents::CreateLobby => make_lobby(s.id.to_string(), payload_data, &mut state)
             .and_then(|id| -> Result<Responses, Error> {
                 s.join(id.to_string());
@@ -143,16 +144,16 @@ fn join_lobby<'a>(
             Err(Error::LobbyError("Socket is already in a game".to_string()))
         })?;
 
-
-
         let mut lobby_guard = lobby_arc.lock().unwrap();
         let lobby = match &mut *lobby_guard {
             GameLogic::Lobby(lobby) => lobby,
             _ => return Err(Error::LobbyError("Game is not a lobby".into())),
         };
-        
+
         if lobby.get_settings().get_max_players() <= lobby.get_players().0.len() as u32 {
-            return Err(Error::LobbyError("The max player count is reached, you can not join...".into()))
+            return Err(Error::LobbyError(
+                "The max player count is reached, you can not join...".into(),
+            ));
         }
 
         lobby.add_player(&sid, payload_data.username)?;
@@ -195,8 +196,6 @@ fn change_settings<'a>(
         return Err(Error::LobbyError("You are not in a lobby".into()));
     };
 
-    
-
     let lobby_arc = state_guard
         .game_map
         .get(&lobby_id)
@@ -211,7 +210,6 @@ fn change_settings<'a>(
     if !sid.eq(lobby.get_host()) {
         return Err(Error::LobbyError("You are not the lobby host".into()));
     }
-
 
     lobby.set_settings(settings);
     let res: LobbyResponse = LobbyResponse::from(&*lobby).to_owned();

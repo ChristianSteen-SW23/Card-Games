@@ -2,7 +2,6 @@ use std::vec;
 
 use crate::objects::lobby::lobby_player::PlayerLobby;
 
-
 #[derive(Debug, Clone)]
 pub struct Player7 {
     pub id: String,
@@ -15,29 +14,31 @@ pub struct Player7 {
 }
 
 impl Player7 {
-    pub fn reset(&mut self){
+    pub fn reset(&mut self) {
         self.hand = vec![];
         self.cards_left = 0;
         self.cur_score = 0;
     }
 
-    pub fn set_cards_left(&mut self){
+    pub fn set_cards_left(&mut self) {
         self.cards_left = self.hand.len();
     }
 
-    pub fn play_again(&mut self){
+    pub fn play_again(&mut self) {
         self.cards_left = 0;
         self.hand.clear();
     }
 
     pub fn count_points_hand(&mut self, with_box: bool) {
-        self.cur_score = self.hand.iter().map(|e| {
-            match e % 13 {
+        self.cur_score = self
+            .hand
+            .iter()
+            .map(|e| match e % 13 {
                 0 => 15,
                 10..=13 => 10,
-                _ => 5
-            }
-        }).sum::<u32>();
+                _ => 5,
+            })
+            .sum::<u32>();
         if with_box {
             self.cur_score = 25;
         }
@@ -45,7 +46,7 @@ impl Player7 {
     }
 }
 
-impl From <&PlayerLobby> for Player7 {
+impl From<&PlayerLobby> for Player7 {
     fn from(p: &PlayerLobby) -> Self {
         Player7 {
             id: p.id.to_owned(),

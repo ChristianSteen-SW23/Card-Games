@@ -26,7 +26,10 @@ impl From<&Game31> for ThirtyOneGameUpdateResponse {
 
 use serde::{Deserialize, Serialize};
 
-use crate::{objects::game31::{Game31, player31::Player31}, responses::TurnResponse};
+use crate::{
+    objects::game31::{Game31, player31::Player31},
+    responses::TurnResponse,
+};
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

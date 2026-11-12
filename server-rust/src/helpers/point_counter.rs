@@ -1,4 +1,3 @@
-
 pub fn count_point_score(cards: &Vec<u32>, picture: u32, ace: u32, number: u32) -> u32 {
     cards.iter().fold(0, |accumulator, &card| {
         accumulator
@@ -11,4 +10,3 @@ pub fn count_point_score(cards: &Vec<u32>, picture: u32, ace: u32, number: u32) 
             }
     })
 }
-

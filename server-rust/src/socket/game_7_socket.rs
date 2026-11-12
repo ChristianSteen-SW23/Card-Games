@@ -1,4 +1,3 @@
-
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
 use socketioxide::{SocketIo, extract::SocketRef};
@@ -70,16 +69,14 @@ pub fn game_7_controller(s: SocketRef, data: Game7Payload, state: SharedState, i
 
     let result: Result<Responses, Error> = match game7.handle_move(data, &s.id.to_string()) {
         Ok(_) => {
-            let mut planned = vec![
-                Planned::new(
-                    Event::GameInfo,
-                    EmitContext::Room {
-                        io: &io,
-                        room_id: game7.id,
-                    },
-                    &SevenGameUpdateResponse::from(&*game7),
-                ),
-            ];
+            let mut planned = vec![Planned::new(
+                Event::GameInfo,
+                EmitContext::Room {
+                    io: &io,
+                    room_id: game7.id,
+                },
+                &SevenGameUpdateResponse::from(&*game7),
+            )];
 
             planned.extend(game7.players.iter().map(|player| {
                 let sid = player.id.to_string();

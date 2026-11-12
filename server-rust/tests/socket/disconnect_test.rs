@@ -4,7 +4,9 @@ use std::{collections::HashMap, sync::mpsc::Receiver, thread::sleep};
 use crate::socket::mocks::*;
 use rust_socketio::client::Client;
 use server_rust::{
-    objects::lobby::settings_lobby::SettingsLobby, responses::LobbyResponse, socket::{LobbyPayload, lobby_socket::LobbyEvents},
+    objects::lobby::settings_lobby::SettingsLobby,
+    responses::LobbyResponse,
+    socket::{LobbyPayload, lobby_socket::LobbyEvents},
 };
 
 #[test]
@@ -65,8 +67,11 @@ fn test_disconnect_from_big_lobby() {
             lobby_id: Some(res_lobby_create.id),
             settings: None,
         };
-        let _: LobbyResponse = emit_and_recv(&socket_n, &rx_n["conToLobby"], "lobbyControl", &join_data);
-        println!("AIOSDHOIASHDIOHAOIDSHOIASHDIOASDIOHASDIOOIADSHOHDASIOHDSAIOHODASIHOIDAHOI##############################################################");
+        let _: LobbyResponse =
+            emit_and_recv(&socket_n, &rx_n["conToLobby"], "lobbyControl", &join_data);
+        println!(
+            "AIOSDHOIASHDIOHAOIDSHOIASHDIOASDIOHASDIOOIADSHOHDASIOHDSAIOHODASIHOIDAHOI##############################################################"
+        );
         joined.push((socket_n, rx_n));
     }
 
@@ -96,7 +101,6 @@ fn test_disconnect_from_big_lobby() {
         ],
     );
 }
-
 
 #[test]
 fn test_disconnect_from_single_player_lobby_removes_lobby() {

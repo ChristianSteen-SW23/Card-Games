@@ -16,3 +16,12 @@ jobs:
       - name: Run cargo audit
         run: cargo audit
         working-directory: ./server-rust
+
+  npm-audit:
+    name: Audit npm dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+        working-directory: ./client

@@ -2,9 +2,9 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::objects::planning_poker::{game_planning_poker::PlanningPoker, player_planning_poker::PlayerPlanningPoker};
-
-
+use crate::objects::planning_poker::{
+    game_planning_poker::PlanningPoker, player_planning_poker::PlayerPlanningPoker,
+};
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -14,7 +14,6 @@ pub struct PlanningPokerResponse {
     pub card_set: HashMap<u32, String>,
     pub game_mode: String,
 }
-
 
 impl From<&PlanningPoker> for PlanningPokerResponse {
     fn from(pp_logic: &PlanningPoker) -> Self {
@@ -33,7 +32,6 @@ impl From<&PlanningPoker> for PlanningPokerResponse {
     }
 }
 
-
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ThirtyOnePlayerResponse {
@@ -45,7 +43,7 @@ impl From<&PlayerPlanningPoker> for ThirtyOnePlayerResponse {
     fn from(p: &PlayerPlanningPoker) -> Self {
         Self {
             picked: p.card_played,
-            name: p.name.to_string()
+            name: p.name.to_string(),
         }
     }
 }

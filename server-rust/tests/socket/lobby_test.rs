@@ -5,7 +5,6 @@ use server_rust::{
     socket::{ErrorResponse, LobbyPayload, lobby_socket::LobbyEvents},
 };
 
-
 #[test]
 fn test_lobby_control_event_createlobby_no_name_400() {
     let data = LobbyPayload {

@@ -93,7 +93,10 @@ impl Game7 {
                 self.turn_manager.check_turn_with_error(sid)?;
                 self.skip_turn(sid)
             }
-            crate::socket::game_7_socket::Game7Events::PlayAgain => {self.set_up_game(); Ok(())},
+            crate::socket::game_7_socket::Game7Events::PlayAgain => {
+                self.set_up_game();
+                Ok(())
+            }
         }
     }
 

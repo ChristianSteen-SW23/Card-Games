@@ -31,3 +31,5 @@ dist-ssr
 /server-rust/target
 **/*.rs.bk
 tarpaulin-report.html
+
+target/

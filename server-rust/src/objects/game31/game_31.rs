@@ -90,7 +90,6 @@ impl Game31 {
             true => {
                 self.players.iter_mut().for_each(|p| {
                     p.count_points_hand();
-                    
                 });
                 let max_score = self.players.iter().map(|p| p.cur_score).max().unwrap_or(0);
 

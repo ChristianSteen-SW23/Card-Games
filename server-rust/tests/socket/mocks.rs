@@ -3,10 +3,7 @@ use serde::{Serialize, de::DeserializeOwned};
 use server_rust::{
     objects::{GameLogic, lobby::settings_lobby::SettingsLobby, states::ServerState},
     run_test_server,
-    socket::{
-        LobbyPayload,
-        lobby_socket::LobbyEvents,
-    },
+    socket::{LobbyPayload, lobby_socket::LobbyEvents},
 };
 use std::time::Duration;
 use std::{
@@ -81,8 +78,9 @@ pub fn setup_test_with_listener(
     let event = event_name.to_string();
 
     let tx_clone = tx.clone();
-    let builder = rust_socketio::ClientBuilder::new(format!("http://{}", addr.to_owned()))
-        .on(&*event, move |payload, _| {
+    let builder = rust_socketio::ClientBuilder::new(format!("http://{}", addr.to_owned())).on(
+        &*event,
+        move |payload, _| {
             // println!("Got payload for '{}': {:?}", event, payload);
             match payload {
                 Payload::Text(values) => {
@@ -97,7 +95,8 @@ pub fn setup_test_with_listener(
                     let _ = tx_clone.send(s);
                 }
             }
-        });
+        },
+    );
     let socket = connect_and_wait(builder);
 
     (state, rt, socket, rx)
@@ -160,20 +159,23 @@ pub fn connect_with_listener(event_name: &str) -> (Client, Receiver<String>) {
     let (tx, rx) = mpsc::channel::<String>();
 
     let tx_clone = tx.clone();
-    let builder = ClientBuilder::new(format!("http://{addr}"))
-        .on(event_name, move |payload, _| match payload {
-            Payload::Text(values) => {
-                if let Some(v) = values.get(0) {
-                    let _ = tx_clone.send(v.to_string());
+    let builder =
+        ClientBuilder::new(format!("http://{addr}")).on(
+            event_name,
+            move |payload, _| match payload {
+                Payload::Text(values) => {
+                    if let Some(v) = values.get(0) {
+                        let _ = tx_clone.send(v.to_string());
+                    }
                 }
-            }
-            Payload::Binary(bin) => {
-                let _ = tx_clone.send(format!("(binary) {:?}", bin.len()));
-            }
-            Payload::String(s) => {
-                let _ = tx_clone.send(s);
-            }
-        });
+                Payload::Binary(bin) => {
+                    let _ = tx_clone.send(format!("(binary) {:?}", bin.len()));
+                }
+                Payload::String(s) => {
+                    let _ = tx_clone.send(s);
+                }
+            },
+        );
     let socket = connect_and_wait(builder);
 
     (socket, rx)

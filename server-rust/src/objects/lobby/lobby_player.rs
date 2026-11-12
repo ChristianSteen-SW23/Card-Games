@@ -9,7 +9,11 @@ pub struct PlayerLobby {
 
 impl PlayerLobby {
     pub fn new(id: String, name: String) -> Self {
-        Self { id, name, is_bot: false }
+        Self {
+            id,
+            name,
+            is_bot: false,
+        }
     }
 
     pub fn get_id(&self) -> &str {
@@ -19,7 +23,6 @@ impl PlayerLobby {
     pub fn username_check(username: &str) -> bool {
         username.len() >= 2
     }
-
 }
 
 impl TryFrom<(String, String)> for PlayerLobby {
@@ -29,10 +32,11 @@ impl TryFrom<(String, String)> for PlayerLobby {
         let (sid, username) = value;
 
         if !PlayerLobby::username_check(&username) {
-            return Err(Error::LobbyError("Your username did not uphold the high standards required".to_string()));
+            return Err(Error::LobbyError(
+                "Your username did not uphold the high standards required".to_string(),
+            ));
         }
 
         Ok(PlayerLobby::new(sid, username))
     }
 }
-

@@ -3,10 +3,13 @@ use rust_socketio::{ClientBuilder, Payload, client::Client};
 
 use server_rust::{objects::GameLogic, responses::seven_response::SevenGameStartResponse};
 use socketioxide::socket::DisconnectReason;
-use std::{sync::{
-    Arc, Mutex,
-    mpsc::{self, Receiver},
-}, time::Duration};
+use std::{
+    sync::{
+        Arc, Mutex,
+        mpsc::{self, Receiver},
+    },
+    time::Duration,
+};
 
 #[test]
 fn test_create_7_lobby_200() {
@@ -49,12 +52,7 @@ fn test_create_7_lobby_200() {
     assert_eq!(game7.starting_player_id, game7.turn_manager.get_current());
     assert_eq!(game7.r#box, None);
     assert_eq!(game7.players.len(), 2);
-    let mut deck: Vec<u32> = game7.players
-        .iter()
-        .flat_map(|p| {
-            p.hand.clone()
-        })
-        .collect();
+    let mut deck: Vec<u32> = game7.players.iter().flat_map(|p| p.hand.clone()).collect();
     deck.sort();
     assert_eq!(deck, (0..52).collect::<Vec<_>>());
     let mut starting_player = "".to_string();
@@ -69,7 +67,8 @@ fn test_create_7_lobby_200() {
     assert_eq!(game7.turn_manager.get_current(), starting_player);
 
     assert!(
-        game7.players
+        game7
+            .players
             .iter()
             .any(|p| p.id == game7.turn_manager.get_next()),
         "Next player should exist in player list"

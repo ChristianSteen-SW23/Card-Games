@@ -1,6 +1,11 @@
 use rust_socketio::client::Client;
 use server_rust::{
-    objects::{lobby::settings_lobby::{GameModeSettings, SettingsLobby}, states::ServerState}, responses::LobbyResponse, socket::{LobbyPayload, lobby_socket::LobbyEvents, start_game_socket::StartGamePayload},
+    objects::{
+        lobby::settings_lobby::{GameModeSettings, SettingsLobby},
+        states::ServerState,
+    },
+    responses::LobbyResponse,
+    socket::{LobbyPayload, lobby_socket::LobbyEvents, start_game_socket::StartGamePayload},
 };
 use std::{
     collections::HashMap,
@@ -53,16 +58,20 @@ pub fn create_7game() -> (
     };
     let _: LobbyResponse = emit_and_recv(&socket2, &rx2["conToLobby"], "lobbyControl", &join_data);
 
-    let mut lobby_settings = SettingsLobby::new();//.set_gamemode(GameModeSettings::Game7 {bot_count: 0});
-    lobby_settings.set_gamemode(GameModeSettings::Game7 {bot_count: 0});
+    let mut lobby_settings = SettingsLobby::new(); //.set_gamemode(GameModeSettings::Game7 {bot_count: 0});
+    lobby_settings.set_gamemode(GameModeSettings::Game7 { bot_count: 0 });
     let settings_data = LobbyPayload {
         username: None,
         event_type: LobbyEvents::ChangeSettings,
         lobby_id: None,
         settings: Some(lobby_settings),
     };
-    let res_lobby_create: LobbyResponse =
-        emit_and_recv(&socket1, &rx1["playerHandler"], "lobbyControl", &settings_data);
+    let res_lobby_create: LobbyResponse = emit_and_recv(
+        &socket1,
+        &rx1["playerHandler"],
+        "lobbyControl",
+        &settings_data,
+    );
 
     let start_game = StartGamePayload {};
     socket1

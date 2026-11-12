@@ -1,5 +1,9 @@
 name: CI
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [ "main" ]
@@ -21,18 +25,21 @@ jobs:
         working-directory: ./server-rust
 
   rust-clippy:
-    name: Clippy (no warnings)
+    name: Clippy and format (no warnings)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
-          components: clippy
+          components: clippy, rustfmt
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: server-rust
       - name: Run clippy
         run: cargo clippy --all-targets -- -D warnings
+        working-directory: ./server-rust
+      - name: Check formatting
+        run: cargo fmt --check
         working-directory: ./server-rust
 
   frontend-build:

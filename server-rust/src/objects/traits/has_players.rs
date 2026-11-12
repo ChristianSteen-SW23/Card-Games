@@ -1,4 +1,7 @@
-use crate::objects::{GameLogic, game7::Game7, game31::Game31, lobby::lobby::Lobby, planning_poker::game_planning_poker::PlanningPoker};
+use crate::objects::{
+    GameLogic, game7::Game7, game31::Game31, lobby::lobby::Lobby,
+    planning_poker::game_planning_poker::PlanningPoker,
+};
 
 pub(crate) trait HasPlayers {
     fn player_ids(&self) -> Vec<String>;

@@ -1,5 +1,11 @@
 use crate::{
-    objects::{lobby::{lobby_player::PlayerLobby, lobby_players::PlayersLobby, settings_lobby::SettingsLobby}, traits::has_players::HasPlayers}, socket::{LobbyPayload, send_error_socket::Error},
+    objects::{
+        lobby::{
+            lobby_player::PlayerLobby, lobby_players::PlayersLobby, settings_lobby::SettingsLobby,
+        },
+        traits::has_players::HasPlayers,
+    },
+    socket::{LobbyPayload, send_error_socket::Error},
 };
 
 #[derive(Debug, Clone)]
@@ -7,7 +13,7 @@ pub struct Lobby {
     pub id: u32,
     pub host: String,
     pub players: PlayersLobby,
-    pub settings: SettingsLobby
+    pub settings: SettingsLobby,
 }
 
 impl Lobby {
@@ -42,7 +48,7 @@ impl Lobby {
 
     pub fn remove_player(&mut self, sid: &String) {
         self.players.remove(sid);
-        if self.get_host() == sid && !self.players.0.is_empty(){
+        if self.get_host() == sid && !self.players.0.is_empty() {
             self.host = self.player_ids()[0].to_string();
         }
     }
