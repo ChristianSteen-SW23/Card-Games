@@ -1,10 +1,8 @@
-use core::time;
-use std::{collections::HashMap, sync::mpsc::Receiver, thread::sleep};
+use std::{collections::HashMap, sync::mpsc::Receiver};
 
 use crate::socket::mocks::*;
 use rust_socketio::client::Client;
 use server_rust::{
-    objects::lobby::settings_lobby::SettingsLobby,
     responses::LobbyResponse,
     socket::{LobbyPayload, lobby_socket::LobbyEvents},
 };
@@ -29,10 +27,10 @@ fn test_disconnect_from_lobby() {
         lobby_id: Some(res_lobby_create.id),
         settings: None,
     };
-    let res_join_lobby: LobbyResponse =
+    let _res_join_lobby: LobbyResponse =
         emit_and_recv(&socket2, &rx2["conToLobby"], "lobbyControl", &join_data);
 
-    let res_lobby_update: LobbyResponse = recv(&rx1["playerHandler"]);
+    let _res_lobby_update: LobbyResponse = recv(&rx1["playerHandler"]);
 
     socket2.disconnect().expect("failed to disconnect");
     let res_lobby_update: LobbyResponse = recv(&rx1["playerHandler"]);

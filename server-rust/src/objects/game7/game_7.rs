@@ -116,7 +116,7 @@ impl Game7 {
         }
     }
 
-    fn play_card(&mut self, card_num: i32, sid: &String) -> Result<(), Error> {
+    fn play_card(&mut self, card_num: i32, sid: &str) -> Result<(), Error> {
         let board = &self.board;
         if !card_playable(&(card_num), board) {
             return Err(Error::Game7Error("You can not play that card".into()));
@@ -190,7 +190,7 @@ impl Game7 {
     }
 }
 
-fn card_playable(card: &i32, board: &Vec<Vec<i32>>) -> bool {
+fn card_playable(card: &i32, board: &[Vec<i32>]) -> bool {
     let suit = ((card - (card % 13)) / 13) as usize;
     let rank = card % 13 + 1;
     // println!("{}, {}, {}",card, suit,rank);
@@ -216,7 +216,7 @@ fn card_playable(card: &i32, board: &Vec<Vec<i32>>) -> bool {
     false
 }
 
-fn possible_skip(hand: &Vec<u32>, board: &Vec<Vec<i32>>) -> bool {
+fn possible_skip(hand: &[u32], board: &[Vec<i32>]) -> bool {
     !hand
         .iter()
         .any(|card| card_playable(&(*card as i32), board))

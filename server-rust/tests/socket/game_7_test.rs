@@ -1,5 +1,4 @@
 use crate::socket::{mocks::*, mocks_7::create_7game};
-use rust_socketio::{ClientBuilder, Payload, client::Client};
 
 use server_rust::{
     objects::GameLogic,
@@ -9,22 +8,14 @@ use server_rust::{
     },
     socket::{Game7Payload, game_7_socket::Game7Events::PlayCard},
 };
-use socketioxide::socket::DisconnectReason;
-use std::{
-    sync::{
-        Arc, Mutex,
-        mpsc::{self, Receiver},
-    },
-    time::Duration,
-};
 
 #[test]
 fn test_play_card_200() {
-    let (state, rt, socket1, rx1, socket2, rx2, lobby_id) = create_7game();
+    let (state, _rt, socket1, rx1, _socket2, rx2, lobby_id) = create_7game();
     let _: SevenGameStartResponse = recv(&rx1["startedGame"]);
 
     // Set up hands/turn, then release the locks before triggering the move.
-    let (player1_id, board_snapshot) = {
+    let (_player1_id, _board_snapshot) = {
         let state_guard = state.lock().unwrap();
         let lobby_arc = state_guard.game_map.get(&lobby_id).unwrap();
         let mut lobby = lobby_arc.lock().unwrap();
@@ -36,7 +27,11 @@ fn test_play_card_200() {
         game7.players[1].hand = (25..=51).collect();
         let _ = game7.turn_manager.update(
             game7.players[0].id.clone(),
-            &game7.players.iter().map(|p| p.id.clone()).collect(),
+            &game7
+                .players
+                .iter()
+                .map(|p| p.id.clone())
+                .collect::<Vec<_>>(),
         );
 
         (game7.players[0].id.clone(), game7.board.clone())
@@ -75,11 +70,11 @@ fn test_play_card_200() {
 
 #[test]
 fn test_play_card_with_win_200() {
-    let (state, rt, socket1, rx1, socket2, rx2, lobby_id) = create_7game();
+    let (state, _rt, socket1, rx1, _socket2, rx2, lobby_id) = create_7game();
     let _: SevenGameStartResponse = recv(&rx1["startedGame"]);
 
     // Set up hands/turn, then release the locks before triggering the move.
-    let (player1_id, board_snapshot) = {
+    let (_player1_id, _board_snapshot) = {
         let state_guard = state.lock().unwrap();
         let lobby_arc = state_guard.game_map.get(&lobby_id).unwrap();
         let mut lobby = lobby_arc.lock().unwrap();
@@ -92,7 +87,11 @@ fn test_play_card_with_win_200() {
         game7.players[1].hand = (0..=12).collect();
         let _ = game7.turn_manager.update(
             game7.players[0].id.clone(),
-            &game7.players.iter().map(|p| p.id.clone()).collect(),
+            &game7
+                .players
+                .iter()
+                .map(|p| p.id.clone())
+                .collect::<Vec<_>>(),
         );
 
         (game7.players[0].id.clone(), game7.board.clone())

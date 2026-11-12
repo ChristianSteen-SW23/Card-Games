@@ -10,7 +10,6 @@ use crate::{
     responses::Responses,
     socket::send_error_socket::Error,
 };
-use colored::Colorize;
 use serde::{Deserialize, Serialize};
 use socketioxide::{SocketIo, extract::SocketRef};
 

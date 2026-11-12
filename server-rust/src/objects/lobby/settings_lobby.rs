@@ -2,7 +2,6 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
-
 pub enum GameModeSettings {
     #[serde(rename = "7")]
     Game7 {
@@ -25,7 +24,6 @@ pub enum GameModeSettings {
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
-
 pub struct SettingsLobby {
     gamemode: GameModeSettings,
     max_players: u32,

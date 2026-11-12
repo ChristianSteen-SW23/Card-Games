@@ -37,6 +37,7 @@ jobs:
           workspaces: server-rust
       - name: Run clippy
         run: cargo clippy --all-targets -- -D warnings
+        # To fix: cargo clippy --fix --allow-dirty --all-targets
         working-directory: ./server-rust
       - name: Check formatting
         run: cargo fmt --check

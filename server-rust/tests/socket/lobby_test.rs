@@ -175,7 +175,7 @@ fn test_lobby_same_socket_not_join_the_two_lobbys() {
         emit_and_recv(&socket1, &rx1["conToLobby"], "lobbyControl", &create_data);
 
     let join_data = LobbyPayload {
-        username: Some(format!("player2").to_string()),
+        username: Some("player2".to_string().to_string()),
         event_type: LobbyEvents::JoinLobby,
         lobby_id: Some(res_lobby_create.id),
         settings: None,
@@ -183,7 +183,7 @@ fn test_lobby_same_socket_not_join_the_two_lobbys() {
     let _: LobbyResponse = emit_and_recv(&socket2, &rx2["conToLobby"], "lobbyControl", &join_data);
 
     let join_data = LobbyPayload {
-        username: Some(format!("player3").to_string()),
+        username: Some("player3".to_string().to_string()),
         event_type: LobbyEvents::JoinLobby,
         lobby_id: Some(res_lobby_create.id),
         settings: None,
@@ -191,7 +191,7 @@ fn test_lobby_same_socket_not_join_the_two_lobbys() {
     let err: ErrorResponse =
         emit_and_recv(&socket2, &rx2["errorMessage"], "lobbyControl", &join_data);
 
-    assert_eq!(err.message, format!("Socket is already in a game"));
+    assert_eq!(err.message, "Socket is already in a game".to_string());
     assert_eq!(err.r#type, "Lobby Error");
 
     assert_lobby_state(&state, res_lobby_create.id, &["player1", "player2"]);

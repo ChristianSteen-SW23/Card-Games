@@ -1,4 +1,4 @@
-pub fn count_point_score(cards: &Vec<u32>, picture: u32, ace: u32, number: u32) -> u32 {
+pub fn count_point_score(cards: &[u32], picture: u32, ace: u32, number: u32) -> u32 {
     cards.iter().fold(0, |accumulator, &card| {
         accumulator
             + if card % 13 == 0 {

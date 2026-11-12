@@ -2,26 +2,24 @@ use rust_socketio::client::Client;
 use server_rust::{
     objects::{
         lobby::settings_lobby::{GameModeSettings, SettingsLobby},
-        states::ServerState,
+        states::SharedState,
     },
     responses::LobbyResponse,
     socket::{LobbyPayload, lobby_socket::LobbyEvents, start_game_socket::StartGamePayload},
 };
-use std::{
-    collections::HashMap,
-    sync::{Arc, Mutex, mpsc::Receiver},
-};
 use tokio::runtime::Runtime;
 
-use crate::socket::mocks::{connect_with_listeners, emit_and_recv, setup_test_with_listeners};
+use crate::socket::mocks::{
+    Listeners, connect_with_listeners, emit_and_recv, setup_test_with_listeners,
+};
 
 pub fn create_7game() -> (
-    Arc<Mutex<ServerState>>,
+    SharedState,
     Runtime,
     Client,
-    HashMap<String, Receiver<String>>,
+    Listeners,
     Client,
-    HashMap<String, Receiver<String>>,
+    Listeners,
     u32,
 ) {
     let (state, rt, socket1, rx1) = setup_test_with_listeners(&[

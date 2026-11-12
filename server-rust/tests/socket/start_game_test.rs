@@ -1,19 +1,10 @@
 use crate::socket::{mocks::*, mocks_7::create_7game};
-use rust_socketio::{ClientBuilder, Payload, client::Client};
 
 use server_rust::{objects::GameLogic, responses::seven_response::SevenGameStartResponse};
-use socketioxide::socket::DisconnectReason;
-use std::{
-    sync::{
-        Arc, Mutex,
-        mpsc::{self, Receiver},
-    },
-    time::Duration,
-};
 
 #[test]
 fn test_create_7_lobby_200() {
-    let (state, rt, socket1, rx1, socket2, rx2, lobby_id) = create_7game();
+    let (state, _rt, _socket1, rx1, _socket2, rx2, lobby_id) = create_7game();
 
     let msg1: SevenGameStartResponse = recv(&rx1["startedGame"]);
     let msg2: SevenGameStartResponse = recv(&rx2["startedGame"]);

@@ -6,6 +6,16 @@ pub struct TurnManager {
     next: String,
 }
 
+/// Returned when the given player is not in the player list.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PlayerNotFound;
+
+impl Default for TurnManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TurnManager {
     /// Builds a [`TurnResponse`] representing the current and next player.
     ///
@@ -42,9 +52,12 @@ impl TurnManager {
     ///
     /// # Returns
     /// * `Ok(())` if the turn was successfully updated.
-    /// * `Err(())` if the next player could not be determined.
-    pub fn update(&mut self, current: String, players: &Vec<String>) -> Result<(), ()> {
-        let current_index = players.iter().position(|p| *p == current).ok_or(())?;
+    /// * `Err(PlayerNotFound)` if `current` is not in `players`.
+    pub fn update(&mut self, current: String, players: &[String]) -> Result<(), PlayerNotFound> {
+        let current_index = players
+            .iter()
+            .position(|p| *p == current)
+            .ok_or(PlayerNotFound)?;
         let next_index = (current_index + 1) % players.len();
         let next = players[next_index].clone();
 
@@ -78,8 +91,8 @@ impl TurnManager {
     ///
     /// # Returns
     /// * `Ok(())` if the turn advanced successfully.
-    /// * `Err(())` if the next player could not be determined.
-    pub fn advance_turn(&mut self, players: &Vec<String>) -> Result<(), ()> {
+    /// * `Err(PlayerNotFound)` if the next player is not in `players`.
+    pub fn advance_turn(&mut self, players: &[String]) -> Result<(), PlayerNotFound> {
         self.update(self.next.to_string(), players)
     }
 

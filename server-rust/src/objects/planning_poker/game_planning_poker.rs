@@ -10,7 +10,6 @@ use crate::{
 #[derive(Debug, Clone)]
 pub struct PlanningPoker {
     id: u32,
-    host: String,
     players: Vec<PlayerPlanningPoker>,
     game_over: bool,
     card_set: HashMap<u32, String>,
@@ -26,7 +25,6 @@ impl From<Lobby> for PlanningPoker {
             .collect();
         PlanningPoker {
             id: value.id,
-            host: value.host,
             players: new_players,
             game_over: false,
             card_set: HashMap::from([
@@ -103,7 +101,7 @@ impl PlanningPoker {
         }
     }
 
-    pub fn play_card(&mut self, played_card: u32, sid: &String) -> Result<(), Error> {
+    pub fn play_card(&mut self, played_card: u32, sid: &str) -> Result<(), Error> {
         if !self.card_set.contains_key(&played_card) {
             return Err(Error::PlanningPokerError(
                 "You can not play that card, not in the deck".into(),

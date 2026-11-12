@@ -1,5 +1,3 @@
-use std::usize;
-
 use crate::objects::lobby::lobby::Lobby;
 use crate::objects::traits::has_players::HasPlayers;
 use crate::objects::turn_manager::TurnManager;
@@ -147,7 +145,7 @@ impl Game31 {
         self.players.iter_mut().for_each(|p| p.hand.sort());
     }
 
-    pub fn handle_move(&mut self, data: Game31Payload, sid: &String) -> Result<(), Error> {
+    pub fn handle_move(&mut self, data: Game31Payload, sid: &str) -> Result<(), Error> {
         let is_new_game = matches!(data.move_type, Game31Events::NewGame);
         if self.game_over != is_new_game {
             return Err(Error::Game31Error(if self.game_over {
@@ -197,7 +195,7 @@ impl Game31 {
             Game31Events::PickTopCard | Game31Events::NewGame => Ok(()),
         }
     }
-    fn knock_table(&mut self, sid: &String) -> Result<(), Error> {
+    fn knock_table(&mut self, sid: &str) -> Result<(), Error> {
         if self.first_turn {
             return Err(Error::Game31Error("You can not knock first turn".into()));
         }
@@ -224,7 +222,7 @@ impl Game31 {
         Ok(())
     }
 
-    fn confirm_turn(&mut self, sid: &String) -> Result<(), Error> {
+    fn confirm_turn(&mut self, sid: &str) -> Result<(), Error> {
         if self.game_over {
             Ok(())
         } else {
@@ -232,7 +230,7 @@ impl Game31 {
         }
     }
 
-    fn swap_card(&mut self, card_idx: Option<u32>, sid: &String) -> Result<(), Error> {
+    fn swap_card(&mut self, card_idx: Option<u32>, sid: &str) -> Result<(), Error> {
         let Some(card_idx) = card_idx.map(|c| c as usize) else {
             return Err(Error::Game31Error(
                 "You did not send a card in your request".into(),
@@ -259,7 +257,7 @@ impl Game31 {
         Ok(())
     }
 
-    fn pick_top_card(&mut self, sid: &String) -> Result<(), Error> {
+    fn pick_top_card(&mut self, sid: &str) -> Result<(), Error> {
         if self
             .get_mut_player(sid)
             .ok_or_else(|| {
@@ -286,7 +284,7 @@ impl Game31 {
         Ok(())
     }
 
-    fn play_top_card(&mut self, card_idx: Option<u32>, sid: &String) -> Result<(), Error> {
+    fn play_top_card(&mut self, card_idx: Option<u32>, sid: &str) -> Result<(), Error> {
         let Some(card_idx) = card_idx.map(|c| c as usize) else {
             return Err(Error::Game31Error(
                 "You did not send a card in your request".into(),

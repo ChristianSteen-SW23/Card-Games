@@ -37,8 +37,7 @@ pub fn disconnect_controller(
     match (&mut *game_guard, player_count) {
         (GameLogic::Lobby(_), 1) => {
             drop(game_guard);
-            let _ = io.within(room_id.to_string()).emit("leaveLobby", "");
-            let _ = io.leave(room_id.to_string());
+            close_room(&io, room_id);
             state.delete_room(&room_id);
         }
         (GameLogic::Lobby(lobby), _) => {
@@ -49,8 +48,7 @@ pub fn disconnect_controller(
         }
         _ => {
             drop(game_guard);
-            send_leave_lobby(&io, room_id);
-            let _ = io.leave(room_id.to_string());
+            close_room(&io, room_id);
             state.delete_room(&room_id);
         }
     }
@@ -68,14 +66,24 @@ fn send_lobby_update<'a>(lobby: &'a Lobby, io: &'a SocketIo, lobby_id: u32) {
     .emit_all();
 }
 
-fn send_leave_lobby(io: &SocketIo, lobby_id: u32) {
-    Responses::Single(Planned::new(
-        Event::LeaveLobby,
-        EmitContext::Room {
-            io,
-            room_id: lobby_id,
-        },
-        &None::<u32>,
-    ))
-    .emit_all();
+/// Tells everyone in the room to leave, then removes all sockets from the room.
+///
+/// Socket.IO broadcasts are async (they return a future that does nothing until
+/// awaited), but this controller is sync, so the work runs in a spawned task.
+/// Both steps share one task so the message is sent *before* the room is emptied.
+fn close_room(io: &SocketIo, lobby_id: u32) {
+    let io = io.clone();
+    let room = lobby_id.to_string();
+    tokio::spawn(async move {
+        if let Err(err) = io
+            .within(room.clone())
+            .emit(Event::LeaveLobby.as_str(), &None::<u32>)
+            .await
+        {
+            eprintln!("SendError(leaveLobby): {:?}", err);
+        }
+        if let Err(err) = io.leave(room).await {
+            eprintln!("Error leaving room: {:?}", err);
+        }
+    });
 }
