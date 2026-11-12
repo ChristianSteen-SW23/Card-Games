@@ -3,7 +3,6 @@ import { socket } from "./../socket";
 import InGamePlayerList31 from "./subComponents/game31/InGamePlayerList31";
 import MakeBoard31 from "./subComponents/game31/MakeBoard31"
 import MakeHand31 from "./subComponents/game31/MakeHand31";
-import Popup from "./subComponents/helperComponents/Popup";
 import { showPopup } from "../js/popupController";
 
 

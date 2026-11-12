@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { socket } from "../../../socket";
 
 export default function ListPlayersLobby({ players }) {

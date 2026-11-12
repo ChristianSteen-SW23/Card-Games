@@ -1,20 +1,18 @@
-import { useState } from "react";
 import { socket } from "../../../socket";
-import MakeCardWithSuit from "./MakeCardWithSuit";
 import MakeCard from "./MakeCard";
 import { getSetting } from "../../../js/settings";
 
 const useFourColours = getSetting("fourColours");
 
-export default function MakeHand({ hand, setHand }) {
+export default function MakeHand({ hand }) {
     return (
         <>
             <div className="row p-5"></div>
             <h1 className="text-primary"><b>Your hand:</b></h1>
             <div className="playingCards">
                 <ul className="table">
-                    {hand.map((card, index) =>
-                        <CalNeedCard card={card} />
+                    {hand.map((card) =>
+                        <CalNeedCard key={card} card={card} />
                     )}
                     <li>
                         <div className={`playingCards ${useFourColours ? "fourColours" : ""}`} onClick={() => socket.emit("7Move", { moveType: "skipTurn" })}>

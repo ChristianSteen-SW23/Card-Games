@@ -1,5 +1,3 @@
-import { useState } from "react";
-import { socket } from "../../../socket";
 import MakeCardWithSuit from "../game7/MakeCardWithSuit";
 import { getSetting } from "../../../js/settings";
 
@@ -15,9 +13,9 @@ export default function MakeHand31({ hand, setPickedCard, pickedCard }) {
                     <ul className="table">
                         {hand.map((card, index) => {
                             if (index === pickedCard) {
-                                return <strong><CalNeedCard card={card} index={index} setPickedCard={setPickedCard} /></strong>
+                                return <strong key={card}><CalNeedCard card={card} index={index} setPickedCard={setPickedCard} /></strong>
                             } else {
-                                return <CalNeedCard card={card} index={index} setPickedCard={setPickedCard} />
+                                return <CalNeedCard key={card} card={card} index={index} setPickedCard={setPickedCard} />
                             }
                         })}
                     </ul>

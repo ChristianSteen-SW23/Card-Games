@@ -1,5 +1,3 @@
-import { useState } from "react";
-import { socket } from "../../../socket";
 import { getSetting } from "../../../js/settings";
 
 const useFourColours = getSetting("fourColours");

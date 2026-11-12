@@ -22,7 +22,6 @@ export default function GamePage500({ startHand, startPlayerInfo, startStackTop,
 
     useEffect(() => {
         function gameInformation(data) {
-            let saveTurn = yourTurn;
 
             setYourTurn(socket.id == data.turn.current);
             setTurn(data.turn);

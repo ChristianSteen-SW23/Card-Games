@@ -4,7 +4,6 @@ import LobbyID from "./subComponents/lobby/LobbyID";
 import ListPlayersLobby from "./subComponents/lobby/ListPlayersLobby";
 import StartGameBTN from "./subComponents/lobby/StartGameBTN";
 import GameModeDropDown from "./subComponents/lobby/GameModeDropDown";
-import { getSetting } from "../js/settings";
 import { showPopup } from "../js/popupController";
 
 export default function Lobby({ lobbyState }) {

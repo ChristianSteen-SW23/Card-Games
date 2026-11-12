@@ -1,5 +1,5 @@
 import { socket } from "../../../socket";
-import { valueColor } from "./BottomOfScreen"
+import { valueColor } from "./valueColor"
 
 export default function PlayerDisplay({
     player,
@@ -7,8 +7,6 @@ export default function PlayerDisplay({
     valueRange,
     cardValues,
 }) {
-    // Clamp value between 0 and valueRange
-    const normalized = Math.min(player.picked ?? 0, valueRange) / valueRange;
 
     // Generate color: 0% → grey (#ccc), 100% → red (#f44336)
     const backgroundColor = valueColor(player.picked ?? 0, 0, valueRange);

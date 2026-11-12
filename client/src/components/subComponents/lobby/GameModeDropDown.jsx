@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { GAME_MODES } from "../../../js/gameModes";
 
 export default function GameModeDropDown({ gameMode, socket, lobbySettings }) {

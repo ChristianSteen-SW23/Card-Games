@@ -1,4 +1,5 @@
 import { socket } from "./../../../socket";
+import { valueColor } from "./valueColor";
 
 export default function BottomOfScreen({
     gameOver,
@@ -43,8 +44,8 @@ function ScoreRound({ valueRange, cardValues }) {
     );
 }
 
-function NewRound({ }) {
-    function sendValue(value) {
+function NewRound() {
+    function sendValue() {
         socket.emit("PlanningPokerMove", { moveType: "playAnotherRound", card: 0 });
     }
 
@@ -67,12 +68,3 @@ function NewRound({ }) {
         </div>
     );
 }
-
-export const valueColor = (value, min, max) => {
-    const percent = max === min
-        ? 0
-        : Math.min(Math.max((value - min) / (max - min), 0), 1); // 0 to 1
-    const red = Math.round(128 + percent * 127);   // 128 (grey) to 255 (red)
-    const other = Math.round(128 - percent * 64);  // 128 (grey) to 64 (red)
-    return `rgb(${red}, ${other}, ${other})`;
-};

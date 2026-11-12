@@ -1,5 +1,3 @@
-import { useState } from "react";
-import { socket } from "../../../socket";
 
 export default function MakeCardWithSuit({ suit, rank }) {
     return (

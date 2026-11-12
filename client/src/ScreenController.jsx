@@ -17,11 +17,11 @@ function ScreenController() {
             setCurrentPage('StartPage')
         }
 
-        function leaveLobbyFunc(str) {
+        function leaveLobbyFunc() {
             console.log("LEAVE LOBBY")
             setCurrentPage('StartPage')
         }
-        function conToLobbyFunc(data, string) {
+        function conToLobbyFunc(data) {
             console.log(data) // TODO: remove this print
             data.lobbyState
             data.gameMode

@@ -1,5 +1,3 @@
-import { useState } from "react";
-import { socket } from "../../../socket";
 
 export default function LobbyID({ roomID }) {
     const copyToClipboard = async () => {

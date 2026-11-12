@@ -1,5 +1,3 @@
-import { useState, useEffect } from "react";
-import { socket } from "./../socket";
 import InGamePlayerList from "./subComponents/game/InGamePlayerList";
 import MakeBoard from "./subComponents/game/MakeBoard";
 import MakeHand from "./subComponents/game/MakeHand";
