@@ -44,13 +44,13 @@ pub fn lobby_controller(
 
     let result: Result<Responses, Error> = match payload_data.event_type {
         LobbyEvents::JoinLobby => join_lobby(s.id.to_string(), payload_data, &mut state, &io)
-            .and_then(|(id, res)| {
-                let _ = s.join(id.to_string());
-                Ok(res)
+            .map(|(id, res)| {
+                s.join(id.to_string());
+                res
             }),
         LobbyEvents::CreateLobby => make_lobby(s.id.to_string(), payload_data, &mut state)
             .and_then(|id| -> Result<Responses, Error> {
-                let _ = s.join(id.to_string());
+                s.join(id.to_string());
 
                 let state = state.lock().unwrap();
 
@@ -89,7 +89,7 @@ fn make_lobby(
     data_payload: LobbyPayload,
     state: &mut SharedState,
 ) -> Result<u32, Error> {
-    let new_id = create_lobby_id(&state)
+    let new_id = create_lobby_id(state)
         .ok_or_else(|| Error::LobbyError("Could not generate a free lobby code".to_string()))?;
 
     let new_lobby_logic: Lobby = (data_payload, new_id, sid.to_string()).try_into()?;
@@ -195,7 +195,7 @@ fn change_settings<'a>(
         return Err(Error::LobbyError("You are not in a lobby".into()));
     };
 
-    let res: LobbyResponse;
+    
 
     let lobby_arc = state_guard
         .game_map
@@ -214,7 +214,7 @@ fn change_settings<'a>(
 
 
     lobby.set_settings(settings);
-    res = LobbyResponse::from(&*lobby).to_owned();
+    let res: LobbyResponse = LobbyResponse::from(&*lobby).to_owned();
 
     Ok(Responses::Single(Planned::new(
         Event::UpdateLobby,

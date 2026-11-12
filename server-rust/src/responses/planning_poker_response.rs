@@ -21,7 +21,7 @@ impl From<&PlanningPoker> for PlanningPokerResponse {
         let players_info = pp_logic
             .get_players()
             .iter()
-            .map(|p| ThirtyOnePlayerResponse::from(p))
+            .map(ThirtyOnePlayerResponse::from)
             .collect();
 
         Self {

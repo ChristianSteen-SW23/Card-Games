@@ -60,7 +60,7 @@ pub fn planning_poker_controller(s: SocketRef, data: PlanningPokerPayload, state
 
     let result: Result<Responses, Error> = match planning_poker.handle_move(data, &s.id.to_string()) {
         Ok(_) => {
-            let mut planned = vec![
+            let planned = vec![
                 Planned::new(
                     Event::GameInfo,
                     EmitContext::Room {

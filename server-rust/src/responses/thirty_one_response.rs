@@ -12,7 +12,7 @@ impl From<&Game31> for ThirtyOneGameUpdateResponse {
         let players_info = game_31_logic
             .get_players()
             .iter()
-            .map(|p| ThirtyOnePlayerResponse::from(p))
+            .map(ThirtyOnePlayerResponse::from)
             .collect();
 
         Self {
@@ -47,7 +47,7 @@ impl From<(&str, &Game31)> for ThirtyOneGameStartResponse {
         let players_info = game_31_logic
             .get_players()
             .iter()
-            .map(|p| ThirtyOnePlayerResponse::from(p))
+            .map(ThirtyOnePlayerResponse::from)
             .collect();
 
         Self {

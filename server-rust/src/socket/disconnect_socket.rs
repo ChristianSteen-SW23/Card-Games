@@ -1,4 +1,3 @@
-use std::any::Any;
 
 use colored::Colorize;
 use socketioxide::{SocketIo, extract::SocketRef, socket::DisconnectReason};
@@ -35,7 +34,7 @@ pub fn disconnect_controller(
     };
 
     let mut game_guard = game_arc.lock().unwrap();
-    let player_count = (&*game_guard.player_ids()).len();
+    let player_count = &game_guard.player_ids().len();
     match (&mut *game_guard, player_count) {
         (GameLogic::Lobby(_), 1) => {
             drop(game_guard);
@@ -65,12 +64,12 @@ fn send_lobby_update<'a>(lobby: &'a Lobby, io: &'a SocketIo, lobby_id: u32) {
             io,
             room_id: lobby_id,
         },
-        &LobbyResponse::from(&*lobby).to_owned(),
+        &LobbyResponse::from(lobby).to_owned(),
     ))
     .emit_all();
 }
 
-fn send_leave_lobby<'a>(io: &'a SocketIo, lobby_id: u32) {
+fn send_leave_lobby(io: &SocketIo, lobby_id: u32) {
     Responses::Single(Planned::new(
         Event::LeaveLobby,
         EmitContext::Room {

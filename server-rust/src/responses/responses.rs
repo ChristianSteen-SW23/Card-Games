@@ -29,7 +29,7 @@ impl<'c> Planned<'c> {
                     "{}",
                     format!(
                         "[single_ref emit] s: {} | evnet: {}",
-                        s.ns().to_string(),
+                        s.ns(),
                         self.event.as_str()
                     )
                     .bright_black()

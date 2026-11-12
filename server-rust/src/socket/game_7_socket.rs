@@ -1,4 +1,3 @@
-use std::ops::Deref;
 
 use colored::Colorize;
 use serde::{Deserialize, Serialize};

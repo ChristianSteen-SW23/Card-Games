@@ -5,7 +5,6 @@ use axum::routing::get;
 use server_rust::objects::states::{ServerState, SharedState};
 use socketioxide::SocketIo;
 use tower_http::cors::{Any, CorsLayer};
-use tracing_subscriber;
 
 use server_rust::{
     socket_router,
@@ -26,7 +25,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     socket_router::register_socket_routes(&io, &state);
 
     let cors = CorsLayer::new()
-        .allow_origin("http://localhost:5173".parse::<http::HeaderValue>().unwrap())
+        .allow_origin("http://localhost:5173".parse::<http::HeaderValue>()?)
         .allow_methods(Any)
         .allow_headers(Any);
 
@@ -35,7 +34,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .layer(layer)
         .layer(cors);
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3100").await.unwrap();
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3100").await?;
     axum::serve(listener, app).await.unwrap();
 
     Ok(())

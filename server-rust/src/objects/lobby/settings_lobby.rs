@@ -31,6 +31,12 @@ pub struct SettingsLobby {
     max_players: u32,
 }
 
+impl Default for SettingsLobby {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SettingsLobby {
     pub fn new() -> Self {
         Self {

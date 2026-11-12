@@ -104,7 +104,7 @@ impl Game7 {
             return Err(Error::Game7Error("Player not found".into()));
         };
 
-        if possible_skip(&player_ref.hand, &board) {
+        if possible_skip(&player_ref.hand, board) {
             let _ = self.turn_manager.advance_turn(&self.player_ids());
             self.r#box = Some(sid.to_string());
             Ok(())

@@ -42,7 +42,7 @@ impl Lobby {
 
     pub fn remove_player(&mut self, sid: &String) {
         self.players.remove(sid);
-        if self.get_host() == sid && self.players.0.len() > 0{
+        if self.get_host() == sid && !self.players.0.is_empty(){
             self.host = self.player_ids()[0].to_string();
         }
     }

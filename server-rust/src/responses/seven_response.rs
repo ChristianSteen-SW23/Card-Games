@@ -18,7 +18,7 @@ impl From<&Game7> for SevenGameUpdateResponse {
         let players_info = game_7_logic
             .players
             .iter()
-            .map(|p| SevenPlayerResponse::from(p))
+            .map(SevenPlayerResponse::from)
             .collect();
 
         Self {
@@ -48,7 +48,7 @@ impl From<(&str, &Game7)> for SevenGameStartResponse {
         let players_info = game_7_logic
             .players
             .iter()
-            .map(|p| SevenPlayerResponse::from(p))
+            .map(SevenPlayerResponse::from)
             .collect();
 
         Self {

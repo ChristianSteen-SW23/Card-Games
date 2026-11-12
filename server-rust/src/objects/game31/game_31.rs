@@ -3,7 +3,6 @@ use std::usize;
 use crate::objects::lobby::lobby::Lobby;
 use crate::objects::traits::has_players::HasPlayers;
 use crate::objects::turn_manager::TurnManager;
-use crate::socket::Game7Payload;
 use crate::socket::game_31_socket::Game31Events;
 use crate::socket::send_error_socket::Error;
 use crate::{objects::game31::player31::Player31, socket::Game31Payload};
@@ -91,7 +90,7 @@ impl Game31 {
             true => {
                 self.players.iter_mut().for_each(|p| {
                     p.count_points_hand();
-                    ()
+                    
                 });
                 let max_score = self.players.iter().map(|p| p.cur_score).max().unwrap_or(0);
 

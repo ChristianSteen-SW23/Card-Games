@@ -1,7 +1,6 @@
-use crate::objects::game31::{self, Game31};
+use crate::objects::game31::Game31;
 use crate::objects::lobby::settings_lobby::GameModeSettings;
 use crate::objects::planning_poker::game_planning_poker::PlanningPoker;
-use crate::objects::traits::has_players::HasPlayers;
 use crate::responses::planning_poker_response::PlanningPokerResponse;
 use crate::responses::seven_response::SevenGameStartResponse;
 use crate::responses::thirty_one_response::ThirtyOneGameStartResponse;
@@ -11,7 +10,6 @@ use crate::{
     responses::Responses,
     socket::send_error_socket::Error,
 };
-use axum::http::response;
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
 use socketioxide::{SocketIo, extract::SocketRef};
@@ -63,7 +61,7 @@ pub fn start_game_controller(
             let game_mode = lobby_logic.settings.get_gamemode();
 
             match game_mode {
-                GameModeSettings::Game7 { bot_count } => 'match_game_mode: {
+                GameModeSettings::Game7 { bot_count: _ } => 'match_game_mode: {
                     // Build the new game
                     let new_game = Game7::from(lobby_logic.to_owned());
                     // Move it into the guard
@@ -93,7 +91,7 @@ pub fn start_game_controller(
                         .collect();
                     Ok(Responses::Multiple(responses))
                 }
-                GameModeSettings::Game31 { bot_count } => 'match_game_mode: {
+                GameModeSettings::Game31 { bot_count: _ } => 'match_game_mode: {
                     let new_game = Game31::from(lobby_logic.to_owned());
                     *game_guard = GameLogic::Game31(new_game);
 
@@ -111,7 +109,7 @@ pub fn start_game_controller(
                                 Event::StartedGame,
                                 EmitContext::SingleString {
                                     io: &io,
-                                    sid: String::from(p.id.to_string()),
+                                    sid: p.id.to_string(),
                                 },
                                 &ThirtyOneGameStartResponse::from((p.id.as_str(), game31_ref)),
                             )
@@ -119,10 +117,10 @@ pub fn start_game_controller(
                         .collect();
                     Ok(Responses::Multiple(responses))
                 }
-                GameModeSettings::Game500 { bot_count } => {
+                GameModeSettings::Game500 { bot_count: _ } => {
                     Err(Error::LobbyError("Game mode are not done".into()))
                 }
-                GameModeSettings::PlanningPoker { bot_count } => 'match_game_mode: {
+                GameModeSettings::PlanningPoker { bot_count: _ } => 'match_game_mode: {
                     let new_game = PlanningPoker::from(lobby_logic.to_owned());
                     *game_guard = GameLogic::PlanningPoker(new_game);
 
@@ -135,7 +133,7 @@ pub fn start_game_controller(
                     let responses = planning_poker_ref
                         .get_players()
                         .iter()
-                        .map(|p| {
+                        .map(|_p| {
                             Planned::new(
                                 Event::StartedGame,
                                 EmitContext::Room {

@@ -34,7 +34,7 @@ impl Player7 {
         self.cur_score = self.hand.iter().map(|e| {
             match e % 13 {
                 0 => 15,
-                13|12|11|10 => 10,
+                10..=13 => 10,
                 _ => 5
             }
         }).sum::<u32>();

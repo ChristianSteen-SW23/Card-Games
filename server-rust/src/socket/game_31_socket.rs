@@ -1,4 +1,3 @@
-use std::ops::Deref;
 
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
@@ -8,12 +7,8 @@ use crate::{
     objects::{GameLogic, states::SharedState},
     responses::{
         EmitContext, Event, Planned, Responses,
-        seven_response::{
-            SevenGameEndedResponse, SevenGameUpdateResponse, SevenHandUpdateResponse,
-        },
         thirty_one_response::{
             ThirtyOneGameEndedResponse, ThirtyOneGameUpdateResponse, ThirtyOneHandUpdateResponse,
-            ThirtyOneWinDataEntry,
         },
     },
     socket::send_error_socket::Error,
@@ -107,16 +102,13 @@ pub fn game_31_controller(s: SocketRef, data: Game31Payload, state: SharedState,
         Ok(responses) => responses.emit_all(),
     };
 
-    match game31.set_game_over() {
-        true => Responses::Single(Planned::new(
-            Event::GameEnded31,
-            EmitContext::Room {
-                io: &io,
-                room_id: lobby_id,
-            },
-            &ThirtyOneGameEndedResponse::from(&*game31),
-        ))
-        .emit_all(),
-        false => (),
-    };
+    if game31.set_game_over() { Responses::Single(Planned::new(
+        Event::GameEnded31,
+        EmitContext::Room {
+            io: &io,
+            room_id: lobby_id,
+        },
+        &ThirtyOneGameEndedResponse::from(&*game31),
+    ))
+    .emit_all() };
 }

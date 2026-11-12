@@ -8,6 +8,12 @@ use crate::objects::lobby::lobby_player::PlayerLobby;
 #[derive(Debug, Clone)]
 pub struct PlayersLobby(pub Vec<PlayerLobby>);
 
+impl Default for PlayersLobby {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PlayersLobby {
     pub fn new() -> Self {
         Self(Vec::new())

@@ -120,7 +120,7 @@ impl PlanningPoker {
         Ok(())
     }
 
-    pub fn play_another_round(&mut self, sid: &String) -> Result<(), Error> {
+    pub fn play_another_round(&mut self, _sid: &String) -> Result<(), Error> {
         self.players.iter_mut().for_each(|p| p.reset());
         self.game_over = false;
         Ok(())
