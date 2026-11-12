@@ -1,14 +1,12 @@
 use std::sync::{Arc, Mutex};
 
-use axum::{http};
+use axum::http;
 use axum::routing::get;
 use server_rust::objects::states::{ServerState, SharedState};
 use socketioxide::SocketIo;
 use tower_http::cors::{Any, CorsLayer};
 
-use server_rust::{
-    socket_router,
-};
+use server_rust::socket_router;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -24,8 +22,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Register all socket routes in another file
     socket_router::register_socket_routes(&io, &state);
 
+    let origin =
+        std::env::var("ALLOWED_ORIGIN").unwrap_or_else(|_| "http://localhost:5173".to_string());
+
     let cors = CorsLayer::new()
-        .allow_origin("http://localhost:5173".parse::<http::HeaderValue>()?)
+        .allow_origin(origin.parse::<http::HeaderValue>().unwrap())
         .allow_methods(Any)
         .allow_headers(Any);
 

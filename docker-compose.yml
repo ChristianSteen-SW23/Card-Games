@@ -1,21 +1,37 @@
 services:
   backend:
     build:
-      context: ./server
-      dockerfile: Dockerfile
+      context: ./server-rust
+      # dockerfile: Dockerfile
     container_name: card-back
-    ports:
-      - "443:3100"
+    # environment:
+    #   ALLOWED_ORIGIN: "http://91.99.223.75"
+    # ports:
+    #   - "443:3100"
     restart: unless-stopped
+
+  # frontend:
+  #   build:
+  #     context: ./client
+  #     dockerfile: Dockerfile
+  #     args:
+  #       VITE_FRONT_SOCKET_IP: "91.99.223.75:443"
+  #       VITE_APP_VERSION: "1.2.1"
+  #   container_name: card-front
+  #   ports:
+  #     - "80:8081"
+  #   depends_on:
+  #     - backend
+  #   restart: unless-stopped
 
   frontend:
     build:
       context: ./client
-      dockerfile: Dockerfile
       args:
-        VITE_FRONT_SOCKET_IP: "91.99.223.75:443"
-        VITE_APP_VERSION: "1.1.1"
+        VITE_APP_VERSION: "1.2.1"
     container_name: card-front
+    environment:
+      BACKEND_URL: "http://backend:3100"   # "backend" = the service name above
     ports:
       - "80:8081"
     depends_on:
