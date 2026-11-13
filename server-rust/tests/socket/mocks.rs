@@ -45,6 +45,11 @@ fn current_test_addr() -> String {
     })
 }
 
+/// Builder for every test client.
+fn test_client(addr: &str) -> ClientBuilder {
+    ClientBuilder::new(format!("http://{addr}"))
+}
+
 fn wait_for_server_ready(addr: &str) {
     let deadline = Instant::now() + Duration::from_secs(5);
     loop {
@@ -84,26 +89,23 @@ pub fn setup_test_with_listener(
     let event = event_name.to_string();
 
     let tx_clone = tx.clone();
-    let builder = rust_socketio::ClientBuilder::new(format!("http://{}", addr.to_owned())).on(
-        &*event,
-        move |payload, _| {
-            // println!("Got payload for '{}': {:?}", event, payload);
-            match payload {
-                Payload::Text(values) => {
-                    if let Some(v) = values.first() {
-                        let _ = tx_clone.send(v.to_string());
-                    }
-                }
-                Payload::Binary(bin) => {
-                    let _ = tx_clone.send(format!("(binary) {:?}", bin.len()));
-                }
-                #[allow(deprecated)] // old variant; rust_socketio 0.6 sends Payload::Text
-                Payload::String(s) => {
-                    let _ = tx_clone.send(s);
+    let builder = test_client(&addr).on(&*event, move |payload, _| {
+        // println!("Got payload for '{}': {:?}", event, payload);
+        match payload {
+            Payload::Text(values) => {
+                if let Some(v) = values.first() {
+                    let _ = tx_clone.send(v.to_string());
                 }
             }
-        },
-    );
+            Payload::Binary(bin) => {
+                let _ = tx_clone.send(format!("(binary) {:?}", bin.len()));
+            }
+            #[allow(deprecated)] // old variant; rust_socketio 0.6 sends Payload::Text
+            Payload::String(s) => {
+                let _ = tx_clone.send(s);
+            }
+        }
+    });
     let socket = connect_and_wait(builder);
 
     (state, rt, socket, rx)
@@ -126,7 +128,7 @@ pub fn setup_test_with_listeners(events: &[&str]) -> (SharedState, Runtime, Clie
     wait_for_server_ready(&addr);
 
     let mut receivers = HashMap::new();
-    let mut builder = rust_socketio::ClientBuilder::new(format!("http://{}", addr.to_owned()));
+    let mut builder = test_client(&addr);
 
     for &event in events {
         let (tx, rx) = mpsc::channel::<String>();
@@ -156,7 +158,7 @@ pub fn setup_test_with_listeners(events: &[&str]) -> (SharedState, Runtime, Clie
 pub fn connect_with_listeners(events: &[&str]) -> (Client, Listeners) {
     let addr = current_test_addr();
     let mut receivers = HashMap::new();
-    let mut builder = ClientBuilder::new(format!("http://{addr}"));
+    let mut builder = test_client(&addr);
 
     for &event in events {
         let (tx, rx) = mpsc::channel::<String>();
