@@ -1,4 +1,4 @@
 # Card game
-This is the a project for dirrefnt card games. It contaions 7 and 31 right now.
+This is a project for different card games. It contains 7, 31 and planning poker right now.
 
 The games can be played at http://91.99.223.75/
