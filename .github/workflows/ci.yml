@@ -20,8 +20,9 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: server-rust
-      - name: Run cargo test
-        run: cargo test --all --all-targets --verbose
+      - uses: taiki-e/install-action@nextest
+      - name: Run tests
+        run: cargo nextest run --all --all-targets --retries 2
         working-directory: ./server-rust
 
   rust-clippy:
