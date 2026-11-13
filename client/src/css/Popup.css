@@ -10,9 +10,11 @@
     transition: opacity 0.3s ease, transform 0.3s ease;
     z-index: 9999;
     color: white;
+    pointer-events: none; /*Steen du dåm */
 }
 
 .popup.visible {
+    pointer-events: auto;
     opacity: 1;
     transform: translateY(0);
 }
